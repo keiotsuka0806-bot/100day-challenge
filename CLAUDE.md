@@ -1,18 +1,53 @@
-# CLAUDE.md
+# CLAUDE.md — #100Day Challenge 本社
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## 会社概要
 
-## Project Overview
+**#100Day Challenge**は毎日1プロジェクトを立ち上げるWeb開発スタジオ。
+Claude Codeが企画・実装・QA・デプロイを担う「AIファースト」な開発会社として運営する。
 
-This is a **#100Day Challenge** workspace containing web app projects. Currently active project:
+## 組織構成
 
-- **`開発部/whisky-note/`** — WhiskyNote: a Japanese-language PWA for logging and sharing whisky tasting notes
-- **`開発部/mood-forecast/`** — empty, placeholder for future project
-- **`企画部/`** — empty, planning department placeholder
+| 部署 | ディレクトリ | 役割 |
+|------|-------------|------|
+| 企画部 | `企画部/` | アイデア生成・仕様書策定・技術選定 |
+| 開発部 | `開発部/` | 実装・バグ修正・リファクタリング |
+| QA部 | `QA部/` | コードレビュー・品質チェック |
+| 運用部 | `運用部/` | デプロイ・日次レポート・監視 |
 
-## WhiskyNote Architecture
+各部署ディレクトリに独自の `CLAUDE.md` がある。そのディレクトリで作業する際は、その部署のルールに従うこと。
 
-A **vanilla JS single-page app** (no build step, no bundler) deployed to Firebase Hosting.
+## プロジェクト一覧
+
+| プロジェクト | ディレクトリ | ステータス | 技術スタック |
+|-------------|-------------|----------|-------------|
+| WhiskyNote | `開発部/whisky-note/` | 稼働中 | Vanilla JS / Firebase |
+| MoodForecast | `開発部/mood-forecast/` | 開発中 | React / Vite |
+| NaniTaberu | `開発部/nani-taberu/` | 開発中 | Vanilla JS / Firebase / Rakuten Recipe API |
+
+> 新プロジェクトを立ち上げたらこの表を更新すること。
+
+## 新規プロジェクト立ち上げ手順
+
+1. **企画部** に仕様書を作成する → `企画部/specs/YYYY-MM-DD-[name].md`
+2. **開発部** に実装ディレクトリを作成 → `開発部/[name]/`
+3. 開発部の `CLAUDE.md` に新プロジェクトのメモを追記
+4. 実装完了後、**QA部** に `/code-review` を依頼
+5. QA通過後、**運用部** が `firebase deploy` を実行
+6. 本社 `CLAUDE.md`（この表）を更新
+
+## 全社共通ルール
+
+- **スピード優先**: 1日1プロジェクトのペース。完璧より完成を優先する
+- **バニラJS優先**: ビルドステップは必要な場合のみ。Vanilla JS + CDNで済むなら使う
+- **Firebase標準**: ホスティング・Auth・Firestoreはデフォルト選択肢
+- **PWA対応**: manifest.json と service worker を原則追加する
+- **日本語UI**: ユーザー向けの表示はすべて日本語
+
+---
+
+## WhiskyNote アーキテクチャ詳細
+
+`開発部/whisky-note/` の詳細設計。
 
 ### File structure
 | File | Role |
@@ -41,11 +76,8 @@ A **vanilla JS single-page app** (no build step, no bundler) deployed to Firebas
 ### Deployment
 
 ```bash
-# Preview locally (serves from current directory)
-firebase serve --only hosting
-
-# Deploy to production
-firebase deploy --only hosting
+firebase serve --only hosting   # ローカルプレビュー
+firebase deploy --only hosting  # 本番デプロイ
 ```
 
 Firebase project: `whisky-note-e137d`

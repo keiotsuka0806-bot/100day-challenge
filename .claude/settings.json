@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p \"運用部/reports\" && echo \"[$(date '+%H:%M')] セッション終了\" >> \"運用部/reports/session-$(date '+%Y-%m-%d').log\""
+          }
+        ]
+      }
+    ]
+  }
+}
