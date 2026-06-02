@@ -5,7 +5,7 @@ const TABS = [
   { id: 'list',     icon: '📋', label: '一覧' },
 ]
 
-export default function Navigation({ active, onChange }) {
+export default function Navigation({ active, onChange, user, onSignOut }) {
   return (
     <nav className="nav">
       {TABS.map(tab => (
@@ -18,6 +18,15 @@ export default function Navigation({ active, onChange }) {
           {tab.label}
         </button>
       ))}
+      <button className="nav-item nav-item-signout" onClick={onSignOut} title={user?.displayName}>
+        <img
+          src={user?.photoURL ?? ''}
+          alt=""
+          className="nav-avatar"
+          onError={e => { e.currentTarget.style.display = 'none' }}
+        />
+        ログアウト
+      </button>
     </nav>
   )
 }
