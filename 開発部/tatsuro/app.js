@@ -1,18 +1,22 @@
-const navToggle = document.querySelector('.nav-toggle');
-const siteNav = document.querySelector('.site-nav');
+const revealTargets = document.querySelectorAll('.reveal');
 const signupForm = document.querySelector('#signupForm');
 const formNote = document.querySelector('#formNote');
 
-navToggle?.addEventListener('click', () => {
-  const isOpen = siteNav.classList.toggle('open');
-  navToggle.setAttribute('aria-expanded', String(isOpen));
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.18,
+  rootMargin: '0px 0px -8% 0px',
 });
 
-siteNav?.querySelectorAll('a').forEach((link) => {
-  link.addEventListener('click', () => {
-    siteNav.classList.remove('open');
-    navToggle?.setAttribute('aria-expanded', 'false');
-  });
+revealTargets.forEach((element, index) => {
+  element.style.transitionDelay = `${Math.min(index * 70, 280)}ms`;
+  observer.observe(element);
 });
 
 signupForm?.addEventListener('submit', (event) => {
@@ -20,9 +24,11 @@ signupForm?.addEventListener('submit', (event) => {
   const formData = new FormData(signupForm);
   const email = String(formData.get('email') || '').trim();
 
-  if (!email) return;
+  if (!email) {
+    formNote.textContent = 'メールアドレスを入力してください。';
+    return;
+  }
 
-  formNote.textContent = '登録リクエストを受け付けました。初回リリース時にご案内します。';
-  formNote.classList.add('success');
+  formNote.textContent = '受け付けました。静かな案内をお送りします。';
   signupForm.reset();
 });

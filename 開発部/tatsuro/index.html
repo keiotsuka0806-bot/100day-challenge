@@ -3,124 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TATSURO - Japanese Craft Whisky</title>
-  <meta name="description" content="TATSUROは、静けさと余韻を設計する架空のジャパニーズクラフトウイスキーLPです。">
-  <meta property="og:title" content="TATSURO - Japanese Craft Whisky">
-  <meta property="og:description" content="夜の静けさに、ひとつの輪郭を。架空のジャパニーズクラフトウイスキーTATSURO。">
+  <title>TATSURO | 時を飲むウイスキー</title>
+  <meta name="description" content="TATSUROは、スコットランド・スペイサイド地方の小規模蒸留所で造られる架空のプレミアムウイスキー。静寂と余韻をテーマに、時間が仕上げた一滴を描くLPです。">
+  <meta property="og:title" content="TATSURO | 時を飲むウイスキー">
+  <meta property="og:description" content="樽に預けたあとは、時間が仕上げる。静寂と余韻を纏う、TATSUROのLP。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/tatsuro-hero.png">
-  <meta name="theme-color" content="#111416">
+  <meta name="theme-color" content="#090807">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
     <a class="brand-mark" href="#top" aria-label="TATSURO トップへ">TATSURO</a>
-    <nav class="site-nav" aria-label="メインナビゲーション">
-      <a href="#taste">味わい</a>
-      <a href="#craft">製法</a>
-      <a href="#bottle">ボトル</a>
-      <a href="#contact">案内を受け取る</a>
-    </nav>
-    <button class="nav-toggle" type="button" aria-label="メニューを開く" aria-expanded="false">
-      <span></span><span></span>
-    </button>
+    <a class="header-note" href="#story">時を飲む</a>
   </header>
 
   <main id="top">
-    <section class="hero" aria-label="TATSURO メインビジュアル">
+    <section class="hero reveal" aria-label="TATSURO メインビジュアル">
       <img class="hero-image" src="assets/tatsuro-hero.png" alt="TATSUROのボトルとグラス">
-      <div class="hero-shade"></div>
-      <div class="hero-content">
-        <p class="eyebrow">ジャパニーズクラフトウイスキー</p>
-        <h1>TATSURO</h1>
-        <p class="hero-copy"><span>樽香の甘みを</span><span>夜に残す。</span></p>
-        <div class="hero-meta" aria-label="基本情報">
-          <span class="meta-chip">Batch No. 001</span>
-          <span class="meta-chip">46% ABV</span>
-          <span class="meta-chip">700ml</span>
+      <div class="hero-vignette" aria-hidden="true"></div>
+      <div class="hero-grain" aria-hidden="true"></div>
+      <div class="section-shell hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow">Speyside / Small Batch / Premium Whisky</p>
+          <h1>時を飲む。</h1>
+          <p class="lede">
+            ウイスキーは作れない。<br>
+            作れるのは、樽に預けるところまでだ。
+          </p>
+          <p class="hero-body">
+            残りは、時間が仕上げる。<br>
+            TATSUROは、10年という歳月が完成させた一滴である。
+          </p>
+          <div class="hero-specs" aria-label="基本情報">
+            <span>Scotland / Speyside</span>
+            <span>46% ABV</span>
+            <span>700ml</span>
+          </div>
         </div>
-        <div class="hero-actions">
-          <a class="btn primary" href="#contact">案内を受け取る</a>
-          <a class="btn secondary" href="#taste">味わいを見る</a>
-        </div>
-      </div>
-      <div class="scroll-cue" aria-hidden="true">Scroll</div>
-    </section>
 
-    <section class="intro section-band">
-      <div class="section-inner intro-grid">
-        <div>
-          <p class="section-kicker">概要</p>
-          <h2>静けさを味わう。</h2>
-        </div>
-        <p>
-          TATSUROは、強さよりも余韻を大切にする架空のジャパニーズクラフトウイスキーです。
-          夜の終わりに、ひと口で空気が静まることを目指しました。
-        </p>
-      </div>
-    </section>
-
-    <section class="spec-band section-band">
-      <div class="section-inner">
-        <div class="spec-strip editorial-strip">
-          <div><span>酒質</span><strong>ジャパニーズブレンデッドモルトウイスキー</strong></div>
-          <div><span>度数</span><strong>46%</strong></div>
-          <div><span>容量</span><strong>700ml</strong></div>
-          <div><span>飲み方</span><strong>ストレート / 水割り / ハイボール</strong></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="taste" class="notes section-band">
-      <div class="section-inner bottle-grid">
-        <div class="bottle-visual" aria-hidden="true">
+        <figure class="hero-figure">
           <img src="assets/tatsuro-hero.png" alt="">
-        </div>
-        <div class="bottle-copy">
-          <p class="section-kicker">味わい</p>
-          <h2>香りと余韻。</h2>
-          <div class="note-list">
-            <div class="note-row"><span>色</span><p>深い琥珀色</p></div>
-            <div class="note-row"><span>香り</span><p>洋梨、白檀、軽いハチミツ</p></div>
-            <div class="note-row"><span>味わい</span><p>麦芽、ドライアプリコット、やわらかなオーク</p></div>
-            <div class="note-row"><span>余韻</span><p>短く消えず、静かに続くスパイス</p></div>
-          </div>
-          <p class="bottle-note">最初の一杯はストレート。少量の加水で香りの層が開く設計です。</p>
+          <figcaption>
+            <span>Batch 01</span>
+            <span>静寂を仕上げるための、第一樽。</span>
+          </figcaption>
+        </figure>
+      </div>
+      <a class="scroll-indicator" href="#story" aria-label="ストーリーへスクロール">
+        <span>Scroll</span>
+        <i></i>
+      </a>
+    </section>
+
+    <section id="story" class="section-band reveal">
+      <div class="section-shell story-grid">
+        <p class="section-index">01 / Story</p>
+        <div class="story-copy">
+          <h2>静寂は、味わうものではなく、深まっていくもの。</h2>
+          <p>
+            スペイサイドの空気は、派手に主張しない。
+            だからこそ、麦芽の甘み、樽の陰影、オークの余韻が、ひとつずつ輪郭を持つ。
+          </p>
+          <p>
+            TATSUROが目指したのは、飲み終えた後に消える酒ではなく、
+            飲んだ後の空間に残る静けさそのものだ。
+          </p>
         </div>
       </div>
     </section>
 
-    <section id="craft" class="craft section-band">
-      <div class="section-inner">
-        <div class="section-heading">
-          <p class="section-kicker">製法</p>
-          <h2>急がず整える。</h2>
-          <p>小規模蒸留、複数樽の後熟、低温濾過を避けた設計。派手さより、記憶に残る静かな均衡を狙います。</p>
+    <section class="section-band reverse reveal">
+      <div class="section-shell experience-grid">
+        <figure class="detail-figure">
+          <img src="assets/tatsuro-hero.png" alt="">
+          <figcaption>光を浴びるほど、液体の輪郭は静かに濃くなる。</figcaption>
+        </figure>
+        <div class="detail-copy">
+          <p class="section-index">02 / Tasting Notes</p>
+          <h2>香りは柔らかく、終わりは長い。</h2>
+          <dl class="detail-list">
+            <div>
+              <dt>色</dt>
+              <dd>琥珀の奥に、わずかな赤銅の気配。</dd>
+            </div>
+            <div>
+              <dt>香り</dt>
+              <dd>洋梨、白檀、蜂蜜、乾いた木肌。</dd>
+            </div>
+            <div>
+              <dt>味わい</dt>
+              <dd>麦芽の甘さに、オークと柑橘の輪郭。</dd>
+            </div>
+            <div>
+              <dt>余韻</dt>
+              <dd>短く切れない。スパイスが静かに長く続く。</dd>
+            </div>
+          </dl>
         </div>
-        <div class="process-list premium-list">
-          <div class="process-row">
-            <span>樽</span>
-            <p>アメリカンオークの明るさを土台に、深みのある香味を重ねる。</p>
+      </div>
+    </section>
+
+    <section class="section-band reveal">
+      <div class="section-shell ritual-grid">
+        <div class="ritual-copy">
+          <p class="section-index">03 / Craft</p>
+          <h2>樽に預ける。あとは、時間に任せる。</h2>
+          <p>
+            急がず、飾らず、整える。
+            小規模な蒸留、静かな熟成、過剰な演出を避けたブレンド。
+            TATSUROは、クラフトの手触りを残したまま、余白を失わないように設計された。
+          </p>
+        </div>
+        <div class="ritual-lines" aria-label="製法の要点">
+          <div>
+            <span>01</span>
+            <p>木材の香りを前に出しすぎず、甘さと深さの境界を保つ。</p>
           </div>
-          <div class="process-row">
-            <span>調合</span>
-            <p>強さよりも均整を重視し、甘さと木の香りのバランスを取る。</p>
+          <div>
+            <span>02</span>
+            <p>飲み口の最初はやわらかく、最後にだけ輪郭が立ち上がる。</p>
           </div>
-          <div class="process-row">
-            <span>飲み方</span>
-            <p>ストレート / 水割り / ハイボールで表情が変わる。飲み方で余韻の長さが変わる設計。</p>
+          <div>
+            <span>03</span>
+            <p>ストレートで静けさを、少量の加水で奥行きを、ハイボールで透明感を。</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="contact" class="contact section-band">
-      <div class="section-inner contact-layout">
+    <section class="section-band reveal">
+      <div class="section-shell closing-grid">
+        <div class="closing-copy">
+          <p class="section-index">04 / Impression</p>
+          <h2>夜の終わりに、ひとつだけ残る輪郭。</h2>
+          <p>
+            Macallanのように深く、響のように静かに。
+            けれどTATSUROは、もっと少ない言葉で、もっと長い余韻を残したい。
+          </p>
+          <p>
+            このLPは商品の説明ではない。<br>
+            時間が味になる、その瞬間を置いておくためのページである。
+          </p>
+          <div class="hero-specs closing-specs" aria-label="補足情報">
+            <span>Small Distillery</span>
+            <span>Limited Batch</span>
+            <span>Quiet Finish</span>
+          </div>
+        </div>
+        <div class="closing-panel">
+          <p class="closing-title">TATSURO</p>
+          <p>時を飲む。</p>
+          <p>残るのは、香りではなく、静けさ。</p>
+          <a class="text-link" href="#contact">案内を受け取る</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section-band reveal">
+      <div class="section-shell contact-grid">
         <div>
-          <p class="section-kicker">案内</p>
-          <h2>静かに受け取る。</h2>
-          <p>ブランドの世界観、限定ボトル、試飲イベントの案内をメールで受け取れます。</p>
+          <p class="section-index">05 / Invitation</p>
+          <h2>静かに、知らせる。</h2>
+          <p>
+            限定ボトル、試飲会、ブランドの新しい便りをメールで受け取れます。
+            余白のある案内だけを届けます。
+          </p>
           <p class="contact-note">20歳未満の飲酒は法律で禁止されています。飲酒運転は絶対にやめましょう。</p>
         </div>
         <form class="signup-form" id="signupForm">
@@ -141,7 +190,7 @@
 
   <footer class="site-footer">
     <span>TATSURO</span>
-    <span>架空のウイスキーLP。</span>
+    <span>静寂と余韻のためのLP。</span>
   </footer>
 
   <script src="app.js"></script>
