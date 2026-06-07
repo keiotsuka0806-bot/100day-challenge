@@ -1,0 +1,14 @@
+{
+  "name": "lexworld",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 4177",
+    "check": "node --check app.js && node --check levels.js",
+    "pro-gamer-review": "node scripts/pro-gamer-review.mjs",
+    "genius-council": "cd ../.. && node 運用部/scripts/post-deploy-genius-cycle.mjs --project 開発部/lexworld --url https://lexworld-seven.vercel.app",
+    "release-check": "cd ../.. && node 運用部/scripts/release-check.mjs --project lexworld",
+    "visual-check": "cd ../.. && node 運用部/scripts/release-check.mjs --project lexworld --visual",
+    "deploy": "vercel --prod --yes && npm run genius-council && npm run pro-gamer-review"
+  }
+}

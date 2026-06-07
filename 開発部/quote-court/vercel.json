@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/generateCases.js": {
+      "maxDuration": 30
+    }
+  }
+}

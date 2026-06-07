@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoundFrame — MP3 + 画像 → MP4</title>
+  <link rel="manifest" href="manifest.json">
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <meta name="theme-color" content="#0d0d1a">
+  <meta name="description" content="MP3と画像を組み合わせてMP4動画を作成">
+  <meta property="og:title" content="SoundFrame — MP3 + 画像 → MP4">
+  <meta property="og:description" content="好きな画像をBGMに乗せてMP4動画を作れます。完全ブラウザ内処理でファイルはどこにも送信されません。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sound-frame-kei-2026.web.app">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SoundFrame — MP3 + 画像 → MP4">
+  <meta name="twitter:description" content="好きな画像をBGMに乗せてMP4動画を作れます。完全ブラウザ内処理でファイルはどこにも送信されません。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d1a; --surface: #13132a; --surface2: #1a1a3e;
+      --accent: #7c3aed; --accent-light: #a78bfa;
+      --gradient: linear-gradient(135deg, #7c3aed, #4f46e5);
+      --text: #e2e8f0; --text-muted: #8892a4; --border: #2a2a50;
+      --success: #10b981; --error: #ef4444; --radius: 18px;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 32px 16px 64px;
+    }
+    header { text-align: center; margin-bottom: 48px; }
+    .logo {
+      font-size: 2.8rem; font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #818cf8, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 10px;
+    }
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+    .badge {
+      display: inline-block; background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.35); color: var(--accent-light);
+      font-size: 0.75rem; padding: 3px 10px; border-radius: 100px; margin-top: 8px;
+    }
+    .main { width: 100%; max-width: 780px; display: flex; flex-direction: column; gap: 20px; }
+    .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 580px) { .upload-row { grid-template-columns: 1fr; } .logo { font-size: 2rem; } }
+
+    .drop-zone {
+      background: var(--surface); border: 2px dashed var(--border);
+      border-radius: var(--radius); padding: 28px 20px; text-align: center;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      min-height: 220px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px; user-select: none;
+    }
+    .drop-zone:hover { border-color: var(--accent-light); background: rgba(124,58,237,0.06); }
+    .drop-zone.dragover { border-color: var(--accent); background: rgba(124,58,237,0.1); transform: scale(1.01); }
+    .drop-zone.has-file { border-style: solid; border-color: var(--accent); background: rgba(124,58,237,0.05); }
+    .drop-icon { font-size: 2.8rem; line-height: 1; transition: transform 0.2s; }
+    .drop-zone:hover .drop-icon { transform: scale(1.1); }
+    .drop-title { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .drop-hint { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+    .change-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      border-radius: 8px; padding: 5px 14px; font-size: 0.78rem; cursor: pointer; transition: all 0.15s; margin-top: 4px;
+    }
+    .change-btn:hover { border-color: var(--accent-light); color: var(--accent-light); }
+    .img-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; display: none; }
+    .img-preview.show { display: block; }
+    .file-badge {
+      display: none; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 8px; padding: 6px 12px; font-size: 0.78rem; color: var(--accent-light);
+      width: 100%; text-align: left; word-break: break-all; line-height: 1.5; white-space: pre-line;
+    }
+    .file-badge.show { display: block; }
+
+    /* Crop section */
+    .crop-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; display: none; flex-direction: column; gap: 14px;
+    }
+    .crop-section.show { display: flex; }
+    .crop-header { display: flex; align-items: center; justify-content: space-between; }
+    .crop-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .crop-label { font-size: 0.75rem; color: var(--text-muted); }
+    .ratio-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ratio-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 100px; padding: 5px 14px;
+      font-size: 0.8rem; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .ratio-btn:hover { border-color: var(--accent-light); color: var(--accent-light); }
+    .ratio-btn.active { background: rgba(124,58,237,0.2); border-color: var(--accent); color: var(--accent-light); font-weight: 600; }
+    .crop-canvas-wrap {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      background: #000; border-radius: 10px; overflow: hidden; cursor: grab;
+    }
+    .crop-canvas-wrap.dragging { cursor: grabbing; }
+    .crop-canvas-wrap canvas { display: block; max-width: 100%; }
+    .crop-hint { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+    .crop-apply-btn {
+      background: var(--gradient); color: white; border: none;
+      border-radius: 10px; padding: 11px 28px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s; align-self: flex-end;
+    }
+    .crop-apply-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
+
+    .convert-btn {
+      background: var(--gradient); color: white; border: none; border-radius: var(--radius);
+      padding: 18px 32px; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; width: 100%; letter-spacing: 0.02em; position: relative; overflow: hidden;
+    }
+    .convert-btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0); transition: background 0.2s; }
+    .convert-btn:hover:not(:disabled)::after { background: rgba(255,255,255,0.08); }
+    .convert-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.45); }
+    .convert-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .progress-card {
+      display: none; background: var(--surface); border-radius: var(--radius);
+      padding: 20px 24px; gap: 10px; flex-direction: column;
+    }
+    .progress-card.show { display: flex; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; }
+    .progress-status { color: var(--text); }
+    .progress-pct { color: var(--accent-light); font-weight: 600; }
+    .progress-track { background: var(--surface2); border-radius: 100px; height: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--gradient); border-radius: 100px; width: 0%; transition: width 0.3s ease; }
+    .progress-fill.pulse { animation: pulse 0.9s ease-in-out infinite alternate; }
+    @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+    .progress-note { font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; white-space: pre-line; }
+
+    .result-card {
+      display: none; background: var(--surface); border: 1px solid rgba(16,185,129,0.35);
+      border-radius: var(--radius); padding: 28px 24px; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .result-card.show { display: flex; }
+    .result-icon { font-size: 3.2rem; animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .result-title { font-size: 1.15rem; font-weight: 700; color: var(--success); }
+    .result-meta { font-size: 0.82rem; color: var(--text-muted); }
+    .dl-btn {
+      background: var(--success); color: white; text-decoration: none; border-radius: 12px;
+      padding: 13px 28px; font-size: 0.95rem; font-weight: 700; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .dl-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+    .reset-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+      border-radius: 10px; padding: 9px 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .reset-btn:hover { border-color: var(--text-muted); color: var(--text); }
+    .share-btn {
+      background: transparent; border: 1px solid rgba(124,58,237,0.4); color: var(--accent-light);
+      border-radius: 10px; padding: 9px 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .share-btn:hover { border-color: var(--accent-light); background: rgba(124,58,237,0.08); }
+
+    footer { margin-top: 48px; color: var(--text-muted); font-size: 0.78rem; text-align: center; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎬 SoundFrame</div>
+  <p class="subtitle">MP3 + 静止画 をひとつの MP4 動画に変換</p>
+  <span class="badge">完全ブラウザ内処理・ファイルはアップロードされません</span>
+</header>
+
+<div class="main">
+  <div class="upload-row">
+    <div class="drop-zone" id="imgZone">
+      <img class="img-preview" id="imgPreview" alt="preview">
+      <div id="imgDropContent">
+        <div class="drop-icon">🖼️</div>
+        <div class="drop-title">画像を選択</div>
+        <div class="drop-hint">クリックまたはドラッグ&ドロップ<br>JPG・PNG・WebP など</div>
+      </div>
+      <div class="file-badge" id="imgBadge"></div>
+      <button class="change-btn" id="imgChangeBtn" style="display:none">変更</button>
+    </div>
+    <div class="drop-zone" id="audioZone">
+      <div id="audioDropContent">
+        <div class="drop-icon">🎵</div>
+        <div class="drop-title">音声ファイルを選択</div>
+        <div class="drop-hint">クリックまたはドラッグ&ドロップ<br>MP3・AAC・WAV・FLAC など</div>
+      </div>
+      <div class="file-badge" id="audioBadge"></div>
+      <button class="change-btn" id="audioChangeBtn" style="display:none">変更</button>
+    </div>
+  </div>
+
+  <div class="crop-section" id="cropSection">
+    <div class="crop-header">
+      <span class="crop-title">✂️ 切り抜き範囲</span>
+      <span class="crop-label">ドラッグで位置を調整</span>
+    </div>
+    <div class="ratio-btns" id="ratioBtns">
+      <button class="ratio-btn active" data-ratio="0">元画像</button>
+      <button class="ratio-btn" data-ratio="16:9">16:9　横</button>
+      <button class="ratio-btn" data-ratio="9:16">9:16　縦</button>
+      <button class="ratio-btn" data-ratio="1:1">1:1</button>
+      <button class="ratio-btn" data-ratio="4:3">4:3　横</button>
+      <button class="ratio-btn" data-ratio="3:4">3:4　縦</button>
+    </div>
+    <div class="crop-canvas-wrap" id="cropWrap">
+      <canvas id="cropCanvas"></canvas>
+    </div>
+    <div class="crop-hint" id="cropHint"></div>
+    <button class="crop-apply-btn" id="cropApplyBtn">確定</button>
+  </div>
+
+  <button class="convert-btn" id="convertBtn" disabled>変換する → MP4を生成</button>
+
+  <div class="progress-card" id="progressCard">
+    <div class="progress-header">
+      <span class="progress-status" id="progressStatus">変換中...</span>
+      <span class="progress-pct" id="progressPct"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-note" id="progressNote"></div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-icon">✅</div>
+    <div class="result-title">変換完了！</div>
+    <div class="result-meta" id="resultMeta"></div>
+    <a class="dl-btn" id="dlLink" href="#" download="output.mp4">⬇️ MP4 をダウンロード</a>
+    <button class="share-btn" id="shareBtn">🔗 このツールを共有</button>
+    <button class="reset-btn" id="resetBtn">もう一度変換する</button>
+  </div>
+</div>
+
+<footer>
+  変換はすべてブラウザ内で完結します。ファイルはどこにも送信されません。
+</footer>
+
+<input type="file" id="imgInput" accept="image/*" style="display:none">
+<input type="file" id="audioInput" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg" style="display:none">
+
+<script>
+// ── State ────────────────────────────────────────────────
+let imgFile = null, audioFile = null, outputUrl = null;
+let cropNorm = null, cropNatW = 0, cropNatH = 0;
+let cropBufW = 0, cropBufH = 0, cropDispScale = 1, dragState = null;
+const cropImgEl = new Image();
+const RATIO_MAP = { '0':0, '16:9':16/9, '9:16':9/16, '1:1':1, '4:3':4/3, '3:4':3/4 };
+
+// ── DOM ──────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const imgZone = $('imgZone'), audioZone = $('audioZone');
+const imgInput = $('imgInput'), audioInput = $('audioInput');
+const imgPreview = $('imgPreview'), imgDropContent = $('imgDropContent'), audioDropContent = $('audioDropContent');
+const imgBadge = $('imgBadge'), audioBadge = $('audioBadge');
+const imgChangeBtn = $('imgChangeBtn'), audioChangeBtn = $('audioChangeBtn');
+const cropSection = $('cropSection'), cropWrap = $('cropWrap'), cropCanvas = $('cropCanvas'), cropHint = $('cropHint');
+const convertBtn = $('convertBtn'), progressCard = $('progressCard');
+const progressFill = $('progressFill'), progressPct = $('progressPct'), progressStatus = $('progressStatus'), progressNote = $('progressNote');
+const resultCard = $('resultCard'), resultMeta = $('resultMeta'), dlLink = $('dlLink'), resetBtn = $('resetBtn'), shareBtn = $('shareBtn');
+
+// ── Utilities ────────────────────────────────────────────
+const fmt = b => b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB';
+const fmtDur = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+	function getExt(f) {
+	  const p = f.name.split('.'); if (p.length>1) return p.pop().toLowerCase();
+	  return ({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','audio/mpeg':'mp3','audio/mp4':'m4a','audio/wav':'wav'}[f.type]||'bin');
+	}
+	function isAudioFile(file) {
+	  if (!file) return false;
+	  if (file.type && file.type.startsWith('audio/')) return true;
+	  return ['mp3', 'm4a', 'aac', 'wav', 'flac', 'ogg'].includes(getExt(file));
+	}
+	function createAudioContext() {
+	  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+	  if (!AudioContextCtor) throw new Error('このブラウザは音声解析に対応していません。');
+	  return new AudioContextCtor();
+	}
+	function isMobileLike() {
+	  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
+	}
+	function supportsWebCodecs() {
+	  return typeof VideoEncoder !== 'undefined'
+	    && typeof AudioEncoder !== 'undefined'
+	    && typeof AudioData !== 'undefined'
+	    && typeof VideoFrame !== 'undefined'
+	    && typeof OffscreenCanvas !== 'undefined';
+	}
+	function recorderMimeType() {
+	  if (!window.MediaRecorder) return '';
+	  const types = [
+	    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+	    'video/mp4',
+	    'video/webm;codecs=vp8,opus',
+	    'video/webm'
+	  ];
+	  return types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+	}
+	function updateBtn() { convertBtn.disabled = !(imgFile && audioFile); }
+
+function setProgress(pct, status, note) {
+  progressFill.classList.remove('pulse');
+  progressFill.style.width = pct + '%';
+  progressPct.textContent = pct + '%';
+  if (status) progressStatus.textContent = status;
+  if (note !== undefined) progressNote.textContent = note;
+}
+function setPulse(status, note) {
+  progressFill.classList.add('pulse');
+  progressFill.style.width = '60%';
+  progressPct.textContent = '';
+  if (status) progressStatus.textContent = status;
+  if (note !== undefined) progressNote.textContent = note;
+}
+
+// ── Image ────────────────────────────────────────────────
+function handleImg(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  imgFile = file; cropNorm = null;
+  imgDropContent.style.display = 'none';
+  imgBadge.textContent = '📷 ' + file.name + '\n' + fmt(file.size);
+  imgBadge.classList.add('show');
+  imgChangeBtn.style.display = 'block';
+  imgZone.classList.add('has-file');
+  updateBtn();
+  initCropTool(URL.createObjectURL(file));
+}
+imgZone.addEventListener('click', e => { if (e.target===imgChangeBtn){imgInput.click();return;} imgInput.click(); });
+imgInput.addEventListener('change', e => { if (e.target.files[0]) handleImg(e.target.files[0]); });
+setupDrop(imgZone, f => handleImg(f));
+
+	// ── Audio ────────────────────────────────────────────────
+	async function handleAudio(file) {
+	  if (!isAudioFile(file)) {
+	    alert('MP3 / M4A / AAC / WAV / FLAC などの音声ファイルを選択してください。');
+	    return;
+	  }
+	  audioFile = file;
+	  let durStr = '';
+	  try {
+	    const ac = createAudioContext();
+	    const decoded = await ac.decodeAudioData(await file.arrayBuffer());
+	    durStr = ' · ' + fmtDur(decoded.duration);
+    ac.close();
+  } catch {}
+  audioDropContent.style.display = 'none';
+  audioBadge.textContent = '🎵 ' + file.name + '\n' + fmt(file.size) + durStr;
+  audioBadge.classList.add('show');
+  audioChangeBtn.style.display = 'block';
+  audioZone.classList.add('has-file');
+  updateBtn();
+}
+audioZone.addEventListener('click', e => { if (e.target===audioChangeBtn){audioInput.click();return;} audioInput.click(); });
+audioInput.addEventListener('change', e => { if (e.target.files[0]) handleAudio(e.target.files[0]); });
+setupDrop(audioZone, f => handleAudio(f));
+
+// ── Drag & drop helper ───────────────────────────────────
+function setupDrop(zone, onFile) {
+  let n = 0;
+  zone.addEventListener('dragenter', e => { e.preventDefault(); n++; zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => { if (--n<=0){n=0;zone.classList.remove('dragover');} });
+  zone.addEventListener('dragover', e => e.preventDefault());
+  zone.addEventListener('drop', e => { e.preventDefault(); n=0; zone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f)onFile(f); });
+}
+
+// ── Crop tool ────────────────────────────────────────────
+function initCropTool(src) {
+  cropImgEl.onload = () => {
+    cropNatW = cropImgEl.naturalWidth; cropNatH = cropImgEl.naturalHeight;
+    const MAX = 1500, bs = Math.min(1, MAX/Math.max(cropNatW,cropNatH));
+    cropBufW = Math.round(cropNatW*bs); cropBufH = Math.round(cropNatH*bs);
+    cropCanvas.width = cropBufW; cropCanvas.height = cropBufH;
+    const mw = Math.min(740, window.innerWidth-48), mh = 400;
+    cropDispScale = Math.min(mw/cropBufW, mh/cropBufH);
+    cropCanvas.style.width = Math.round(cropBufW*cropDispScale)+'px';
+    cropCanvas.style.height = Math.round(cropBufH*cropDispScale)+'px';
+    cropNorm = null; cropHint.textContent = '';
+    document.querySelectorAll('.ratio-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.ratio-btn[data-ratio="0"]').classList.add('active');
+    drawCrop(); cropSection.classList.add('show');
+    imgPreview.src = src; imgPreview.classList.add('show');
+  };
+  cropImgEl.src = src;
+}
+function setCropFromRatio(r) {
+  if (r===0){cropNorm=null;cropHint.textContent='';drawCrop();return;}
+  const ar=cropNatW/cropNatH; let nw,nh;
+  if(r>ar){nw=1;nh=ar/r;}else{nh=1;nw=r/ar;}
+  cropNorm={nx:(1-nw)/2,ny:(1-nh)/2,nw,nh};
+  cropHint.textContent='ドラッグで位置を調整できます'; drawCrop();
+}
+function getCropInBuf() {
+  if(!cropNorm)return null;
+  return {x:cropNorm.nx*cropBufW,y:cropNorm.ny*cropBufH,w:cropNorm.nw*cropBufW,h:cropNorm.nh*cropBufH};
+}
+function getCropInNat() {
+  if(!cropNorm)return null;
+  return {
+    x:Math.floor(cropNorm.nx*cropNatW/2)*2, y:Math.floor(cropNorm.ny*cropNatH/2)*2,
+    w:Math.max(2,Math.floor(cropNorm.nw*cropNatW/2)*2), h:Math.max(2,Math.floor(cropNorm.nh*cropNatH/2)*2)
+  };
+}
+function drawCrop() {
+  const ctx=cropCanvas.getContext('2d'); ctx.drawImage(cropImgEl,0,0,cropBufW,cropBufH);
+  const c=getCropInBuf(); if(!c)return;
+  ctx.fillStyle='rgba(0,0,0,0.54)';
+  ctx.fillRect(0,0,cropBufW,c.y); ctx.fillRect(0,c.y+c.h,cropBufW,cropBufH-c.y-c.h);
+  ctx.fillRect(0,c.y,c.x,c.h); ctx.fillRect(c.x+c.w,c.y,cropBufW-c.x-c.w,c.h);
+  const lw=Math.max(1.5,2.5/cropDispScale);
+  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=lw;
+  ctx.strokeRect(c.x+lw/2,c.y+lw/2,c.w-lw,c.h-lw);
+  ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=Math.max(0.5,1/cropDispScale);
+  for(const t of[1/3,2/3]){
+    ctx.beginPath();ctx.moveTo(c.x+c.w*t,c.y);ctx.lineTo(c.x+c.w*t,c.y+c.h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(c.x,c.y+c.h*t);ctx.lineTo(c.x+c.w,c.y+c.h*t);ctx.stroke();
+  }
+  const hs=Math.max(4,9/cropDispScale); ctx.fillStyle='#a78bfa';
+  for(const[hx,hy]of[[c.x,c.y],[c.x+c.w,c.y],[c.x,c.y+c.h],[c.x+c.w,c.y+c.h]])
+    ctx.fillRect(hx-hs/2,hy-hs/2,hs,hs);
+}
+function bufPos(e){
+  const r=cropCanvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e;
+  return{x:(s.clientX-r.left)/cropDispScale,y:(s.clientY-r.top)/cropDispScale};
+}
+function onDragStart(e){if(!cropNorm)return;const p=bufPos(e);dragState={bx:p.x,by:p.y,nx:cropNorm.nx,ny:cropNorm.ny};cropWrap.classList.add('dragging');}
+function onDragMove(e){
+  if(!dragState||!cropNorm)return; if(e.cancelable)e.preventDefault();
+  const p=bufPos(e);
+  cropNorm.nx=Math.max(0,Math.min(1-cropNorm.nw,dragState.nx+(p.x-dragState.bx)/cropBufW));
+  cropNorm.ny=Math.max(0,Math.min(1-cropNorm.nh,dragState.ny+(p.y-dragState.by)/cropBufH));
+  drawCrop();
+}
+function onDragEnd(){dragState=null;cropWrap.classList.remove('dragging');}
+cropCanvas.addEventListener('mousedown',onDragStart);
+cropCanvas.addEventListener('touchstart',e=>{onDragStart(e);},{passive:true});
+window.addEventListener('mousemove',onDragMove);
+window.addEventListener('touchmove',onDragMove,{passive:false});
+window.addEventListener('mouseup',onDragEnd); window.addEventListener('touchend',onDragEnd);
+
+document.getElementById('ratioBtns').addEventListener('click',e=>{
+  const b=e.target.closest('.ratio-btn'); if(!b)return;
+  document.querySelectorAll('.ratio-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); setCropFromRatio(RATIO_MAP[b.dataset.ratio]??0);
+});
+document.getElementById('cropApplyBtn').addEventListener('click',()=>{
+  const c=getCropInNat();
+  if(c){
+    const tmp=document.createElement('canvas'); tmp.width=c.w; tmp.height=c.h;
+    tmp.getContext('2d').drawImage(cropImgEl,c.x,c.y,c.w,c.h,0,0,c.w,c.h);
+    imgPreview.src=tmp.toDataURL('image/jpeg',0.85);
+    imgBadge.textContent=imgBadge.textContent.replace(/\n✂️.*/,'')+`\n✂️ ${c.w}×${c.h}px に切り抜き`;
+  }else{
+    imgPreview.src=cropImgEl.src;
+    imgBadge.textContent=imgBadge.textContent.replace(/\n✂️.*/,'');
+  }
+  cropSection.classList.remove('show');
+});
+
+	// ── Convert: Web Codecs (fast) ───────────────────────────
+	async function imageToCanvas(maxSide = 1920) {
+	  const src = URL.createObjectURL(imgFile);
+	  try {
+	    const img = await new Promise((resolve, reject) => {
+	      const el = new Image();
+	      el.onload = () => resolve(el);
+	      el.onerror = reject;
+	      el.src = src;
+	    });
+	    const nc = getCropInNat();
+	    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+	    if (nc) { sx = nc.x; sy = nc.y; sw = nc.w; sh = nc.h; }
+	    const scale = Math.min(1, maxSide / Math.max(sw, sh));
+	    const outW = Math.max(2, Math.floor(sw * scale / 2) * 2);
+	    const outH = Math.max(2, Math.floor(sh * scale / 2) * 2);
+	    const canvas = document.createElement('canvas');
+	    canvas.width = outW;
+	    canvas.height = outH;
+	    canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+	    return { canvas, outW, outH };
+	  } finally {
+	    URL.revokeObjectURL(src);
+	  }
+	}
+
+	async function convertWebCodecs(onStatus) {
+  const { Muxer, ArrayBufferTarget } = await import(
+    'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.mjs'
+  );
+
+  onStatus(10, '画像を読み込み中...');
+  const bitmap = await createImageBitmap(imgFile);
+  const nc = getCropInNat();
+  let sx=0, sy=0, sw=bitmap.width, sh=bitmap.height;
+  if(nc){sx=nc.x;sy=nc.y;sw=nc.w;sh=nc.h;}
+
+  // Cap longest side at 1920 for reasonable file size
+  const MAX=1920, scale=Math.min(1,MAX/Math.max(sw,sh));
+  const outW=Math.floor(sw*scale/2)*2, outH=Math.floor(sh*scale/2)*2;
+
+	  onStatus(20, '音声を解析中...');
+	  const ac = createAudioContext();
+  const audioBuffer = await ac.decodeAudioData(await audioFile.arrayBuffer());
+  await ac.close();
+  const durMicro = Math.round(audioBuffer.duration * 1_000_000);
+
+  onStatus(30, '動画フレームを生成中...');
+  const canvas = new OffscreenCanvas(outW, outH);
+  canvas.getContext('2d').drawImage(bitmap, sx, sy, sw, sh, 0, 0, outW, outH);
+  bitmap.close();
+
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target,
+    video: { codec: 'avc', width: outW, height: outH },
+    audio: { codec: 'aac', sampleRate: audioBuffer.sampleRate, numberOfChannels: audioBuffer.numberOfChannels },
+    fastStart: 'in-memory',
+    firstTimestampBehavior: 'offset'
+  });
+
+  // Encode 1 video frame (covers entire audio duration)
+  onStatus(40, '映像フレームをエンコード中...');
+  await new Promise((resolve, reject) => {
+    const venc = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta, 0, durMicro),
+      error: reject
+    });
+    venc.configure({ codec: 'avc1.4d0028', width: outW, height: outH, bitrate: 2_000_000, framerate: 1 });
+    const frame = new VideoFrame(canvas, { timestamp: 0 });
+    venc.encode(frame, { keyFrame: true });
+    frame.close();
+    venc.flush().then(() => { venc.close(); resolve(); }).catch(reject);
+  });
+
+  // Encode audio in chunks
+  onStatus(55, '音声をエンコード中...');
+  await new Promise((resolve, reject) => {
+    const aenc = new AudioEncoder({
+      output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+      error: reject
+    });
+    aenc.configure({ codec: 'mp4a.40.2', sampleRate: audioBuffer.sampleRate, numberOfChannels: audioBuffer.numberOfChannels, bitrate: 192_000 });
+
+    const CHUNK = 4096, nch = audioBuffer.numberOfChannels, total = audioBuffer.length;
+    for (let i = 0; i < total; i += CHUNK) {
+      const size = Math.min(CHUNK, total - i);
+      const data = new Float32Array(size * nch);
+      for (let ch = 0; ch < nch; ch++)
+        data.set(audioBuffer.getChannelData(ch).subarray(i, i+size), ch*size);
+      const ad = new AudioData({
+        format: 'f32-planar', sampleRate: audioBuffer.sampleRate,
+        numberOfFrames: size, numberOfChannels: nch,
+        timestamp: Math.round(i / audioBuffer.sampleRate * 1_000_000), data
+      });
+      aenc.encode(ad); ad.close();
+    }
+    aenc.flush().then(() => { aenc.close(); resolve(); }).catch(reject);
+  });
+
+  onStatus(90, 'MP4を書き出し中...');
+  muxer.finalize();
+	  return new Blob([target.buffer], { type: 'video/mp4' });
+	}
+
+	// ── Convert: MediaRecorder fallback for mobile browsers ───
+	async function convertMediaRecorder(onStatus) {
+	  const mimeType = recorderMimeType();
+	  if (!mimeType) throw new Error('このブラウザは動画録画に対応していません。');
+	  if (!HTMLCanvasElement.prototype.captureStream) throw new Error('このブラウザはCanvas録画に対応していません。');
+
+		  onStatus(10, '安定変換を準備中...', '高速変換が使えない場合の保険モードです。音は出さずに変換します。');
+	  const { canvas } = await imageToCanvas(1280);
+	  const videoStream = canvas.captureStream(1);
+
+	  const ac = createAudioContext();
+	  const audioBuffer = await ac.decodeAudioData(await audioFile.arrayBuffer());
+	  const source = ac.createBufferSource();
+	  source.buffer = audioBuffer;
+	  const destination = ac.createMediaStreamDestination();
+	  source.connect(destination);
+
+	  const stream = new MediaStream([
+	    ...videoStream.getVideoTracks(),
+	    ...destination.stream.getAudioTracks()
+	  ]);
+	  const chunks = [];
+	  const recorder = new MediaRecorder(stream, { mimeType });
+
+	  const done = new Promise((resolve, reject) => {
+	    recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+	    recorder.onerror = e => reject(e.error || new Error('録画変換に失敗しました。'));
+	    recorder.onstop = () => resolve();
+	  });
+
+	  source.onended = () => {
+	    onStatus(92, '動画を書き出し中...', '');
+	    if (recorder.state !== 'inactive') recorder.stop();
+	  };
+
+	  recorder.start(1000);
+	  await ac.resume();
+	  source.start();
+	  const startedAt = performance.now();
+	  const tick = setInterval(() => {
+	    const dur = audioBuffer.duration || 0;
+	    if (dur > 0) {
+	      const elapsed = Math.min(dur, (performance.now() - startedAt) / 1000);
+	      const pct = Math.min(90, Math.round((elapsed / dur) * 80) + 15);
+		      onStatus(pct, '安定変換中...', `${fmtDur(elapsed)} / ${fmtDur(dur)}\n音は出していません。`);
+	    } else {
+	      const pct = Math.min(85, Math.round((performance.now() - startedAt) / 1000) + 15);
+	      onStatus(pct, '安定変換中...', '音は出さずに動画化しています。');
+	    }
+	  }, 500);
+
+	  try {
+	    await done;
+	  } finally {
+	    clearInterval(tick);
+	    try { source.stop(); } catch {}
+	    videoStream.getTracks().forEach(t => t.stop());
+	    destination.stream.getTracks().forEach(t => t.stop());
+	    await ac.close().catch(() => {});
+	  }
+
+	  const type = mimeType.startsWith('video/mp4') ? 'video/mp4' : 'video/webm';
+	  return new Blob(chunks, { type });
+	}
+
+// ── Convert button ───────────────────────────────────────
+convertBtn.addEventListener('click', async () => {
+  if (!imgFile || !audioFile) return;
+  convertBtn.disabled = true;
+  progressCard.classList.add('show');
+  resultCard.classList.remove('show');
+  progressFill.style.background = '';
+  if (outputUrl) { URL.revokeObjectURL(outputUrl); outputUrl = null; }
+
+  const onStatus = (pct, msg) => setProgress(pct, msg, '');
+
+  try {
+    setPulse('変換を開始しています...', '');
+
+	    let blob, outputExt = 'mp4';
+	    const attempts = [];
+		    if (supportsWebCodecs()) attempts.push(['高速変換', convertWebCodecs]);
+		    attempts.push(['FFmpeg高速変換', convertFFmpeg]);
+		    if (recorderMimeType()) attempts.push(['安定変換', convertMediaRecorder]);
+	    if (!attempts.length) throw new Error('このスマホブラウザでは変換機能を利用できません。PC版ChromeまたはSafariで試してください。');
+
+	    const errors = [];
+	    for (const [name, fn] of attempts) {
+	      try {
+	        blob = await fn(onStatus);
+	        if (blob.type === 'video/webm') outputExt = 'webm';
+	        break;
+	      } catch (err) {
+	        errors.push(`${name}: ${err.message || err}`);
+	      }
+	    }
+	    if (!blob) throw new Error(errors.join('\n'));
+
+    outputUrl = URL.createObjectURL(blob);
+    const nc = getCropInNat();
+    const w = nc ? nc.w : cropNatW, h = nc ? nc.h : cropNatH;
+    dlLink.href = outputUrl;
+	    dlLink.download = audioFile.name.replace(/\.[^.]+$/,'') + '.' + outputExt;
+    resultMeta.textContent = `ファイルサイズ: ${fmt(blob.size)}　解像度: ${w}×${h}`;
+    setProgress(100, '完了', '');
+    resultCard.classList.add('show');
+
+  } catch (err) {
+    progressFill.classList.remove('pulse');
+    progressFill.style.background = 'var(--error)';
+    progressStatus.textContent = 'エラーが発生しました';
+	    progressNote.textContent = err.message || String(err);
+    console.error(err);
+  }
+
+  convertBtn.disabled = false;
+});
+
+// ── FFmpeg fallback ──────────────────────────────────────
+let ffmpegLoaded = false;
+async function convertFFmpeg(onStatus) {
+  if (!window.FFmpeg) {
+    await new Promise((res, rej) => {
+      onStatus(5, '高速変換エンジンを読み込み中... (約20MB)', '端末によってはここで少し時間がかかります。');
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  const { createFFmpeg, fetchFile } = FFmpeg;
+  if (!ffmpegLoaded) {
+    const ff = createFFmpeg({ corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
+    await ff.load(); window._ff = ff; ffmpegLoaded = true;
+  }
+  const ff = window._ff;
+  const nc = getCropInNat();
+  const vf = (nc ? `crop=${nc.w}:${nc.h}:${nc.x}:${nc.y},` : '') + 'scale=trunc(iw/2)*2:trunc(ih/2)*2';
+  const ie = getExt(imgFile), ae = getExt(audioFile);
+  onStatus(30, '高速変換の準備中...', '');
+  ff.FS('writeFile', 'i.'+ie, await fetchFile(imgFile));
+  ff.FS('writeFile', 'a.'+ae, await fetchFile(audioFile));
+  onStatus(50, '高速変換中...', 'スマホでは端末性能により数十秒かかることがあります。');
+  await ff.run('-loop','1','-i','i.'+ie,'-i','a.'+ae,'-c:v','libx264','-tune','stillimage','-preset','ultrafast','-r','1','-c:a','aac','-b:a','192k','-pix_fmt','yuv420p','-vf',vf,'-movflags','+faststart','-shortest','o.mp4');
+  const data = ff.FS('readFile','o.mp4');
+  try{ff.FS('unlink','i.'+ie);ff.FS('unlink','a.'+ae);ff.FS('unlink','o.mp4');}catch{}
+  return new Blob([data.buffer], { type: 'video/mp4' });
+}
+
+// ── Share ────────────────────────────────────────────────
+shareBtn.addEventListener('click', async () => {
+  const url = 'https://sound-frame-kei-2026.web.app';
+  if (navigator.share) await navigator.share({ title:'SoundFrame', url }).catch(()=>{});
+  else {
+    await navigator.clipboard.writeText(url).catch(()=>{});
+    shareBtn.textContent = '✅ URLをコピーしました';
+    setTimeout(() => shareBtn.textContent = '🔗 このツールを共有', 2000);
+  }
+});
+
+// ── Reset ────────────────────────────────────────────────
+resetBtn.addEventListener('click', () => {
+  imgFile=null;audioFile=null;imgInput.value='';audioInput.value='';
+  cropNorm=null;dragState=null;
+  imgPreview.src='';imgPreview.classList.remove('show');
+  imgDropContent.style.display='';imgBadge.classList.remove('show');
+  imgChangeBtn.style.display='none';imgZone.classList.remove('has-file');
+  cropSection.classList.remove('show');
+  audioDropContent.style.display='';audioBadge.classList.remove('show');
+  audioChangeBtn.style.display='none';audioZone.classList.remove('has-file');
+  progressCard.classList.remove('show');
+  progressFill.style.width='0%';progressFill.style.background='';progressFill.classList.remove('pulse');
+  resultCard.classList.remove('show');
+  if(outputUrl){URL.revokeObjectURL(outputUrl);outputUrl=null;}
+  updateBtn();
+});
+</script>
+</body>
+</html>

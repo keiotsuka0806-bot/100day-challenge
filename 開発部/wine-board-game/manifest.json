@@ -1,0 +1,14 @@
+{
+  "name": "VinRoute — ワインボードゲーム",
+  "short_name": "VinRoute",
+  "description": "世界のワイン産地を旅するボードゲーム",
+  "start_url": "/wine-board-game/",
+  "display": "standalone",
+  "background_color": "#0d0500",
+  "theme_color": "#1a0a00",
+  "orientation": "landscape",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VinRoute — ワインボードゲーム</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a0a00">
+</head>
+<body>
+
+  <!-- ロビー画面 -->
+  <div id="lobbyScreen" class="screen active">
+    <div class="lobby-container">
+      <div class="logo">
+        <div class="logo-icon">🍷</div>
+        <h1>VinRoute</h1>
+        <p class="tagline">世界のワイン産地を旅して、伝説のソムリエを目指せ</p>
+      </div>
+      <div class="lobby-card">
+        <h2>ゲーム設定</h2>
+        <div class="player-count-section">
+          <label>プレイヤー数</label>
+          <div class="count-btns">
+            <button class="count-btn active" data-count="2">2人</button>
+            <button class="count-btn" data-count="3">3人</button>
+            <button class="count-btn" data-count="4">4人</button>
+          </div>
+        </div>
+        <div id="playerSetup" class="player-setup"></div>
+        <button id="startGameBtn" class="btn-primary btn-large">ゲーム開始</button>
+        <button id="howToPlayBtn" class="btn-secondary" style="margin-top:0">? 遊び方</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ゲーム画面 — パネルは #gameScreen の直接の子 -->
+  <div id="gameScreen" class="screen">
+
+    <!-- 左: プレイヤーパネル -->
+    <div id="playerPanels" class="player-panels"></div>
+
+    <!-- 中央: マップ -->
+    <div class="map-wrapper">
+      <canvas id="mapCanvas"></canvas>
+      <div id="regionTooltip" class="region-tooltip"></div>
+      <button id="helpBtn" class="help-btn">?</button>
+    </div>
+
+    <!-- 右: アクションパネル -->
+    <div class="action-panel">
+      <div id="turnInfo" class="turn-info"></div>
+
+      <!-- サイコロフェーズ -->
+      <div id="rollPhase" class="phase-panel">
+        <p class="phase-label">🎯 あなたのターン</p>
+        <div class="dice-display">
+          <div class="die" id="die1">🎲</div>
+          <div class="die" id="die2">🎲</div>
+        </div>
+        <button id="rollBtn" class="btn-primary btn-pulse">🎲 サイコロを振る</button>
+      </div>
+
+      <!-- 移動フェーズ -->
+      <div id="movePhase" class="phase-panel hidden">
+        <p class="phase-label">🗺 移動フェーズ</p>
+        <div class="steps-info">
+          <span>残り移動数</span>
+          <span id="stepsLeft" class="steps-count">0</span>
+        </div>
+        <p class="hint-text">✨ 光っている産地をクリック</p>
+        <button id="skipMoveBtn" class="btn-secondary">スキップ</button>
+      </div>
+
+      <!-- アクションフェーズ -->
+      <div id="actionPhase" class="phase-panel hidden">
+        <p class="phase-label">⚡ アクション</p>
+        <h3 id="landedRegionName" class="landed-name"></h3>
+        <div class="collected-res" id="collectedRes"></div>
+        <div class="action-btns">
+          <button id="buildBtn" class="btn-action">🌿 建設</button>
+          <button id="brewBtn" class="btn-action">🍾 醸造</button>
+          <button id="quizBtn" class="btn-action">📋 クイズ</button>
+        </div>
+        <button id="endTurnBtn" class="btn-end-turn">ターン終了 →</button>
+      </div>
+
+      <!-- イベントフェーズ -->
+      <div id="eventPhase" class="phase-panel hidden">
+        <p class="phase-label">🃏 イベント</p>
+        <div id="eventCard" class="event-card"></div>
+        <button id="closeEventBtn" class="btn-primary">OK</button>
+      </div>
+
+      <!-- ゲームログ -->
+      <div class="game-log">
+        <h4>ログ</h4>
+        <div id="logList" class="log-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 遊び方オーバーレイ -->
+  <div id="howToOverlay" class="modal-overlay hidden">
+    <div class="modal-box howto-box">
+      <h3>🍷 VinRoute の遊び方</h3>
+      <div class="howto-steps">
+        <div class="howto-step"><span class="step-num">1</span><div><strong>サイコロを振る</strong><br>右パネルの「サイコロを振る」ボタンを押す。出た目の数だけ移動できる。</div></div>
+        <div class="howto-step"><span class="step-num">2</span><div><strong>産地を移動</strong><br>金色に光っている隣の産地をクリックして移動。着地するとその産地のリソースを取得。</div></div>
+        <div class="howto-step"><span class="step-num">3</span><div><strong>建設・醸造</strong><br>リソースを使って「畑」や「醸造所」を建設。醸造所があればワインを醸造して勝利点を獲得！</div></div>
+        <div class="howto-step"><span class="step-num">4</span><div><strong>イベント</strong><br>ターン終了時にイベントカードを引く。豊作・霜害・クイズなど様々な効果が発動する。</div></div>
+        <div class="howto-step"><span class="step-num">5</span><div><strong>勝利条件</strong><br><strong>15点</strong>を先取したプレイヤーの勝利！ワイン醸造(2〜6点)、目的地到達(+2点)、クイズ正解(+1点)で得点。</div></div>
+      </div>
+      <div class="howto-resources">
+        <h4>リソース一覧</h4>
+        <div class="res-grid">
+          <span>🍇 カベルネ</span><span>🍷 ピノ・ノワール</span>
+          <span>🌕 シャルドネ</span><span>🌿 リースリング</span>
+          <span>🔮 ブレンド</span>
+        </div>
+      </div>
+      <button class="btn-primary modal-close" data-modal="howToOverlay">わかった！ゲーム開始</button>
+    </div>
+  </div>
+
+  <!-- 建設モーダル -->
+  <div id="buildModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3>🌿 建設する</h3>
+      <p id="buildRegionName" class="modal-subtitle"></p>
+      <div id="buildOptions" class="option-grid"></div>
+      <button class="btn-secondary modal-close" data-modal="buildModal">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- 醸造モーダル -->
+  <div id="brewModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3>🍾 ワインを醸造する</h3>
+      <p class="modal-subtitle">醸造所のある産地で醸造できます</p>
+      <div id="brewOptions" class="option-grid"></div>
+      <button class="btn-secondary modal-close" data-modal="brewModal">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- クイズモーダル -->
+  <div id="quizModal" class="modal-overlay hidden">
+    <div class="modal-box quiz-box">
+      <div class="quiz-header">📋 ソムリエクイズ</div>
+      <p id="quizQuestion" class="quiz-question"></p>
+      <div id="quizChoices" class="quiz-choices"></div>
+      <div id="quizResult" class="quiz-result hidden"></div>
+      <button id="closeQuizBtn" class="btn-primary hidden">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 勝利画面 -->
+  <div id="victoryScreen" class="screen hidden">
+    <div class="victory-container">
+      <div class="victory-trophy">🏆</div>
+      <h1 id="winnerTitle"></h1>
+      <div id="finalScores" class="final-scores"></div>
+      <button id="playAgainBtn" class="btn-primary btn-large">もう一度プレイ</button>
+    </div>
+  </div>
+
+  <script src="quiz.js"></script>
+  <script src="map.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+</body>
+</html>

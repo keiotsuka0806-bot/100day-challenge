@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/analyzeFood.js": {
+      "maxDuration": 60
+    }
+  }
+}

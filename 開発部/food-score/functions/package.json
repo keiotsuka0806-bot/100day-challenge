@@ -1,0 +1,11 @@
+{
+  "name": "food-score-functions",
+  "version": "1.0.0",
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "^4.9.0"
+  }
+}
