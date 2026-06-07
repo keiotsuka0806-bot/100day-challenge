@@ -1,5 +1,7 @@
 node_modules/
 .env
+.env.local
+.env.*.local
 .genius-audit-ok
 *.log
 
@@ -15,11 +17,19 @@ node_modules/
 **/.agents/
 skills-lock.json
 .claude/
-**/CLAUDE.md
 記憶庫/
 運用部/
 並行プロジェクト管理ガイド.md
 企画部/IDEA_LOG.md
+
+# versioned organization context
+!CLAUDE.md
+!**/CLAUDE.md
+
+# local-only context overlays
+CLAUDE.local.md
+**/CLAUDE.local.md
+*.local.md
 
 # Firebase local deploy cache
 **/.firebase/
