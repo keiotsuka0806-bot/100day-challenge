@@ -51,6 +51,7 @@ fi
 
 ## Step 4: GitHubにpush
 git add して git commit すること。
-このルーティンは専用automation worktreeで動くため、pushは必ず git push origin HEAD:main を使うこと。" >> "$LOGFILE" 2>&1
+このルーティンは専用automation worktreeで動くため、pushは必ず 運用部/scripts/automation-push-main.sh org-report を使うこと。
+直接 git push しないこと。" >> "$LOGFILE" 2>&1
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 組織改善レポート 完了" >> "$LOGFILE"

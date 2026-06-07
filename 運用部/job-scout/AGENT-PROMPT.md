@@ -134,10 +134,10 @@ git config user.email "job-scout-agent@100day-challenge"
 git config user.name "Job Scout Agent"
 git add "運用部/reports/job-scout-$(date +%Y-%m-%d).md" "運用部/job-scout/seen-jobs.json"
 git commit -m "chore: job-scout レポート $(date +%Y-%m-%d)"
-git push origin HEAD:main
+運用部/scripts/automation-push-main.sh job-scout
 ```
 
 ## 完了
 
-git pushが完了したら終了する。
+automation-push-main.sh が完了したら終了する。
 ユーザーへの通知は不要（深夜3時のバックグラウンド実行のため）。

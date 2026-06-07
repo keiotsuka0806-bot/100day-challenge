@@ -168,7 +168,7 @@ cd /Users/kei/dev/100day-challenge
 
 各ルーティンは最初に `運用部/scripts/run-in-automation-worktree.sh` へ自己委譲する。これにより、Keiの手元作業がメイン worktree に残っていても、AIルーティンは専用ブランチ `automation/[routine]` 上で clean tree から始める。
 
-automation worktree から main に反映する場合、push は `git push origin HEAD:main` を使う。通常の `git push` や `git push origin main` は使わない。
+automation worktree から main に反映する場合、push は `運用部/scripts/automation-push-main.sh [routine]` を使う。通常の `git push` や `git push origin main` は使わない。
 
 ### Routine Ownership
 
@@ -184,6 +184,10 @@ automation worktree から main に反映する場合、push は `git push origi
 ### Automation Report
 
 `run-in-automation-worktree.sh` は各実行後に `運用部/reports/automation-YYYY-MM-DD.md` へ、exit code、worktree、before/after commit、作業ツリー状態、ログパスを追記する。朝の確認ではまずこのファイルを見る。
+
+### Push Conflict Handling
+
+`automation-push-main.sh` は `origin/main` を fetch して rebase してから `HEAD:main` へpushする。push reject時はもう一度 fetch/rebase/push を試す。rebase conflict または retry失敗時は `運用部/reports/automation-YYYY-MM-DD.md` と `運用部/logs/automation-push-[routine].log` に状態を残して停止する。
 
 ## 日次レポート形式
 
