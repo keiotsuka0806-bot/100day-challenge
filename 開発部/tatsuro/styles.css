@@ -175,7 +175,7 @@ h2 {
   line-height: 1.02;
   letter-spacing: 0;
   margin-bottom: 18px;
-  text-wrap: balance;
+  white-space: nowrap;
 }
 h3 { font-size: 19px; margin-bottom: 10px; text-wrap: balance; }
 p { color: var(--muted); line-height: 1.85; text-wrap: pretty; }

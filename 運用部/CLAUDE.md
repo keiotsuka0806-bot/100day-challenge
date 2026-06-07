@@ -170,6 +170,21 @@ cd /Users/kei/dev/100day-challenge
 
 automation worktree から main に反映する場合、push は `git push origin HEAD:main` を使う。通常の `git push` や `git push origin main` は使わない。
 
+### Routine Ownership
+
+各ルーティンは commit 前に `運用部/scripts/automation-ownership-check.sh` で担当範囲を検査する。`AUTOMATION_ROUTINE` が設定された automation worktree では、pre-commit から自動実行される。
+
+| Routine | 触ってよい範囲 |
+|---|---|
+| `kikakubu` | `企画部/specs/*-idea*.md`, `企画部/research/*.md`, `企画部/IDEA_LOG.md` |
+| `org-report` | `運用部/reports/org-improvement-*.md`, `運用部/org-improvement/*.md` |
+| `retrospective` | `記憶庫/lessons.md`, `記憶庫/reusable-patterns.md`, `記憶庫/decisions.md` |
+| `job-scout` | `運用部/reports/job-scout-*.md`, `運用部/job-scout/seen-jobs.json` |
+
+### Automation Report
+
+`run-in-automation-worktree.sh` は各実行後に `運用部/reports/automation-YYYY-MM-DD.md` へ、exit code、worktree、before/after commit、作業ツリー状態、ログパスを追記する。朝の確認ではまずこのファイルを見る。
+
 ## 日次レポート形式
 
 「日報更新して」と言われたら、以下の3ファイルをすべて作成・更新する。

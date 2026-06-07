@@ -8,6 +8,7 @@ cd "$ROOT"
 
 MODE=""
 STRICT=0
+ROUTINE="${AUTOMATION_ROUTINE:-}"
 for arg in "$@"; do
   case "$arg" in
     --staged)
@@ -15,6 +16,9 @@ for arg in "$@"; do
       ;;
     --strict)
       STRICT=1
+      ;;
+    --routine=*)
+      ROUTINE="${arg#--routine=}"
       ;;
   esac
 done
@@ -105,6 +109,12 @@ fi
 
 if git diff --cached --name-only | grep -Eq '(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$'; then
   warn "lockfile is staged; make sure dependency changes are intentional"
+fi
+
+if [ "$MODE" = "--staged" ] && [ -n "$ROUTINE" ]; then
+  if ! "$ROOT/運用部/scripts/automation-ownership-check.sh" "$ROUTINE" --staged; then
+    FAILED=1
+  fi
 fi
 
 if [ "$FAILED" -ne 0 ]; then

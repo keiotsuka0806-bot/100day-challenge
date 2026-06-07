@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-06T13:28:46.053Z",
+  "updatedAt": "2026-06-07T01:33:57Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -154,11 +154,11 @@
       "lastDeploy": "2026-06-07",
       "lastCouncil": "",
       "councilReport": "",
-      "lastReleaseCheck": "2026-06-06",
-      "lastVerifiedAt": "2026-06-06T13:28:46.048Z",
+      "lastReleaseCheck": "2026-06-07",
+      "lastVerifiedAt": "2026-06-07T01:33:57Z",
       "lastHttpStatus": "HTTP 200",
       "lastPublicUrl": "https://tatsuro-kei-2026.web.app",
-      "lastVisualCheckAt": "2026-06-06T13:28:46.048Z",
+      "lastVisualCheckAt": "2026-06-07T01:33:57Z",
       "lastVisualCheck": "HTTP 200; mode=html"
     }
   }
