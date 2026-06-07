@@ -1,0 +1,37 @@
+node_modules/
+.env
+.genius-audit-ok
+
+# macOSゴミ
+.DS_Store
+**/.DS_Store
+
+# Playwright MCPの自動生成ログ
+.playwright-mcp/
+
+# Agent/skill caches copied into workspaces
+.agents/
+**/.agents/
+skills-lock.json
+
+# Claude runtime lock files
+.claude/scheduled_tasks.lock
+
+# Keep project-specific Claude skills, ignore copied skill catalogues
+.claude/skills/*
+!.claude/skills/genius-audit/
+!.claude/skills/genius-audit/**
+!.claude/skills/genius-consultant/
+!.claude/skills/genius-consultant/**
+!.claude/skills/project-kickoff/
+!.claude/skills/project-kickoff/**
+!.claude/skills/retrospective/
+!.claude/skills/retrospective/**
+
+# Firebase local deploy cache
+**/.firebase/
+
+# ルートへ迷い込んだスクリーンショット（scripts/cleanup.sh が自動移動）
+/*.png
+/*.jpg
+/*.jpeg
