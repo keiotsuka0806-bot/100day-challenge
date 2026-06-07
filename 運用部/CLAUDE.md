@@ -151,6 +151,17 @@ node 運用部/scripts/update-council-task.mjs --project [project-name] --ticket
 - 必要に応じて `release-check.mjs --visual` が通っている
 - 変更後の公開URLが再確認済み
 
+## Git Hygiene
+
+自動ルーティンや手動整理の前後に、以下を実行して作業ツリーの混入を確認する。
+
+```bash
+cd /Users/kei/dev/100day-challenge
+運用部/scripts/git-hygiene-check.sh
+```
+
+ローカルの `.git/hooks/pre-commit` からも同じチェックを呼び出す。止める対象は `.DS_Store`、`.agents/`、`.firebase/`、Claude runtime lock、`企画部/specs/運用部/` に迷い込んだログ、想定外の `.log` など。
+
 ## 日次レポート形式
 
 「日報更新して」と言われたら、以下の3ファイルをすべて作成・更新する。
