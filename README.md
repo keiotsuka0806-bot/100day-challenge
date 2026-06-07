@@ -2,17 +2,14 @@
 
 Small products, prototypes, notes, and experiments created through a 100-day building challenge.
 
-This repository is a working archive. It contains not only finished apps, but also planning notes, prototypes, design reviews, QA notes, and operation logs.
+This repository is a curated archive for public sharing. It focuses on app code, prototypes, planning notes, design reviews, QA notes, and public-facing drafts.
 
 ## Main Areas
 
 - `開発部/`: apps and prototypes
 - `企画部/`: ideas, specs, and research notes
-- `デザイン部/`: design reviews and visual notes
 - `QA部/`: testing and review material
-- `運用部/`: daily operations, tasks, reports, and process notes
 - `広報部/`: public-facing drafts and handoff notes
-- `記憶庫/`: project memory and reference notes
 
 ## App Prototypes
 
@@ -59,3 +56,5 @@ Check each app directory for its own `package.json` or README when available.
 ## Status
 
 This is an active learning and building workspace. Expect rough edges, experiments, and incomplete ideas alongside more polished work.
+
+Private workspace files, agent configs, and operation logs are intentionally excluded from the public branch.
