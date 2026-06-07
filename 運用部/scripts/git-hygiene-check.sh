@@ -6,7 +6,18 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-MODE="${1:-}"
+MODE=""
+STRICT=0
+for arg in "$@"; do
+  case "$arg" in
+    --staged)
+      MODE="--staged"
+      ;;
+    --strict)
+      STRICT=1
+      ;;
+  esac
+done
 FAILED=0
 
 warn() {
@@ -81,6 +92,15 @@ rm -f "$tmp"
 if [ "$MODE" != "--staged" ] && git status --short | grep -q '^?? '; then
   warn "untracked files exist; review before running automation that commits"
   git status --short | sed -n 's/^?? /  untracked: /p' >&2
+  if [ "$STRICT" -eq 1 ]; then
+    FAILED=1
+  fi
+fi
+
+if [ "$MODE" != "--staged" ] && [ "$STRICT" -eq 1 ] && git status --short | grep -q '^[ MARCUD]'; then
+  warn "tracked changes exist; automation that commits must start from a clean tree"
+  git status --short | sed -n 's/^/  /p' >&2
+  FAILED=1
 fi
 
 if git diff --cached --name-only | grep -Eq '(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock)$'; then

@@ -4,10 +4,17 @@
 WORKDIR="/Users/kei/dev/100day-challenge"
 LOGFILE="$WORKDIR/運用部/logs/routine-org-report.log"
 CLAUDE="/Users/kei/.local/bin/claude"
+HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"
 
+mkdir -p "$(dirname "$LOGFILE")"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 組織改善レポート 開始" >> "$LOGFILE"
 
-cd "$WORKDIR"
+cd "$WORKDIR" || exit 1
+
+if ! "$HYGIENE" --strict >> "$LOGFILE" 2>&1; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] 組織改善レポート 中止: git hygiene check failed" >> "$LOGFILE"
+  exit 1
+fi
 
 "$CLAUDE" --print --permission-mode bypassPermissions -p "あなたは#100Day Challenge の外部コンサルタントです。天才コンサルタント視点で組織を分析し、改善レポートを作成してください。
 

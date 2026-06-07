@@ -39,6 +39,16 @@ ds_count=$(find . -name ".DS_Store" | wc -l | tr -d ' ')
 find . -name ".DS_Store" -delete
 [ "$ds_count" -gt 0 ] && SUMMARY="$SUMMARY .DS_Store${ds_count}件削除;"
 
+# 3.5. Git hygiene check
+if 運用部/scripts/git-hygiene-check.sh >/tmp/100day-git-hygiene.log 2>&1; then
+  SUMMARY="$SUMMARY git hygiene OK;"
+else
+  mkdir -p "$(dirname "$SESSION_LOG")"
+  echo "[$(date '+%H:%M')] git hygiene NG — 詳細: /tmp/100day-git-hygiene.log" >> "$SESSION_LOG"
+  cat /tmp/100day-git-hygiene.log
+  exit 1
+fi
+
 # 4. 古い運用レポートをアーカイブ（30日以上前）
 LOG_ARCHIVE="運用部/archive"
 mkdir -p "$LOG_ARCHIVE"

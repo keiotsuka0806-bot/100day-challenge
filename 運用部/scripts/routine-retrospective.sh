@@ -4,10 +4,17 @@
 WORKDIR="/Users/kei/dev/100day-challenge"
 LOGFILE="$WORKDIR/運用部/logs/routine-retrospective.log"
 CLAUDE="/Users/kei/.local/bin/claude"
+HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"
 
+mkdir -p "$(dirname "$LOGFILE")"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 自動Retrospective 開始" >> "$LOGFILE"
 
-cd "$WORKDIR"
+cd "$WORKDIR" || exit 1
+
+if ! "$HYGIENE" --strict >> "$LOGFILE" 2>&1; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] 自動Retrospective 中止: git hygiene check failed" >> "$LOGFILE"
+  exit 1
+fi
 
 "$CLAUDE" --print --permission-mode bypassPermissions -p "あなたは#100Day Challenge の記憶係です。昨日の開発活動から学びを抽出して記憶庫に自動保存してください。
 
