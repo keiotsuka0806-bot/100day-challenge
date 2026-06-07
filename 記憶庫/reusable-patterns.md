@@ -93,6 +93,47 @@ claude mcp add [name] --scope user \
 5. デプロイして、友達共有URLを日報に残す
 **注意点**: 1日プロジェクトでは大改造よりも、初回30秒で使えること、迷わないこと、共有しやすいことを優先する。
 
+## Genius Council デプロイ後3ループ改善パターン
+**使い道**: すべてのプロジェクトで、デプロイ後に領域別の天才プロ集団レビューを自動生成し、3回の改善ループを強制するとき
+**実装例**: `運用部/scripts/post-deploy-genius-cycle.mjs`
+**基本フロー**:
+1. プロジェクトを本番デプロイする
+2. 本番URLのHTTP 200を確認する
+3. 以下を実行する
+```bash
+cd /Users/kei/dev/100day-challenge
+node 運用部/scripts/post-deploy-genius-cycle.mjs --project 開発部/[project-name] --url [production-url]
+```
+4. スクリプトがプロジェクト種別を判定する
+   - game: プロゲーマー、レベルデザイナー、RTA走者、ゲームUX
+   - ai: AIプロダクト、プロンプト、セキュリティ、UX
+   - visual-share: 写真家、SNS、モバイルUX、ブランド
+   - ops-tool: SaaS PM、業務改善、アクセシビリティ、QA
+   - learning: 教育設計、認知科学、教材編集、学習UX
+   - 自動判定が合わない場合は `運用部/council-overrides.json` の `typeOverride` / `councilOverride` で上書きする
+5. `デザイン部/reports/YYYY-MM-DD-[project]-genius-council.md` の改善チケットを読む
+6. `運用部/tasks/[project]/GC-L1.md`、`GC-L2.md`、`GC-L3.md` の作業カードに沿って改善を実装するか、改善不要理由を記録する
+7. 変更があれば再デプロイし、公開URLを再確認する
+8. `node 運用部/scripts/release-check.mjs --project [project-name]` を実行し、共有可能判定を確認する
+9. 画面の実表示確認が必要な場合は `node 運用部/scripts/release-check.mjs --project [project-name] --visual` を実行する
+10. 複数プロジェクトをまとめて見る場合は `node 運用部/scripts/release-check-all.mjs --visual` を実行する
+**生成されるファイル**:
+- `運用部/project-registry.json`
+- `運用部/council-overrides.json`
+- `デザイン部/reports/YYYY-MM-DD-[project]-genius-council.md`
+- `運用部/tasks/[project]/GC-L1.md`
+- `運用部/tasks/[project]/GC-L2.md`
+- `運用部/tasks/[project]/GC-L3.md`
+- `運用部/tasks/[project]/release-fix.md`（Release Check失敗時）
+- `広報部/handoff/[project]-YYYY-MM-DD.md`
+**補助コマンド**:
+- `node 運用部/scripts/sync-project-registry.mjs`: `開発部/` 配下を見てProject Registryを同期する
+- `node 運用部/scripts/release-check-all.mjs --visual`: URLありプロジェクトを一括でRelease Checkする
+- `node 運用部/scripts/update-council-task.mjs --project [project] --ticket GC-L1 --status Done --file [path] --command "[command]"`: Councilタスクの状態と証拠欄を更新する
+- `node 運用部/scripts/visual-smoke-check.mjs --url [production-url] --project [project-name]`: 公開画面の実表示またはHTML取得を確認する
+**状態遷移**: `開発中 -> デプロイ済み -> デプロイ後改善中 -> 共有可能`。Release Check失敗時は `要修正`。
+**注意点**: レポート生成だけで完了にしない。Genius Councilは「議論ログを作る仕組み」であり、実装反映または明確な見送り判断、変更ファイル・確認コマンド・公開URL確認の証拠記録、GC-L1/L2/L3合計12点以上までが完了条件。
+
 ## 静的PWA + Firebase Hostingパターン
 **使い道**: 1日プロジェクトを素早く公開し、スマホのホーム画面に追加できる形にするとき
 **実装例**: `開発部/food-score/manifest.json`・`sw.js`・`firebase.json`
