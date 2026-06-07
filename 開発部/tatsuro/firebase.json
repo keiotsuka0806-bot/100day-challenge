@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "tatsuro-kei-2026",
     "public": ".",
     "ignore": [
       "firebase.json",
