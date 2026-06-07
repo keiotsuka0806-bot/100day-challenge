@@ -162,6 +162,16 @@ cd /Users/kei/dev/100day-challenge
 
 ローカルの `.git/hooks/pre-commit` からも同じチェックを呼び出す。止める対象は `.DS_Store`、`.agents/`、`.firebase/`、Claude runtime lock、`企画部/specs/運用部/` に迷い込んだログ、想定外の `.log` など。
 
+### Autosave Scope Guard
+
+`autosave:` コミットは `.git/hooks/prepare-commit-msg` から `運用部/scripts/autosave-scope-check.sh` を実行する。ステージ済みファイルが複数スコープにまたがる場合はコミットを止める。`開発部/` 配下は `開発部/[project]` 単位、それ以外はトップレベル部署単位で判定する。
+
+hookを入れ直す場合は以下を実行する。
+
+```bash
+運用部/scripts/install-git-hooks.sh
+```
+
 ## Automation Worktrees
 
 自動で `git commit` / `git push` する朝ルーティンは、メイン作業ツリーではなく `/Users/kei/dev/.automation-worktrees/100day-challenge/` 配下の専用 worktree で実行する。
