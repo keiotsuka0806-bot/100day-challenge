@@ -1,8 +1,13 @@
 #!/bin/bash
 # 夜の自動Retrospective — 毎朝3:23に実行
 
-WORKDIR="/Users/kei/dev/100day-challenge"
-LOGFILE="$WORKDIR/運用部/logs/routine-retrospective.log"
+if [ -z "${AUTOMATION_WORKDIR:-}" ]; then
+  exec /Users/kei/dev/100day-challenge/運用部/scripts/run-in-automation-worktree.sh retrospective 運用部/scripts/routine-retrospective.sh "$@"
+fi
+
+WORKDIR="${AUTOMATION_WORKDIR:-/Users/kei/dev/100day-challenge}"
+LOGROOT="${AUTOMATION_LOG_ROOT:-$WORKDIR}"
+LOGFILE="$LOGROOT/運用部/logs/routine-retrospective.log"
 CLAUDE="/Users/kei/.local/bin/claude"
 HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"
 
@@ -40,6 +45,7 @@ fi
 [学びの内容を簡潔に]
 
 ## Step 4: GitHubにpush（更新があった場合のみ）
-git add 記憶庫/ して git commit して git push すること。" >> "$LOGFILE" 2>&1
+git add 記憶庫/ して git commit すること。
+このルーティンは専用automation worktreeで動くため、pushは必ず git push origin HEAD:main を使うこと。" >> "$LOGFILE" 2>&1
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 自動Retrospective 完了" >> "$LOGFILE"

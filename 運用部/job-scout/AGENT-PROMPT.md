@@ -134,7 +134,7 @@ git config user.email "job-scout-agent@100day-challenge"
 git config user.name "Job Scout Agent"
 git add "運用部/reports/job-scout-$(date +%Y-%m-%d).md" "運用部/job-scout/seen-jobs.json"
 git commit -m "chore: job-scout レポート $(date +%Y-%m-%d)"
-git push origin main
+git push origin HEAD:main
 ```
 
 ## 完了

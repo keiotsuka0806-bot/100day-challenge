@@ -1,8 +1,13 @@
 #!/bin/bash
 # Job Scout — 毎朝3:33に実行
 
-WORKDIR="/Users/kei/dev/100day-challenge"
-LOGFILE="$WORKDIR/運用部/logs/routine-job-scout.log"
+if [ -z "${AUTOMATION_WORKDIR:-}" ]; then
+  exec /Users/kei/dev/100day-challenge/運用部/scripts/run-in-automation-worktree.sh job-scout 運用部/scripts/routine-job-scout.sh "$@"
+fi
+
+WORKDIR="${AUTOMATION_WORKDIR:-/Users/kei/dev/100day-challenge}"
+LOGROOT="${AUTOMATION_LOG_ROOT:-$WORKDIR}"
+LOGFILE="$LOGROOT/運用部/logs/routine-job-scout.log"
 CLAUDE="/Users/kei/.local/bin/claude"
 PROMPT_FILE="$WORKDIR/運用部/job-scout/AGENT-PROMPT.md"
 HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"

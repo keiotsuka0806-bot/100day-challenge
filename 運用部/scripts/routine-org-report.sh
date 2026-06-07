@@ -1,8 +1,13 @@
 #!/bin/bash
 # Daily Org Improvement Report — 毎朝3:13に実行
 
-WORKDIR="/Users/kei/dev/100day-challenge"
-LOGFILE="$WORKDIR/運用部/logs/routine-org-report.log"
+if [ -z "${AUTOMATION_WORKDIR:-}" ]; then
+  exec /Users/kei/dev/100day-challenge/運用部/scripts/run-in-automation-worktree.sh org-report 運用部/scripts/routine-org-report.sh "$@"
+fi
+
+WORKDIR="${AUTOMATION_WORKDIR:-/Users/kei/dev/100day-challenge}"
+LOGROOT="${AUTOMATION_LOG_ROOT:-$WORKDIR}"
+LOGFILE="$LOGROOT/運用部/logs/routine-org-report.log"
 CLAUDE="/Users/kei/.local/bin/claude"
 HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"
 
@@ -45,6 +50,7 @@ fi
 ## 明日のアクションアイテム
 
 ## Step 4: GitHubにpush
-git add して git commit して git push すること。" >> "$LOGFILE" 2>&1
+git add して git commit すること。
+このルーティンは専用automation worktreeで動くため、pushは必ず git push origin HEAD:main を使うこと。" >> "$LOGFILE" 2>&1
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 組織改善レポート 完了" >> "$LOGFILE"

@@ -1,8 +1,13 @@
 #!/bin/bash
 # 企画部 毎朝アイデア生成 — 毎朝3:03に実行
 
-WORKDIR="/Users/kei/dev/100day-challenge"
-LOGFILE="$WORKDIR/運用部/logs/routine-kikakubu.log"
+if [ -z "${AUTOMATION_WORKDIR:-}" ]; then
+  exec /Users/kei/dev/100day-challenge/運用部/scripts/run-in-automation-worktree.sh kikakubu 運用部/scripts/routine-kikakubu.sh "$@"
+fi
+
+WORKDIR="${AUTOMATION_WORKDIR:-/Users/kei/dev/100day-challenge}"
+LOGROOT="${AUTOMATION_LOG_ROOT:-$WORKDIR}"
+LOGFILE="$LOGROOT/運用部/logs/routine-kikakubu.log"
 CLAUDE="/Users/kei/.local/bin/claude"
 HYGIENE="$WORKDIR/運用部/scripts/git-hygiene-check.sh"
 
@@ -60,6 +65,7 @@ fi
 - AI活用: 2〜3案はClaude APIを使う企画を含める
 
 ## Step 4: GitHubにpush
-git add して git commit して git push すること。" >> "$LOGFILE" 2>&1
+git add して git commit すること。
+このルーティンは専用automation worktreeで動くため、pushは必ず git push origin HEAD:main を使うこと。" >> "$LOGFILE" 2>&1
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 企画部ルーティン 完了" >> "$LOGFILE"

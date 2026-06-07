@@ -162,6 +162,14 @@ cd /Users/kei/dev/100day-challenge
 
 ローカルの `.git/hooks/pre-commit` からも同じチェックを呼び出す。止める対象は `.DS_Store`、`.agents/`、`.firebase/`、Claude runtime lock、`企画部/specs/運用部/` に迷い込んだログ、想定外の `.log` など。
 
+## Automation Worktrees
+
+自動で `git commit` / `git push` する朝ルーティンは、メイン作業ツリーではなく `/Users/kei/dev/.automation-worktrees/100day-challenge/` 配下の専用 worktree で実行する。
+
+各ルーティンは最初に `運用部/scripts/run-in-automation-worktree.sh` へ自己委譲する。これにより、Keiの手元作業がメイン worktree に残っていても、AIルーティンは専用ブランチ `automation/[routine]` 上で clean tree から始める。
+
+automation worktree から main に反映する場合、push は `git push origin HEAD:main` を使う。通常の `git push` や `git push origin main` は使わない。
+
 ## 日次レポート形式
 
 「日報更新して」と言われたら、以下の3ファイルをすべて作成・更新する。
