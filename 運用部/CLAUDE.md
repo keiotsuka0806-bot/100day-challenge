@@ -207,6 +207,10 @@ automation worktree から main に反映する場合、push は `運用部/scri
 
 `run-in-automation-worktree.sh` は各実行後に `運用部/reports/automation-YYYY-MM-DD.md` へ、exit code、worktree、before/after commit、作業ツリー状態、ログパスを追記する。朝の確認ではまずこのファイルを見る。
 
+### Organization Health Check
+
+組織の定点観測は `運用部/scripts/organization-health-check.sh` で行う。`運用部/reports/organization-health-YYYY-MM-DD.md` を出力し、`共有可能` の数、`要修正` の数、今日の学び、混入リスク、次の1手を固定で記録する。
+
 ### Push Conflict Handling
 
 `automation-push-main.sh` は `origin/main` を fetch して rebase してから `HEAD:main` へpushする。push reject時はもう一度 fetch/rebase/push を試す。rebase conflict または retry失敗時は `運用部/reports/automation-YYYY-MM-DD.md` と `運用部/logs/automation-push-[routine].log` に状態を残して停止する。
