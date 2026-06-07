@@ -11,14 +11,14 @@ a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 
 :root {
-  --ink: #111416;
-  --charcoal: #171b1e;
-  --slate: #263034;
-  --paper: #f4f0e8;
-  --muted: #b8c2bd;
-  --amber: #d6943c;
-  --teal: #5fb4a7;
-  --line: rgba(244, 240, 232, 0.14);
+  --ink: #0e1011;
+  --charcoal: #16191b;
+  --slate: #2a2f31;
+  --paper: #f3ede4;
+  --muted: #b9b2a7;
+  --amber: #d39a47;
+  --teal: #78b9ab;
+  --line: rgba(243, 237, 228, 0.12);
   --max: 1160px;
 }
 
@@ -31,14 +31,14 @@ img { max-width: 100%; display: block; }
   align-items: center;
   justify-content: space-between;
   padding: 0 clamp(18px, 4vw, 48px);
-  background: rgba(17, 20, 22, 0.7);
-  border-bottom: 1px solid rgba(244, 240, 232, 0.08);
+  background: rgba(14, 16, 17, 0.62);
+  border-bottom: 1px solid rgba(243, 237, 228, 0.08);
   backdrop-filter: blur(18px);
 }
 .brand-mark {
   font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  font-size: 22px;
-  letter-spacing: 0.18em;
+  font-size: 18px;
+  letter-spacing: 0.24em;
   font-weight: 700;
 }
 .site-nav { display: flex; align-items: center; gap: 28px; color: var(--muted); font-size: 13px; }
@@ -65,16 +65,16 @@ img { max-width: 100%; display: block; }
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(17,20,22,0.92) 0%, rgba(17,20,22,0.64) 34%, rgba(17,20,22,0.12) 72%),
-    linear-gradient(0deg, rgba(17,20,22,0.42), rgba(17,20,22,0.08));
+    linear-gradient(90deg, rgba(14,16,17,0.95) 0%, rgba(14,16,17,0.66) 32%, rgba(14,16,17,0.08) 68%),
+    linear-gradient(180deg, rgba(14,16,17,0.08), rgba(14,16,17,0.44));
 }
 .hero-content {
   position: relative;
   z-index: 2;
-  width: min(680px, calc(100% - 40px));
-  max-width: 520px;
+  width: min(640px, calc(100% - 40px));
+  max-width: 480px;
   margin-left: clamp(20px, 7vw, 96px);
-  padding-top: 64px;
+  padding-top: 56px;
 }
 .eyebrow,
 .section-kicker {
@@ -89,23 +89,25 @@ h1, h2, h3, p { margin-top: 0; }
 h1 {
   margin-bottom: 18px;
   font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  font-size: clamp(68px, 13vw, 168px);
-  line-height: 0.86;
+  font-size: clamp(72px, 15vw, 184px);
+  line-height: 0.84;
   letter-spacing: 0;
   text-wrap: balance;
 }
 .hero-copy {
-  max-width: 14ch;
+  display: grid;
+  gap: 2px;
+  max-width: max-content;
   color: #f7d7a2;
-  font-size: clamp(22px, 2.3vw, 32px);
-  line-height: 1.2;
-  text-wrap: balance;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.08;
 }
+.hero-copy span { display: block; white-space: nowrap; }
 .hero-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 .meta-chip {
   display: inline-flex;
@@ -153,27 +155,28 @@ h1 {
 .section-inner {
   width: min(var(--max), calc(100% - 40px));
   margin: 0 auto;
-  padding: clamp(62px, 9vw, 116px) 0;
+  padding: clamp(56px, 8vw, 108px) 0;
 }
 .intro-grid,
 .bottle-grid,
 .contact-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(32px, 7vw, 86px);
+  gap: clamp(28px, 6vw, 72px);
   align-items: start;
 }
 .section-heading { max-width: 680px; margin-bottom: 34px; }
 h2 {
   font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  font-size: clamp(32px, 4.5vw, 58px);
-  line-height: 1.05;
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1.02;
   letter-spacing: 0;
   margin-bottom: 18px;
   text-wrap: balance;
 }
+h2 span { display: block; }
 h3 { font-size: 19px; margin-bottom: 10px; text-wrap: balance; }
-p { color: var(--muted); line-height: 1.9; text-wrap: pretty; }
+p { color: var(--muted); line-height: 1.85; text-wrap: pretty; }
 .contact-note,
 .bottle-note {
   color: #cfd6d1;
@@ -191,8 +194,8 @@ p { color: var(--muted); line-height: 1.9; text-wrap: pretty; }
   background: var(--line);
 }
 .spec-strip div {
-  min-height: 132px;
-  padding: 22px;
+  min-height: 122px;
+  padding: 20px 22px;
   background: rgba(16, 18, 19, 0.96);
   display: grid;
   gap: 10px;
@@ -207,7 +210,7 @@ p { color: var(--muted); line-height: 1.9; text-wrap: pretty; }
 }
 .spec-strip strong {
   font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.2;
   font-weight: 700;
   color: var(--paper);
@@ -216,16 +219,16 @@ p { color: var(--muted); line-height: 1.9; text-wrap: pretty; }
 .process-list { border-top: 1px solid var(--line); }
 .process-row {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 24px;
-  padding: 28px 0;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  padding: 22px 0;
   border-bottom: 1px solid var(--line);
 }
 .process-row span { color: var(--amber); font-weight: 900; }
 .process-row p { margin-bottom: 0; }
 
 .bottle-visual {
-  min-height: 520px;
+  min-height: 560px;
   overflow: hidden;
   border: 1px solid var(--line);
   background: #080a0b;
@@ -233,16 +236,16 @@ p { color: var(--muted); line-height: 1.9; text-wrap: pretty; }
 .bottle-visual img {
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: 560px;
   object-fit: cover;
-  object-position: 62% center;
+  object-position: 64% center;
 }
 .spec-list { margin: 28px 0 0; border-top: 1px solid var(--line); }
 .spec-list div {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 18px;
-  padding: 18px 0;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  padding: 16px 0;
   border-bottom: 1px solid var(--line);
 }
 dt { color: var(--teal); font-weight: 900; }
@@ -259,9 +262,9 @@ dd { margin: 0; color: var(--paper); }
 }
 .note-row {
   display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 18px;
-  padding: 16px 0;
+  grid-template-columns: 72px 1fr;
+  gap: 16px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--line);
 }
 .note-row:last-child { border-bottom: 0; }
@@ -280,9 +283,9 @@ dd { margin: 0; color: var(--paper); }
 
 .contact { background: #0f1213; }
 .signup-form {
-  padding: 28px;
+  padding: 26px;
   border: 1px solid var(--line);
-  background: rgba(244, 240, 232, 0.04);
+  background: rgba(243, 237, 228, 0.035);
   border-radius: 8px;
 }
 .signup-form label:not(.check-row) { display: block; color: var(--paper); font-weight: 800; margin-bottom: 10px; }
@@ -339,8 +342,8 @@ input[type="email"] {
   .hero-image { object-position: 62% center; }
   .hero-shade {
     background:
-      linear-gradient(0deg, rgba(17,20,22,0.95) 0%, rgba(17,20,22,0.62) 48%, rgba(17,20,22,0.08) 100%),
-      linear-gradient(90deg, rgba(17,20,22,0.58), rgba(17,20,22,0.12));
+      linear-gradient(0deg, rgba(14,16,17,0.96) 0%, rgba(14,16,17,0.66) 48%, rgba(14,16,17,0.08) 100%),
+      linear-gradient(90deg, rgba(14,16,17,0.56), rgba(14,16,17,0.12));
   }
   .hero-content { margin: 0 auto; padding: 0 0 62px; }
   .scroll-cue { display: none; }
@@ -354,9 +357,9 @@ input[type="email"] {
   .field-row { grid-template-columns: 1fr; }
   .field-row .btn { width: 100%; }
   .bottle-visual,
-  .bottle-visual img { min-height: 360px; }
+  .bottle-visual img { min-height: 340px; }
   .site-footer { flex-direction: column; }
-  .hero-copy { max-width: 11ch; font-size: clamp(20px, 7vw, 28px); }
+  .hero-copy { font-size: clamp(18px, 6vw, 26px); }
   .note-row { grid-template-columns: 1fr; gap: 4px; }
 }
 
@@ -369,5 +372,4 @@ input[type="email"] {
   .section-inner { width: min(100% - 28px, var(--max)); }
   h1 { font-size: clamp(54px, 18vw, 92px); line-height: 0.9; }
   h2 { font-size: clamp(28px, 9vw, 40px); }
-  .hero-copy { max-width: 10ch; }
 }

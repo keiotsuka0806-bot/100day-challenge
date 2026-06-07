@@ -1,6 +1,7 @@
 node_modules/
 .env
 .genius-audit-ok
+*.log
 
 # macOSゴミ
 .DS_Store
