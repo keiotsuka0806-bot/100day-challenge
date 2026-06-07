@@ -31,6 +31,9 @@ skills-lock.json
 # Firebase local deploy cache
 **/.firebase/
 
+# Stray operation logs accidentally created under planning specs
+企画部/specs/運用部/
+
 # ルートへ迷い込んだスクリーンショット（scripts/cleanup.sh が自動移動）
 /*.png
 /*.jpg
