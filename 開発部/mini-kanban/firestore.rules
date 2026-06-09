@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /boards/{boardId} {
+
+      function isOwner() {
+        return request.auth != null
+          && resource.data.ownerId == request.auth.uid;
+      }
+
+      function isMember() {
+        return request.auth != null
+          && request.auth.token.email in resource.data.memberEmails;
+      }
+
+      // 読み取り: オーナーまたは招待済みメンバーのみ
+      allow read: if isOwner() || isMember();
+
+      // 作成: ログイン済みユーザーなら誰でも（自分のボードを作る）
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
+
+      // 更新・削除: オーナーのみ
+      allow update, delete: if isOwner();
+
+      match /cards/{cardId} {
+        function boardData() {
+          return get(/databases/$(database)/documents/boards/$(boardId)).data;
+        }
+
+        function canAccessBoard() {
+          return request.auth != null && (
+            boardData().ownerId == request.auth.uid ||
+            request.auth.token.email in boardData().memberEmails
+          );
+        }
+
+        // カードの読み書き: ボードにアクセスできるユーザーのみ
+        allow read, write: if canAccessBoard();
+      }
+    }
+  }
+}

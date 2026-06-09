@@ -1,93 +1,138 @@
 # 再利用パターン集
 
-複数プロジェクトで使い回せるコード・構造のカタログ。
+このファイルは「複数プロジェクトで使い回せる」実装パターンを蓄積する。
+「どこかのプロジェクトにあったはず」と探す時間をゼロにするために書く。
 
 ---
 
-## cloneNode リスナー剥がしパターン
+## Firebase Auth (Google Sign-In)
+**使い道**: Firebase認証が必要な全プロジェクト
+**実装例**: `開発部/whisky-note/app.js` の `auth.onAuthStateChanged` ブロック
+**注意点**: `signInWithPopup` はモバイルでブロックされることがある。その場合は `signInWithRedirect` に切り替える
 
-**使い道**: DOM 要素に複数回 `addEventListener` が呼ばれる場面（再レンダリング時のリスナー重複防止）
+```javascript
+// 認証状態の監視（UI制御の起点）
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    // ログイン済み: Firestoreリスナー開始・メイン画面表示
+  } else {
+    // 未ログイン: ログイン画面表示
+  }
+});
 
-**実装例**: `開発部/whisky-note/app.js` の `setupTagList()` 関数
+// ログイン
+firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
 
-```js
-function setupTagList(containerId, options, arr) {
-  const container = document.getElementById(containerId);
-  // cloneNode(true) で既存リスナーをすべて剥がす
-  const fresh = container.cloneNode(false); // 子ノードは不要なので false
-  container.parentNode.replaceChild(fresh, container);
-  // fresh に新しい内容を構築してリスナーを登録
+// ログアウト
+firebase.auth().signOut();
+```
+
+---
+
+## Firestore onSnapshot (リアルタイム同期)
+**使い道**: データのリアルタイム更新が必要な全プロジェクト
+**実装例**: `開発部/whisky-note/app.js` の `setupFirestoreListener`
+**注意点**: コンポーネント破棄時に `unsubscribe()` を呼ばないとメモリリークする
+
+```javascript
+const unsubscribe = db.collection('items')
+  .where('uid', '==', uid)
+  .onSnapshot(snapshot => {
+    items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    render();
+  });
+
+// クリーンアップ時（ログアウト等）
+unsubscribe();
+```
+
+---
+
+## PWA 最小構成
+**使い道**: 全プロジェクト（全社共通ルールでPWA対応が必須）
+**実装例**: `開発部/sound-frame/` または `開発部/tatsuro/`
+**注意点**: iconsは192px・512pxの2サイズ必須。start_urlはFirebaseホスティングルートに合わせる
+
+### manifest.json
+```json
+{
+  "name": "アプリ名",
+  "short_name": "短縮名",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }
 ```
 
-**注意点**: `cloneNode(true)` は子ノードごとコピーする。既存子ノードを捨てたい場合は `cloneNode(false)` を使う。
+### sw.js（最小キャッシュ）
+```javascript
+const CACHE = 'v1';
+const ASSETS = ['/', '/index.html', '/styles.css', '/app.js'];
 
----
+self.addEventListener('install', e =>
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)))
+);
 
-## onSnapshot + Auth ライフサイクルパターン
+self.addEventListener('fetch', e =>
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)))
+);
+```
 
-**使い道**: Firebase Auth + Firestore を使うすべてのアプリ
-
-**実装例**: `開発部/whisky-note/app.js` の `auth.onAuthStateChanged` ブロック
-
-```js
-let unsubscribeSnapshot = null;
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // ログイン時：リスナー開始
-    unsubscribeSnapshot = db.collection('records')
-      .where('uid', '==', user.uid)
-      .onSnapshot(snapshot => { /* ... */ });
-  } else {
-    // ログアウト時：リスナー必ず detach
-    if (unsubscribeSnapshot) {
-      unsubscribeSnapshot();
-      unsubscribeSnapshot = null;
-    }
+### index.html に追加
+```html
+<link rel="manifest" href="/manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
   }
-});
+</script>
 ```
-
-**注意点**: `unsubscribeSnapshot` を module レベルの変数に保持すること。関数スコープに置くと参照できなくなる。
 
 ---
 
-## base64 写真リサイズ → Firestore 保存パターン
+## Vercel SPA フォールバック
+**使い道**: Vercelにデプロイするシングルページアプリ（ゲーム含む）
+**実装例**: `開発部/lexworld/vercel.json`
+**注意点**: これがないとリロード時に404になる。ゲームはFirebaseよりVercelが設定量少なく速い
 
-**使い道**: 写真アップロード機能（Firebase Storage なしで Firestore に直接保存する場合）
-
-**実装例**: `開発部/whisky-note/app.js` の `handlePhotoUpload()` 相当処理
-
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+}
 ```
-[ファイル選択]
-  → HEIC? → heic2any でJPEG変換
-  → Canvas でリサイズ（max 1200px, quality 0.82）
-  → base64 data URL として変数に保持
-  → Firestore document の photo フィールドに保存
-```
-
-**注意点**: Firestore document の上限は 1MB。base64 JPEG（1200px, 0.82品質）は概ね 150〜400KB。写真1枚なら収まるが、複数枚・高品質は危険。本番ではFirebase Storageへの移行を前提にすること。
 
 ---
 
-## vanilla JS SPA 画面切り替えパターン
+## AI処理中の4ステートUI
+**使い道**: AI APIを呼び出すプロジェクト全般
+**実装例**: `開発部/sound-frame/app.js`（SoundFrame教訓から定型化）
+**注意点**: 「処理中」表示がないとユーザーは「壊れた」と判断して離脱する
 
-**使い道**: ビルドステップなしの SPA でルーティングなしの画面遷移
+```javascript
+// 状態: idle / loading / success / error の4ステート
+function setState(state, message = '') {
+  document.body.dataset.state = state;
+  if (message) statusEl.textContent = message;
+}
 
-**実装例**: `開発部/whisky-note/index.html` + `app.js` の画面切り替え処理
-
-```js
-// CSS クラスで表示/非表示を制御
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+// 使い方
+setState('loading', '処理中...');
+try {
+  const result = await callAI();
+  setState('success');
+} catch (e) {
+  setState('error', 'エラーが発生しました');
 }
 ```
 
 ```css
-.screen { display: none; }
-.screen.active { display: block; }
+/* state別のUI制御 */
+[data-state="loading"] .loading-indicator { display: block; }
+[data-state="loading"] .submit-btn { pointer-events: none; opacity: 0.5; }
+[data-state="error"] .error-message { display: block; }
 ```
-
-**注意点**: モーダルは別管理（`open` クラス + `body.style.overflow = 'hidden'`）。スクロールロックを忘れると背景がスクロールする。

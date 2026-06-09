@@ -1,0 +1,15 @@
+{
+  "name": "TATSURO",
+  "short_name": "TATSURO",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#111416",
+  "theme_color": "#111416",
+  "icons": [
+    {
+      "src": "assets/tatsuro-hero.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

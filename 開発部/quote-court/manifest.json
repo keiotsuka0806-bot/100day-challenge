@@ -1,0 +1,17 @@
+{
+  "name": "名言法廷",
+  "short_name": "名言法廷",
+  "description": "その名言、本当にその人が言ったのか？本物 or フェイクを判決せよ。",
+  "start_url": "/quote-court/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#c9a84c",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

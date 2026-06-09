@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#16161a">
+    <title>LexWorld</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">100 Day Challenge / Day 7</p>
+          <h1>LexWorld</h1>
+        </div>
+        <div class="top-actions">
+          <button class="ghost-button" id="guideButton" type="button">遊び方</button>
+          <div class="status-pill" id="clearCount">0 / 6 clear</div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="stage-panel" aria-label="ステージ選択">
+          <div class="section-head">
+            <h2>Stages</h2>
+            <button class="ghost-button" id="clearProgressButton" type="button">記録を消す</button>
+          </div>
+          <div class="stage-list" id="stageList"></div>
+        </section>
+
+        <section class="game-panel" aria-label="ゲーム画面">
+          <div class="quick-guide" aria-label="遊び方">
+            <div class="guide-step">
+              <span class="guide-number">1</span>
+              <p><strong>P</strong> を動かして黒いルールブロックを押す。</p>
+            </div>
+            <div class="guide-step">
+              <span class="guide-number">2</span>
+              <p><strong>水→氷</strong> と <strong>氷→渡れる</strong> のように、前後がつながるブロックを隣に置く。</p>
+            </div>
+            <div class="guide-step">
+              <span class="guide-number">3</span>
+              <p>光ったルールで地形が変わったら、旗のゴールへ進む。</p>
+            </div>
+          </div>
+
+          <div class="game-head">
+            <div>
+              <p class="eyebrow" id="levelNumber">Level 1</p>
+              <h2 id="levelTitle">はじめの一歩</h2>
+              <p class="hint" id="levelHint"></p>
+              <div class="level-meta" id="levelMeta"></div>
+            </div>
+            <div class="score-box">
+              <div class="move-counter"><span id="moveCount">0</span> moves</div>
+              <div class="rank-line" id="rankLine">Rank: --</div>
+            </div>
+          </div>
+
+          <div class="board-wrap">
+            <div id="board" class="board" aria-label="LexWorld board"></div>
+          </div>
+
+          <div class="controls">
+            <button id="undoButton" type="button">Undo</button>
+            <button id="resetButton" type="button">Reset</button>
+            <button id="hintButton" type="button">Hint</button>
+          </div>
+
+          <div class="pro-panel" aria-label="プロゲーマー評価">
+            <div>
+              <p class="eyebrow">Pro Gamer Lens</p>
+              <h2 id="proVerdict">まずはルールを作れ</h2>
+            </div>
+            <p id="proAdvice">ブロックを動かして、有効ルールを1本以上作るところから始めよう。</p>
+          </div>
+
+          <div class="mobile-pad" aria-label="移動ボタン">
+            <span></span>
+            <button type="button" data-dir="up" aria-label="上">↑</button>
+            <span></span>
+            <button type="button" data-dir="left" aria-label="左">←</button>
+            <button type="button" data-dir="down" aria-label="下">↓</button>
+            <button type="button" data-dir="right" aria-label="右">→</button>
+          </div>
+
+          <div class="rule-panel">
+            <div class="section-head">
+              <h2>Rules</h2>
+              <span class="small-note">光っているものが有効</span>
+            </div>
+            <div class="legend-grid" aria-label="凡例">
+              <span><b class="legend-dot player-dot"></b>P: 自分</span>
+              <span><b class="legend-dot water-dot"></b>水: 通れない</span>
+              <span><b class="legend-dot fire-dot"></b>火: 危険</span>
+              <span><b class="legend-dot rock-dot"></b>岩: 通れない</span>
+              <span><b class="legend-dot goal-dot"></b>旗: ゴール</span>
+            </div>
+            <div id="activeRules" class="rule-list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="guide-dialog" id="guideDialog">
+      <form method="dialog">
+        <div class="dialog-head">
+          <h2>LexWorld の遊び方</h2>
+          <button class="ghost-button" type="submit" aria-label="閉じる">閉じる</button>
+        </div>
+        <div class="dialog-body">
+          <p>目的は <strong>P</strong> を旗まで連れていくことです。ただし、水・火・岩はそのままだと通れません。</p>
+          <p>黒いブロックは「世界のルール」です。たとえば <strong>水→氷</strong> と <strong>氷→渡れる</strong> を隣同士にすると、ルールがつながって水を渡れるようになります。</p>
+          <p>ブロックは押せますが、引くことはできません。間違えたら <strong>Undo</strong> で1手戻せます。</p>
+          <div class="example-chain">
+            <span>水→氷</span>
+            <span>+</span>
+            <span>氷→渡れる</span>
+            <span>=</span>
+            <span>水を通れる</span>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="levels.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

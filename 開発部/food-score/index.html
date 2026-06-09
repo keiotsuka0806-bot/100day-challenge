@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FoodScore — 料理写真AI採点</title>
+  <meta name="description" content="料理写真を100点で採点し、色・構図・光・盛り付けの改善ポイントを提案します。">
+  <meta property="og:title" content="FoodScore — 料理写真AI採点">
+  <meta property="og:description" content="料理写真を選ぶだけで、SNSで映える見え方をAIが採点します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://food-score-sigma.vercel.app">
+  <meta name="twitter:card" content="summary">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f0f13">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FoodScore">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+
+  <!-- 通常は使わない管理用オーバーレイ -->
+  <div id="setupOverlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="setup-icon">🔑</div>
+      <h2>AI採点の設定</h2>
+      <p>友達に共有する本番版では設定不要です。<br>AIキーはサーバー側で管理されています。</p>
+      <input type="password" id="apiKeyInput" placeholder="管理用キー" autocomplete="off">
+      <div id="keyError" class="key-error hidden">現在、この画面からのキー設定は使いません</div>
+      <button id="saveKeyBtn" class="btn-primary">保存して始める</button>
+      <a href="https://food-score-sigma.vercel.app" class="link-small">アプリに戻る →</a>
+    </div>
+  </div>
+
+  <!-- 履歴パネル -->
+  <div id="historyPanel" class="panel hidden">
+    <div class="panel-header">
+      <h3>採点履歴</h3>
+      <button id="closeHistoryBtn" class="icon-btn">✕</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </div>
+  <div id="panelOverlay" class="panel-overlay hidden"></div>
+
+  <!-- メインアプリ -->
+  <div id="app">
+    <header>
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">📸</span>
+          <span class="logo-text">FoodScore</span>
+        </div>
+        <div class="header-actions">
+          <button id="historyBtn" class="icon-btn" title="採点履歴">📋</button>
+          <button id="settingsBtn" class="icon-btn" title="管理設定">⚙️</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro-section" aria-label="FoodScoreの概要">
+        <p class="intro-kicker">SNS映えの見え方チェック</p>
+        <h1>料理写真を100点で採点</h1>
+        <p class="intro-copy">写真を1枚選ぶだけで、色・構図・光・盛り付けの改善ポイントを返します。</p>
+        <div class="trust-row" aria-label="利用条件">
+          <span>APIキー不要</span>
+          <span>約30秒</span>
+          <span>スマホ対応</span>
+        </div>
+      </section>
+
+      <!-- アップロードセクション -->
+      <section id="uploadSection">
+        <div id="dropZone" class="drop-zone">
+          <div id="dropContent" class="drop-content">
+            <div class="drop-icon">🍽️</div>
+            <p class="drop-title">料理写真をここへ</p>
+            <p class="drop-sub">まずは1枚選んでください</p>
+          </div>
+          <img id="previewImg" class="preview-img hidden" alt="プレビュー">
+          <canvas id="captureCanvas" class="hidden"></canvas>
+        </div>
+
+        <div class="action-row">
+          <label for="fileInput" class="btn-secondary btn-file">
+            <span>📂</span><span>ファイルを選ぶ</span>
+          </label>
+          <input type="file" id="fileInput" accept="image/*" class="hidden">
+          <button id="cameraBtn" class="btn-secondary">📷 カメラ</button>
+        </div>
+
+        <p id="selectedHint" class="selected-hint hidden">写真を読み込みました。次に採点へ進めます。</p>
+
+        <div class="shooting-tips" aria-label="撮影のコツ">
+          <span>真上 or 45度</span>
+          <span>明るい場所</span>
+          <span>皿全体</span>
+        </div>
+
+        <button id="analyzeBtn" class="btn-primary btn-analyze hidden">
+          <span class="btn-icon">✨</span>
+          <span>AIで採点する</span>
+        </button>
+      </section>
+
+      <!-- カメラセクション -->
+      <section id="cameraSection" class="hidden">
+        <div class="camera-wrap">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="camera-guide"></div>
+        </div>
+        <div class="camera-controls">
+          <button id="cancelCameraBtn" class="btn-secondary">キャンセル</button>
+          <button id="captureBtn" class="btn-capture">📸</button>
+          <div style="flex:1"></div>
+        </div>
+      </section>
+
+      <!-- ローディング -->
+      <section id="loadingSection" class="hidden">
+        <div class="loading-content">
+          <div class="loading-ring">
+            <div></div><div></div><div></div><div></div>
+          </div>
+          <p class="loading-title">AIが採点中...</p>
+          <p class="loading-sub">色彩・構図・明度・盛り付けを分析しています</p>
+        </div>
+      </section>
+
+      <!-- エラーセクション -->
+      <section id="errorSection" class="hidden">
+        <div class="error-card">
+          <div class="error-icon">⚠️</div>
+          <p id="errorMsg" class="error-msg"></p>
+          <button id="retryBtn" class="btn-primary" style="margin-top:16px;">もう一度試す</button>
+        </div>
+      </section>
+
+      <!-- 採点結果セクション -->
+      <section id="resultsSection" class="hidden">
+
+        <div class="result-photo-wrap">
+          <img id="resultImg" class="result-photo" alt="採点した料理">
+          <div id="scoreBadge" class="score-badge">
+            <span id="totalScore" class="score-num">0</span>
+            <span class="score-denom">/ 100</span>
+          </div>
+        </div>
+
+        <div id="gradeText" class="grade-text"></div>
+        <div id="foodBadge" class="food-badge hidden"></div>
+
+        <div class="result-card one-liner-card">
+          <div class="card-label">✦ 評価</div>
+          <p id="oneLiner" class="one-liner"></p>
+        </div>
+
+        <div class="radar-wrap">
+          <canvas id="radarChart"></canvas>
+        </div>
+
+        <div class="score-breakdown">
+          <div class="score-row">
+            <div class="score-row-head">
+              <span class="score-row-label">🎨 色彩バランス</span>
+              <span class="score-row-val" id="val-color">0<small>/25</small></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" id="bar-color"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-head">
+              <span class="score-row-label">📐 構図・アングル</span>
+              <span class="score-row-val" id="val-comp">0<small>/25</small></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" id="bar-comp"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-head">
+              <span class="score-row-label">☀️ 明度・光</span>
+              <span class="score-row-val" id="val-light">0<small>/25</small></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" id="bar-light"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-head">
+              <span class="score-row-label">🍱 盛り付け</span>
+              <span class="score-row-val" id="val-plate">0<small>/25</small></span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" id="bar-plate"></div></div>
+          </div>
+        </div>
+
+        <div id="hashtagSection" class="result-card hashtag-card hidden">
+          <div class="card-label">🏷 ハッシュタグ</div>
+          <p id="hashtagText" class="hashtag-text"></p>
+          <button id="copyTagsBtn" class="btn-copy">📋 コピー</button>
+        </div>
+
+        <div class="result-card advice-card">
+          <div class="card-label">💡 改善アドバイス</div>
+          <ul id="adviceList" class="advice-list"></ul>
+        </div>
+
+        <div class="retake-card">
+          <div class="retake-label">⚡ 撮り直しポイント</div>
+          <p id="retakePoint"></p>
+        </div>
+
+        <button id="shareBtn" class="btn-share">
+          <span>📤</span><span>結果をシェア</span>
+        </button>
+        <p class="share-note">スコア入り画像を作成して共有できます。</p>
+        <button id="newPhotoBtn" class="btn-secondary btn-full">＋ 新しい写真を採点する</button>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

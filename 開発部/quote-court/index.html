@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>名言法廷</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="floatContainer"></div>
+
+  <!-- ══ スタート画面 ══ -->
+  <div id="startScreen" class="screen active">
+    <div class="start-wrap">
+      <p class="start-court-label">裁　判　所　第　一　審</p>
+      <h1>名言法廷</h1>
+      <p class="start-sub">その名言、真にその者が語りしか</p>
+
+      <div id="readySection" class="start-section hidden">
+        <div class="best-row">
+          <div class="best-item"><span class="best-label">最高得点</span><span id="highScore" class="best-val">—</span></div>
+          <div class="best-item"><span class="best-label">最高連続</span><span id="highCombo" class="best-val">—</span></div>
+        </div>
+        <button id="startBtn" class="btn-start">開　廷　す　る</button>
+      </div>
+
+      <div id="loadingSection" class="start-section hidden">
+        <div class="spinner"></div>
+        <p class="loading-text">Claude が新事件を捜査中…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ゲーム画面 ══ -->
+  <div id="gameScreen" class="screen">
+
+    <!-- ヘッダー -->
+    <header class="game-header">
+      <span class="header-case" id="caseNumber">第一事件</span>
+      <div class="header-progress">
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+        <span id="caseProgress">1/10</span>
+      </div>
+      <div class="header-right">
+        <div id="comboDisplay" class="combo-badge hidden">
+          <span id="comboFire">🔥</span><span id="comboText">×2</span>
+        </div>
+        <span id="ptsDisplay" class="pts-val">0</span><span class="pts-unit">点</span>
+      </div>
+    </header>
+
+    <!-- 法廷エリア -->
+    <div class="courtroom">
+
+      <!-- 起訴状（上部） -->
+      <div class="indictment-strip">
+        <span class="indictment-label">起訴状</span>
+        <p id="indictmentText" class="indictment-text"></p>
+      </div>
+
+      <!-- 証言台（中央） -->
+      <div class="witness-area">
+        <div class="witness-frame">
+          <img id="authorPortrait" class="witness-img hidden" alt="">
+          <div id="portraitPlaceholder" class="witness-placeholder">👤</div>
+        </div>
+        <div class="witness-nameplate">
+          <span id="authorName" class="nameplate-name"></span>
+          <span id="authorContext" class="nameplate-context"></span>
+        </div>
+      </div>
+
+      <!-- 名言（下部） -->
+      <div class="quote-area">
+        <blockquote id="quoteText" class="quote-text"></blockquote>
+      </div>
+
+      <!-- 確信度 -->
+      <div class="confidence-row">
+        <button id="confNormal" class="conf-btn active" data-conf="normal">🤔 普通 <small>+10</small></button>
+        <button id="confSure" class="conf-btn" data-conf="sure">🔥 確信 <small>+20/-15</small></button>
+      </div>
+
+      <!-- 判決ボタン（左右） -->
+      <div class="verdict-row">
+        <button id="realBtn" class="verdict-btn btn-real">
+          <span class="vbtn-mark">◎</span>
+          <span class="vbtn-label">本　物</span>
+        </button>
+        <button id="fakeBtn" class="verdict-btn btn-fake">
+          <span class="vbtn-mark">✕</span>
+          <span class="vbtn-label">偽　物</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ 判決パネル（overlayなし） ══ -->
+  <div id="verdictPanel" class="verdict-panel hidden">
+    <div id="verdictStamp" class="verdict-stamp"></div>
+    <div id="verdictLabel" class="verdict-label-text"></div>
+    <div id="scoreReveal" class="score-reveal"></div>
+    <div id="comboReveal" class="combo-reveal"></div>
+    <div class="truth-section">
+      <p id="truthHeader" class="truth-header"></p>
+      <p id="truthText" class="truth-text"></p>
+    </div>
+    <button id="nextBtn" class="btn-next">次　の　事　件　へ　→</button>
+  </div>
+
+  <!-- ══ 結果画面 ══ -->
+  <div id="resultScreen" class="screen">
+    <div class="result-wrap">
+      <p class="result-court-label">最　終　判　決</p>
+      <div class="result-score-wrap">
+        <span id="finalScore" class="result-score">0</span><span class="result-score-unit">点</span>
+      </div>
+      <p id="resultRank" class="result-rank"></p>
+      <p id="resultMessage" class="result-msg"></p>
+      <div id="resultStats" class="result-stats"></div>
+      <div id="resultDetails" class="result-details"></div>
+      <button id="retryBtn" class="btn-start">新 し い 事 件 で 再 挑 戦</button>
+    </div>
+  </div>
+
+  <script src="case-bank-extra.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+</body>
+</html>

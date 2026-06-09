@@ -1,0 +1,40 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.genius-audit-ok
+*.log
+
+# macOSゴミ
+.DS_Store
+**/.DS_Store
+
+# Playwright MCPの自動生成ログ
+.playwright-mcp/
+
+# Agent/skill caches copied into workspaces
+.agents/
+**/.agents/
+skills-lock.json
+.claude/
+記憶庫/
+運用部/
+並行プロジェクト管理ガイド.md
+企画部/IDEA_LOG.md
+
+# versioned organization context
+!CLAUDE.md
+!**/CLAUDE.md
+
+# local-only context overlays
+CLAUDE.local.md
+**/CLAUDE.local.md
+*.local.md
+
+# Firebase local deploy cache
+**/.firebase/
+
+# ルートへ迷い込んだスクリーンショット（scripts/cleanup.sh が自動移動）
+/*.png
+/*.jpg
+/*.jpeg
