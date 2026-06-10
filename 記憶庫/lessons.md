@@ -16,6 +16,11 @@
 - **[デプロイ]** ゲームアプリはFirebaseよりVercelの方が設定量が少ない（LexWorld教訓）。Vercel SPAフォールバックはvercel.jsonに1行追加するだけ。firebase.jsonのrewrites設定より大幅にシンプル
 - **[デプロイ]** vercel.jsonのSPAフォールバックを忘れると、リロード時に404になる。`{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }` を必ず追加する
 
+## 2026-06-10
+- **[エージェント設計]** 記憶庫への書き込みだけでは次のエージェント実行に反映されない（2026-06-09「specs連番命名廃止」を決定したが、翌日の企画部エージェントは `idea1〜10` 形式で再生成した。エージェントに伝えるにはCLAUDE.mdへの転記が必要）
+- **[Anthropicプラットフォーム]** Claude Agent SDK・ヘッドレスClaude Code・GitHub Actions連携は2026-06-15よりAPIクレジット課金に移行（無制限vibeコーディング終了。100日チャレンジの自動エージェント運用コストを月額ベースで再設計する必要がある）
+- **[Firebase]** Firebase AI Logic GAにより、オンデバイス+クラウドハイブリッド推論とSQL Connect（GraphQL不要でSQL直書き）が本番利用可能に（既存Firebaseスタックのまま、AIチャット・推論機能を追加できるオプションが生まれた）
+
 ## 2026-06-05
 - **[Firebase]** Vercel Serverless Functionsの環境変数でAPIキーを隠す方法が確立（FoodScore）
 - **[Firebase]** インメモリのレート制限は複数インスタンスで機能しない。本格公開前にUpstash RedisまたはFirestoreに移行が必要
