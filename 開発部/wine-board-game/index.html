@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VinRoute — ワインボードゲーム</title>
+  <title>VinRoute — 産地交易ゲーム</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a0a00">
@@ -16,7 +16,7 @@
       <div class="logo">
         <div class="logo-icon">🍷</div>
         <h1>VinRoute</h1>
-        <p class="tagline">世界のワイン産地を旅して、伝説のソムリエを目指せ</p>
+        <p class="tagline">分岐ルートを旅して産地カードを集める</p>
       </div>
       <div class="lobby-card">
         <h2>ゲーム設定</h2>
@@ -74,17 +74,16 @@
       </div>
 
       <!-- アクションフェーズ -->
-      <div id="actionPhase" class="phase-panel hidden">
-        <p class="phase-label">⚡ アクション</p>
-        <h3 id="landedRegionName" class="landed-name"></h3>
-        <div class="collected-res" id="collectedRes"></div>
-        <div class="action-btns">
-          <button id="buildBtn" class="btn-action">🌿 建設</button>
-          <button id="brewBtn" class="btn-action">🍾 醸造</button>
-          <button id="quizBtn" class="btn-action">📋 クイズ</button>
+        <div id="actionPhase" class="phase-panel hidden">
+          <p class="phase-label">⚡ アクション</p>
+          <h3 id="landedRegionName" class="landed-name"></h3>
+          <div class="collected-res" id="collectedRes"></div>
+          <div class="action-btns">
+            <button id="quizBtn" class="btn-action">📋 知識</button>
+            <button id="dexBtn" class="btn-action">📚 図鑑</button>
+          </div>
+          <button id="endTurnBtn" class="btn-end-turn">ターン終了 →</button>
         </div>
-        <button id="endTurnBtn" class="btn-end-turn">ターン終了 →</button>
-      </div>
 
       <!-- イベントフェーズ -->
       <div id="eventPhase" class="phase-panel hidden">
@@ -106,11 +105,11 @@
     <div class="modal-box howto-box">
       <h3>🍷 VinRoute の遊び方</h3>
       <div class="howto-steps">
-        <div class="howto-step"><span class="step-num">1</span><div><strong>サイコロを振る</strong><br>右パネルの「サイコロを振る」ボタンを押す。出た目の数だけ移動できる。</div></div>
-        <div class="howto-step"><span class="step-num">2</span><div><strong>産地を移動</strong><br>金色に光っている隣の産地をクリックして移動。着地するとその産地のリソースを取得。</div></div>
-        <div class="howto-step"><span class="step-num">3</span><div><strong>建設・醸造</strong><br>リソースを使って「畑」や「醸造所」を建設。醸造所があればワインを醸造して勝利点を獲得！</div></div>
-        <div class="howto-step"><span class="step-num">4</span><div><strong>イベント</strong><br>ターン終了時にイベントカードを引く。豊作・霜害・クイズなど様々な効果が発動する。</div></div>
-        <div class="howto-step"><span class="step-num">5</span><div><strong>勝利条件</strong><br><strong>15点</strong>を先取したプレイヤーの勝利！ワイン醸造(2〜6点)、目的地到達(+2点)、クイズ正解(+1点)で得点。</div></div>
+        <div class="howto-step"><span class="step-num">1</span><div><strong>サイコロを振る</strong><br>出た目の数だけ、1マスずつ進む。毎回どの分岐に入るかを選ぶ。</div></div>
+        <div class="howto-step"><span class="step-num">2</span><div><strong>産地を先取りする</strong><br>着地した産地は先着1人だけが価値を獲得できる。取られた産地は後から奪えない。</div></div>
+        <div class="howto-step"><span class="step-num">3</span><div><strong>セットを完成させる</strong><br>同じ回廊の産地を集めると、セットボーナスが入る。</div></div>
+        <div class="howto-step"><span class="step-num">4</span><div><strong>知識を使う</strong><br>クイズは補助。正解すると次の収集が少し有利になる。</div></div>
+        <div class="howto-step"><span class="step-num">5</span><div><strong>勝利条件</strong><br>最終シーズン終了時、コレクション価値が最も高いプレイヤーが勝利。</div></div>
       </div>
       <div class="howto-resources">
         <h4>リソース一覧</h4>
@@ -124,34 +123,23 @@
     </div>
   </div>
 
-  <!-- 建設モーダル -->
-  <div id="buildModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h3>🌿 建設する</h3>
-      <p id="buildRegionName" class="modal-subtitle"></p>
-      <div id="buildOptions" class="option-grid"></div>
-      <button class="btn-secondary modal-close" data-modal="buildModal">キャンセル</button>
-    </div>
-  </div>
-
-  <!-- 醸造モーダル -->
-  <div id="brewModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h3>🍾 ワインを醸造する</h3>
-      <p class="modal-subtitle">醸造所のある産地で醸造できます</p>
-      <div id="brewOptions" class="option-grid"></div>
-      <button class="btn-secondary modal-close" data-modal="brewModal">キャンセル</button>
-    </div>
-  </div>
-
   <!-- クイズモーダル -->
   <div id="quizModal" class="modal-overlay hidden">
     <div class="modal-box quiz-box">
-      <div class="quiz-header">📋 ソムリエクイズ</div>
+      <div class="quiz-header">📋 知識チャレンジ</div>
       <p id="quizQuestion" class="quiz-question"></p>
       <div id="quizChoices" class="quiz-choices"></div>
       <div id="quizResult" class="quiz-result hidden"></div>
       <button id="closeQuizBtn" class="btn-primary hidden">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 図鑑モーダル -->
+  <div id="dexModal" class="modal-overlay hidden">
+    <div class="modal-box dex-box">
+      <div class="quiz-header">📚 産地カード図鑑</div>
+      <div id="dexGrid" class="dex-grid"></div>
+      <button class="btn-secondary modal-close" data-modal="dexModal">閉じる</button>
     </div>
   </div>
 

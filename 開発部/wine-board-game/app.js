@@ -3,52 +3,12 @@
 // ===== 定数 =====
 const PLAYER_COLORS = ['#E74C3C', '#3498DB', '#2ECC71', '#F39C12'];
 
-const BUILDINGS = {
-  vineyard: {
-    name: '畑',
-    icon: '🌿',
-    cost: { pinot: 1, cabernet: 1 },
-    costLabel: 'ピノ×1 + カベルネ×1',
-    effect: '通過時にこの産地のリソース+1',
-    limit: 1
-  },
-  winery: {
-    name: '醸造所',
-    icon: '🍾',
-    cost: { cabernet: 1, chardonnay: 1, blend: 1 },
-    costLabel: 'カベルネ×1 + シャルドネ×1 + ブレンド×1',
-    effect: 'ワインの醸造が可能になる',
-    limit: 1
-  },
-  cellar: {
-    name: 'セラー',
-    icon: '🏛️',
-    cost: { riesling: 2, blend: 2 },
-    costLabel: 'リースリング×2 + ブレンド×2',
-    effect: '醸造ワインの勝利点+1',
-    limit: 1
-  }
-};
-
-const WINE_RECIPES = [
-  { id: 'bordeaux_blend', name: 'ボルドー・ブレンド', cost: { cabernet: 2, blend: 1 }, vp: 3, desc: '力強い赤ワイン' },
-  { id: 'bourgogne',      name: 'ブルゴーニュ',      cost: { pinot: 3 },               vp: 4, desc: '気品ある単一品種' },
-  { id: 'champagne',      name: 'シャンパーニュ',    cost: { chardonnay: 2, riesling: 1 }, vp: 3, desc: '優雅な泡' },
-  { id: 'rose',           name: 'スパークリング・ロゼ', cost: { pinot: 1, chardonnay: 1 }, vp: 2, desc: '軽やかなロゼ' },
-  { id: 'grand_cru',      name: 'グランクリュ',      cost: { cabernet: 1, pinot: 1, chardonnay: 1, riesling: 1, blend: 1 }, vp: 6, desc: '究極の1本' },
-  { id: 'koshu',          name: '甲州ワイン',         cost: { riesling: 1, blend: 2 },   vp: 2, desc: '和食と合う日本ワイン' }
-];
-
-const EVENT_CARDS = [
-  { id: 'harvest',     name: '豊作 🌞',         desc: '自分の畑がある全産地からリソース+1取得',             effect: 'harvest' },
-  { id: 'frost',       name: '霜害 ❄️',          desc: '任意の相手プレイヤーのリソースを1種類減らす',       effect: 'frost' },
-  { id: 'parker',      name: 'パーカー登場 🍷',  desc: '現在最多勝利点のプレイヤーが+1点',                  effect: 'parker' },
-  { id: 'scandal',     name: 'スキャンダル 📰',  desc: '全プレイヤーのブレンドが半分に',                   effect: 'scandal' },
-  { id: 'climate',     name: '気候変動 🌡️',      desc: 'ランダムな産地のリソース種が変わる',               effect: 'climate' },
-  { id: 'bonby',       name: '貧乏神 👹',         desc: '最下位プレイヤーの次ターン移動-1',                 effect: 'bonby' },
-  { id: 'trade_winds', name: '貿易風 🌬️',        desc: '任意の産地に無料でテレポート移動できる',           effect: 'trade_winds' },
-  { id: 'wine_fair',   name: 'ワイン見本市 🏪',  desc: '全リソースを1種類につき+1取得',                    effect: 'wine_fair' },
-  { id: 'quiz_card',   name: 'ソムリエ試験 📋',  desc: 'クイズに正解で+1勝利点',                           effect: 'quiz' }
+const MARKET_EVENTS = [
+  { id: 'cool_climate_boom', name: 'Cool Climate Boom', desc: 'Cool地域の価値+2 / 収益+1', target: { climate: 'Cool' }, valueBonus: 2, incomeBonus: 1 },
+  { id: 'pinot_popularity', name: 'Pinot Popularity', desc: 'Pinot地域の収益+3', target: { resource: 'pinot' }, valueBonus: 0, incomeBonus: 3 },
+  { id: 'new_world_trend', name: 'New World Trend', desc: 'Americas地域の価値+2', target: { zone: 'americas' }, valueBonus: 2, incomeBonus: 1 },
+  { id: 'old_world_prestige', name: 'Old World Prestige', desc: 'Western Europe地域の価値+2', target: { zone: 'western_europe' }, valueBonus: 2, incomeBonus: 1 },
+  { id: 'sparkling_festival', name: 'Sparkling Festival', desc: 'Sparkling系地域の収益+3', target: { keyword: 'champagne' }, valueBonus: 1, incomeBonus: 3 }
 ];
 
 const SEASONS_TOTAL = 5;
@@ -83,43 +43,28 @@ function setupLobby() {
 function renderPlayerSetup(count) {
   const container = document.getElementById('playerSetup');
   const defaultNames = ['アリス', 'ボブ', 'チャーリー', 'ダイアナ'];
-  const defaultAI = [false, true, true, true];
   container.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const row = document.createElement('div');
     row.className = 'player-input-row';
-    const ai = defaultAI[i];
     row.innerHTML = `
       <div class="player-color-dot" style="background:${PLAYER_COLORS[i]}"></div>
       <input class="player-name-input" type="text" placeholder="プレイヤー${i+1}の名前"
-             value="${defaultNames[i]}" data-player="${i}"${ai ? ' disabled' : ''}>
-      <button class="ai-toggle${ai ? ' ai-on' : ''}" data-player="${i}">${ai ? '🤖' : '👤'}</button>
+             value="${defaultNames[i]}" data-player="${i}">
     `;
     container.appendChild(row);
   }
-  container.querySelectorAll('.ai-toggle').forEach(btn => {
-    btn.onclick = () => {
-      btn.classList.toggle('ai-on');
-      const on = btn.classList.contains('ai-on');
-      btn.textContent = on ? '🤖' : '👤';
-      const inp = container.querySelector(`input[data-player="${btn.dataset.player}"]`);
-      if (inp) inp.disabled = on;
-    };
-  });
 }
 
 function startGame() {
   const inputs = document.querySelectorAll('.player-name-input');
   const names = Array.from(inputs).map(el => el.value.trim() || `P${parseInt(el.dataset.player)+1}`);
-  const aiFlags = Array.from(document.querySelectorAll('.ai-toggle')).map(b => b.classList.contains('ai-on'));
-  initGame(names, aiFlags);
+  initGame(names);
 }
 
 // ===== ゲーム初期化 =====
-function initGame(playerNames, aiFlags = []) {
-  const regionIds = Object.keys(REGION_DATA);
-  const shuffled = shuffleArray([...regionIds]);
-  const startPositions = shuffled.slice(0, playerNames.length);
+function initGame(playerNames) {
+  const startPositions = Array.from({ length: playerNames.length }, () => 'paris');
 
   gs = {
     players: playerNames.map((name, i) => ({
@@ -127,25 +72,34 @@ function initGame(playerNames, aiFlags = []) {
       name,
       color: PLAYER_COLORS[i],
       position: startPositions[i],
-      resources: { cabernet: 1, pinot: 1, chardonnay: 1, riesling: 1, blend: 1 },
+      resources: {},
+      cards: [],
+      completedSets: [],
+      visitedRegions: [],
       buildings: [],
-      wines: [],
+      moveBonus: 0,
       vp: 0,
-      bonbyPenalty: 0,
-      isAI: aiFlags[i] || false
+      isAI: false
     })),
     regions: buildRegionState(),
+    visibleRegions: [...STARTER_VISIBLE_REGION_IDS],
+    unlockedZones: new Set(),
+    isAnimatingMove: false,
     currentPlayerIndex: 0,
     phase: 'roll',
     diceResult: null,
     stepsLeft: 0,
     reachableRegions: [],
-    destination: pickDestination(null),
+    destination: pickDestination(null, null),
+    marketEvent: null,
     turn: 1,
     season: 1,
     turnInSeason: 1,
     log: []
   };
+
+  gs.marketEvent = MARKET_EVENTS[Math.floor(Math.random() * MARKET_EVENTS.length)];
+  gs.destination = pickDestination(null, gs.marketEvent);
 
   setupGameEventListeners();
   showScreen('gameScreen');
@@ -153,7 +107,8 @@ function initGame(playerNames, aiFlags = []) {
   setPhase('roll');
   renderAll();
   startAnimLoop();
-  addLog(`ゲーム開始！${SEASONS_TOTAL}シーズン終了時の最多VP勝利です。`, null);
+  addLog(`ゲーム開始！${SEASONS_TOTAL}シーズン終了時の最多コレクション価値勝利です。`, null);
+  addLog(`初期市場: ${gs.marketEvent.name} / 注目産地: ${REGION_DATA[gs.destination]?.name || ''}`, null);
   addLog(`--- シーズン1・ターン1 / ${gs.players[0].name}のターン ---`, null);
   if (currentPlayer().isAI) setTimeout(() => aiTakeTurn(), 1200);
 }
@@ -161,14 +116,29 @@ function initGame(playerNames, aiFlags = []) {
 function buildRegionState() {
   const state = {};
   for (const [id, r] of Object.entries(REGION_DATA)) {
-    state[id] = { ...r, buildings: {} };
+    state[id] = {
+      ...r,
+      buildings: {},
+      claimedBy: null,
+      claimedTurn: null,
+      firstClaimedBy: null,
+      discoveredBy: [],
+      unlocked: STARTER_VISIBLE_REGION_IDS.includes(id)
+    };
   }
   return state;
 }
 
-function pickDestination(exclude) {
-  const ids = Object.keys(REGION_DATA).filter(id => id !== exclude);
-  return ids[Math.floor(Math.random() * ids.length)];
+function pickDestination(exclude, marketEvent) {
+  const visible = gs ? getVisibleRegionIds(gs) : STARTER_VISIBLE_REGION_IDS;
+  const candidates = visible.filter(id => id !== exclude);
+  if (!candidates.length) return exclude;
+
+  if (marketEvent) {
+    const targeted = candidates.filter(id => matchesMarketTarget(id, marketEvent));
+    if (targeted.length) return targeted[Math.floor(Math.random() * targeted.length)];
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 // ===== Canvas セットアップ =====
@@ -194,16 +164,22 @@ function getCanvasXY(e) {
 
 function onCanvasHover(e) {
   const pos = getCanvasXY(e);
-  const regionId = getRegionAtPoint(pos.x, pos.y);
+  const regionId = getRegionAtPoint(pos.x, pos.y, gs);
   const tooltip = document.getElementById('regionTooltip');
   if (regionId) {
     const r = REGION_DATA[regionId];
+    const meta = getRegionStrategy(regionId);
     const buildings = gs ? (gs.regions[regionId].buildings || {}) : {};
-    const bList = Object.keys(buildings).map(k => BUILDINGS[k]?.icon + BUILDINGS[k]?.name).join(' ');
+    const bList = Object.keys(buildings).length ? '施設あり' : '';
+    const resourceTags = (meta.resources || []).map(r => `${RESOURCE_ICONS[r] || '◻'} ${RESOURCE_NAMES[r] || r}`).join(' ');
+    const owner = gs?.regions[regionId]?.claimedBy ? getPlayerById(gs.regions[regionId].claimedBy) : null;
     tooltip.innerHTML = `
       <div class="tt-name">${r.name}</div>
       <div class="tt-country">${r.country}</div>
-      <div>${RESOURCE_ICONS[r.resource]} ${RESOURCE_NAMES[r.resource]}</div>
+      <div class="tt-meta">${meta.setLabel} / ${meta.climate} / 価値 ${meta.value}</div>
+      <div class="tt-meta">${owner ? `保有: ${owner.name}` : '未取得'}</div>
+      <div>${resourceTags || `${RESOURCE_ICONS[r.resource]} ${RESOURCE_NAMES[r.resource]}`}</div>
+      <div class="tt-effect">${meta.specialEffect}</div>
       ${bList ? `<div>${bList}</div>` : ''}
     `;
     tooltip.style.display = 'block';
@@ -215,9 +191,9 @@ function onCanvasHover(e) {
 }
 
 function onCanvasClick(e) {
-  if (!gs || gs.phase !== 'move' || currentPlayer().isAI) return;
+  if (!gs || gs.phase !== 'move' || currentPlayer().isAI || gs.isAnimatingMove) return;
   const pos = getCanvasXY(e);
-  const regionId = getRegionAtPoint(pos.x, pos.y);
+  const regionId = getRegionAtPoint(pos.x, pos.y, gs);
   if (regionId && gs.reachableRegions.includes(regionId)) {
     movePlayerTo(regionId);
   }
@@ -228,9 +204,10 @@ function setupGameEventListeners() {
   const guard = fn => () => { if (gs && !currentPlayer().isAI) fn(); };
   document.getElementById('rollBtn').onclick = guard(rollDice);
   document.getElementById('skipMoveBtn').onclick = guard(skipMovement);
-  document.getElementById('buildBtn').onclick = guard(openBuildModal);
-  document.getElementById('brewBtn').onclick = guard(openBrewModal);
-  document.getElementById('quizBtn').onclick = guard(() => openQuizModal('action'));
+  const quizBtn = document.getElementById('quizBtn');
+  const dexBtn = document.getElementById('dexBtn');
+  if (quizBtn) quizBtn.onclick = guard(() => openQuizModal('action'));
+  if (dexBtn) dexBtn.onclick = guard(openRegionDexModal);
   document.getElementById('endTurnBtn').onclick = guard(endTurn);
   document.getElementById('closeEventBtn').onclick = closeEvent;
   document.getElementById('helpBtn').onclick = () => {
@@ -247,16 +224,9 @@ function setupGameEventListeners() {
 // ===== ターンフロー =====
 function rollDice() {
   const p = currentPlayer();
-  const penalty = p.bonbyPenalty || 0;
-
   const d1 = Math.ceil(Math.random() * 6);
   const d2 = Math.ceil(Math.random() * 6);
-  const total = Math.max(1, d1 + d2 - penalty);
-
-  if (penalty > 0) {
-    p.bonbyPenalty = 0;
-    addLog(`${p.name}に貧乏神のペナルティ！移動-${penalty}`, p);
-  }
+  const total = Math.max(1, d1 + d2);
 
   // サイコロアニメーション
   const die1El = document.getElementById('die1');
@@ -286,37 +256,39 @@ function rollDice() {
 function getReachable(posId, steps) {
   const region = REGION_DATA[posId];
   if (!region) return [];
-  return region.adjacent.filter(id => REGION_DATA[id]);
+  return region.adjacent.filter(id => REGION_DATA[id] && isRegionVisible(id, gs));
 }
 
-function movePlayerTo(regionId) {
+async function movePlayerTo(regionId) {
+  if (!gs || gs.isAnimatingMove) return;
   const p = currentPlayer();
-  const prevPos = p.position;
+  const fromId = p.position;
+  const fromRegion = REGION_DATA[fromId];
+  const toRegion = REGION_DATA[regionId];
+  if (!fromRegion || !toRegion) return;
+
+  gs.isAnimatingMove = true;
+  gs.phase = 'move';
+  setPhase('move');
+  playStepSound();
+  await animateTokenMove(p, fromRegion, toRegion, 260);
+
   p.position = regionId;
-  gs.stepsLeft--;
-
-  // 通過した産地に畑があればリソースを取得
-  for (const [pid, region] of Object.entries(gs.regions)) {
-    if (pid === regionId && region.buildings.vineyard) {
-      const owner = region.buildings.vineyard;
-      const ownerPlayer = gs.players.find(pl => pl.id === owner);
-      if (ownerPlayer) {
-        ownerPlayer.resources[region.resource]++;
-        addLog(`${ownerPlayer.name}の畑から${RESOURCE_NAMES[region.resource]}+1`, ownerPlayer);
-      }
-    }
-  }
-
-  addLog(`${p.name}が${REGION_DATA[regionId].name}へ移動`, p);
+  gs.stepsLeft = Math.max(0, gs.stepsLeft - 1);
+  claimRegion(p, regionId);
+  addLog(`${p.name}が${toRegion.name}へ移動`, p);
 
   if (gs.stepsLeft > 0) {
     gs.reachableRegions = getReachable(regionId, 1);
     document.getElementById('stepsLeft').textContent = gs.stepsLeft;
-  } else {
-    // 移動終了 → アクションフェーズへ
-    gs.reachableRegions = [];
-    enterActionPhase();
+    gs.isAnimatingMove = false;
+    renderAll();
+    return;
   }
+
+  gs.reachableRegions = [];
+  gs.isAnimatingMove = false;
+  enterActionPhase();
   renderAll();
 }
 
@@ -330,29 +302,34 @@ function skipMovement() {
 function enterActionPhase() {
   const p = currentPlayer();
   const region = REGION_DATA[p.position];
+  const meta = getRegionStrategy(p.position);
   gs.phase = 'action';
 
-  // 着地リソースを取得
-  const res = region.resource;
-  p.resources[res]++;
-  addLog(`${p.name}が${region.name}で${RESOURCE_NAMES[res]}を取得！`, p);
+  const setId = meta.setId;
+  document.getElementById('landedRegionName').textContent = `📍 ${region?.name || ''}`;
+  document.getElementById('collectedRes').innerHTML = `
+    <span>${meta?.setLabel || ''}</span>
+    <span>・</span>
+    <span>価値 ${meta?.value || 0}</span>
+    <span>・</span>
+    <span>${region?.claimedBy ? '既取得' : '未取得'}</span>
+  `;
 
-  // 目的地ボーナス
   if (p.position === gs.destination) {
-    p.vp += 2;
-    addLog(`${p.name}が今月の銘醸地に到達！+2点！`, p);
-    gs.destination = pickDestination(p.position);
-    checkVictory();
+    p.moveBonus = (p.moveBonus || 0) + 1;
+    addLog(`🎯 注目産地到達！次の収集が少し有利になる`, p);
+    gs.destination = pickDestination(p.position, gs.marketEvent);
+    if (gs.destination) addLog(`新しい注目産地: ${REGION_DATA[gs.destination].name}`, null);
   }
 
-  // 畑ボーナス（3つ所有で+2VP、一度だけ）
-  const ownedVineyards = gs.players.filter((_, idx) => idx === gs.currentPlayerIndex)[0].buildings
-    .filter(b => b.type === 'vineyard').length;
-  if (ownedVineyards >= 3 && !p._vineyard3bonus) {
-    p._vineyard3bonus = true;
-    p.vp += 2;
-    addLog(`${p.name}が畑3つ達成ボーナス！+2点！`, p);
-    checkVictory();
+  if (setId && !p.completedSets.includes(setId)) {
+    const progress = getSetProgress(p, setId);
+    if (progress.count >= progress.total) {
+      const bonus = getSetBonus(setId);
+      p.completedSets.push(setId);
+      p.vp += bonus;
+      addLog(`${p.name}が${meta.setLabel}を完成！+${bonus}価値`, p);
+    }
   }
 
   setPhase('action');
@@ -364,86 +341,30 @@ function endTurn() {
 }
 
 function drawEventCard() {
-  const card = EVENT_CARDS[Math.floor(Math.random() * EVENT_CARDS.length)];
+  const card = MARKET_EVENTS[Math.floor(Math.random() * MARKET_EVENTS.length)];
   gs.currentEvent = card;
+  gs.marketEvent = card;
+  gs.destination = pickDestination(currentPlayer()?.position, card);
   setPhase('event');
 
   const el = document.getElementById('eventCard');
   el.innerHTML = `<div class="event-name">${card.name}</div><div>${card.desc}</div>`;
   addLog(`イベント: ${card.name}`, null);
+  if (currentPlayer()?.isAI) {
+    setTimeout(() => {
+      if (gs && gs.currentEvent === card) closeEvent();
+    }, 650);
+  }
 }
 
 function closeEvent() {
-  const card = gs.currentEvent;
-  const quizPending = card?.effect === 'quiz';
-  if (card) applyEvent(card);
+  if (gs.currentEvent) applyEvent(gs.currentEvent);
   gs.currentEvent = null;
-  if (!quizPending) nextPlayer();
+  nextPlayer();
 }
 
 function applyEvent(card) {
-  const p = currentPlayer();
-  switch (card.effect) {
-    case 'harvest':
-      p.buildings.filter(b => b.type === 'vineyard').forEach(b => {
-        const res = REGION_DATA[b.regionId]?.resource;
-        if (res) { p.resources[res]++; addLog(`豊作: ${p.name}が${RESOURCE_NAMES[res]}+1`, p); }
-      });
-      break;
-    case 'frost':
-      // 相手が1人以上いれば対象選択（簡易: ランダム相手）
-      const opponents = gs.players.filter((_, i) => i !== gs.currentPlayerIndex);
-      if (opponents.length > 0) {
-        const target = opponents[Math.floor(Math.random() * opponents.length)];
-        const resKeys = Object.keys(target.resources).filter(k => target.resources[k] > 0);
-        if (resKeys.length > 0) {
-          const rk = resKeys[Math.floor(Math.random() * resKeys.length)];
-          target.resources[rk] = Math.max(0, target.resources[rk] - 1);
-          addLog(`霜害: ${target.name}の${RESOURCE_NAMES[rk]}-1`, null);
-        }
-      }
-      break;
-    case 'parker':
-      const maxVp = Math.max(...gs.players.map(pl => pl.vp));
-      const leaders = gs.players.filter(pl => pl.vp === maxVp);
-      leaders.forEach(pl => { pl.vp++; addLog(`パーカー: ${pl.name}に+1点`, pl); });
-      checkVictory();
-      break;
-    case 'scandal':
-      gs.players.forEach(pl => { pl.resources.blend = Math.floor(pl.resources.blend / 2); });
-      addLog('スキャンダル: 全員のブレンドが半分に', null);
-      break;
-    case 'climate': {
-      const rIds = Object.keys(gs.regions);
-      const rId = rIds[Math.floor(Math.random() * rIds.length)];
-      const resOptions = ['cabernet', 'pinot', 'chardonnay', 'riesling', 'blend'];
-      const newRes = resOptions[Math.floor(Math.random() * resOptions.length)];
-      gs.regions[rId].resource = newRes;
-      REGION_DATA[rId].resource = newRes;
-      addLog(`気候変動: ${REGION_DATA[rId].name}のリソースが${RESOURCE_NAMES[newRes]}に変化`, null);
-      break;
-    }
-    case 'bonby':
-      const lowestVp = Math.min(...gs.players.map(pl => pl.vp));
-      const losers = gs.players.filter(pl => pl.vp === lowestVp);
-      losers.forEach(pl => { pl.bonbyPenalty = (pl.bonbyPenalty || 0) + 1; addLog(`貧乏神: ${pl.name}の次ターン移動-1`, null); });
-      break;
-    case 'trade_winds':
-      // 現在プレイヤーをランダムな産地に移動
-      const destIds = Object.keys(REGION_DATA).filter(id => id !== p.position);
-      const newPos = destIds[Math.floor(Math.random() * destIds.length)];
-      p.position = newPos;
-      addLog(`貿易風: ${p.name}が${REGION_DATA[newPos].name}へ移動`, p);
-      break;
-    case 'wine_fair':
-      Object.keys(p.resources).forEach(k => p.resources[k]++);
-      addLog(`ワイン見本市: ${p.name}が全リソース+1`, p);
-      break;
-    case 'quiz':
-      if (p.isAI) { aiAutoQuiz(); } else { openQuizModal('event'); }
-      return;
-  }
-  renderAll();
+  addLog(`市場ニュース: ${card.name} — ${card.desc}`, null);
 }
 
 function nextPlayer() {
@@ -454,14 +375,14 @@ function nextPlayer() {
     if (gs.turnInSeason > TURNS_PER_SEASON) {
       gs.turnInSeason = 1;
       if (gs.season >= SEASONS_TOTAL) {
-        const winner = [...gs.players].sort((a, b) => b.vp - a.vp)[0];
+        const winner = [...gs.players].sort((a, b) => getAssetValue(b) - getAssetValue(a))[0];
         showVictory(winner);
         return;
       }
       gs.season++;
       addLog(`🍂 シーズン${gs.season - 1}終了 — 収穫祭！全畑から追加収穫`, null);
       harvestFestival();
-      gs.destination = pickDestination(gs.destination);
+      gs.destination = pickDestination(gs.destination, gs.marketEvent);
       addLog(`🎯 新しい目的地: ${REGION_DATA[gs.destination].name}`, null);
     }
   }
@@ -488,105 +409,6 @@ function harvestFestival() {
     }
     if (gained > 0) addLog(`収穫祭: ${p.name}が${gained}リソース収穫`, p);
   }
-}
-
-// ===== 建設 =====
-function openBuildModal() {
-  const p = currentPlayer();
-  const regionId = p.position;
-  const region = gs.regions[regionId];
-  const container = document.getElementById('buildOptions');
-  container.innerHTML = '';
-  document.getElementById('buildRegionName').textContent = REGION_DATA[regionId].name + 'に建設';
-
-  for (const [type, def] of Object.entries(BUILDINGS)) {
-    const alreadyBuilt = region.buildings[type];
-    const canAfford = canPay(p.resources, def.cost);
-    const card = document.createElement('button');
-    card.className = 'option-card';
-    card.disabled = alreadyBuilt || !canAfford;
-
-    let statusText = '';
-    if (alreadyBuilt) statusText = '（建設済み）';
-    else if (!canAfford) statusText = '（リソース不足）';
-
-    card.innerHTML = `
-      <div class="opt-name">${def.icon} ${def.name} ${statusText}</div>
-      <div class="opt-cost">コスト: ${def.costLabel}</div>
-      <div class="opt-effect">${def.effect}</div>
-    `;
-    if (!alreadyBuilt && canAfford) {
-      card.onclick = () => { buildAt(type, regionId); document.getElementById('buildModal').classList.add('hidden'); };
-    }
-    container.appendChild(card);
-  }
-
-  document.getElementById('buildModal').classList.remove('hidden');
-}
-
-function buildAt(type, regionId) {
-  const p = currentPlayer();
-  const def = BUILDINGS[type];
-  payResources(p.resources, def.cost);
-  gs.regions[regionId].buildings[type] = p.id;
-  p.buildings.push({ type, regionId });
-  addLog(`${p.name}が${REGION_DATA[regionId].name}に${def.icon}${def.name}を建設`, p);
-  renderAll();
-}
-
-// ===== 醸造 =====
-function openBrewModal() {
-  const p = currentPlayer();
-  const regionId = p.position;
-  const hasWinery = hasWineryNear(p, regionId);
-  const container = document.getElementById('brewOptions');
-  container.innerHTML = '';
-
-  if (!hasWinery) {
-    container.innerHTML = '<p style="color:#9a7a5a;font-size:13px;">この産地またはその周辺に醸造所が必要です。</p>';
-    document.getElementById('brewModal').classList.remove('hidden');
-    return;
-  }
-
-  const hasCellar = p.buildings.some(b => b.type === 'cellar');
-
-  for (const recipe of WINE_RECIPES) {
-    const canAfford = canPay(p.resources, recipe.cost);
-    const card = document.createElement('button');
-    card.className = 'option-card';
-    card.disabled = !canAfford;
-    const bonus = hasCellar ? 1 : 0;
-    const totalVp = recipe.vp + bonus;
-    const costStr = Object.entries(recipe.cost).map(([k,v]) => `${RESOURCE_NAMES[k]}×${v}`).join(' + ');
-    card.innerHTML = `
-      <div class="opt-name">🍷 ${recipe.name}</div>
-      <div class="opt-cost">コスト: ${costStr}</div>
-      <div class="opt-effect">${recipe.desc}</div>
-      <div class="opt-vp">+${totalVp}点${bonus ? `（セラーボーナス+${bonus}）` : ''}</div>
-    `;
-    if (canAfford) {
-      card.onclick = () => { brew(recipe, hasCellar); document.getElementById('brewModal').classList.add('hidden'); };
-    }
-    container.appendChild(card);
-  }
-
-  document.getElementById('brewModal').classList.remove('hidden');
-}
-
-function hasWineryNear(player, regionId) {
-  if (gs.regions[regionId].buildings.winery === player.id) return true;
-  return REGION_DATA[regionId].adjacent.some(adjId => gs.regions[adjId]?.buildings.winery === player.id);
-}
-
-function brew(recipe, hasCellar) {
-  const p = currentPlayer();
-  payResources(p.resources, recipe.cost);
-  const vp = recipe.vp + (hasCellar ? 1 : 0);
-  p.vp += vp;
-  p.wines.push(recipe.id);
-  addLog(`${p.name}が${recipe.name}を醸造！+${vp}点`, p);
-  checkVictory();
-  renderAll();
 }
 
 // ===== クイズ =====
@@ -617,11 +439,10 @@ function openQuizModal(source) {
 
       const p = currentPlayer();
       if (correct) {
-        p.vp++;
-        resultEl.textContent = `正解！+1点 — ${q.explanation}`;
+        grantKnowledgeReward(p, q, source);
+        resultEl.textContent = `正解！${q.explanation}`;
         resultEl.className = 'quiz-result correct';
-        addLog(`${p.name}がクイズ正解！+1点`, p);
-        checkVictory();
+        addLog(`${p.name}が知識チャレンジ成功`, p);
       } else {
         resultEl.textContent = `不正解… ${q.explanation}`;
         resultEl.className = 'quiz-result wrong';
@@ -648,14 +469,14 @@ function checkVictory() {
 
 function showVictory(winner) {
   document.getElementById('winnerTitle').textContent = `${winner.name} の勝利！`;
-  const sorted = [...gs.players].sort((a, b) => b.vp - a.vp);
+  const sorted = [...gs.players].sort((a, b) => getAssetValue(b) - getAssetValue(a));
   const medals = ['🥇', '🥈', '🥉', '4️⃣'];
   document.getElementById('finalScores').innerHTML = sorted.map((p, i) => `
     <div class="score-row">
       <div class="score-rank">${medals[i]}</div>
       <div class="player-dot" style="background:${p.color};width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
       <div class="score-name">${p.name}</div>
-      <div class="score-vp">${p.vp}点</div>
+      <div class="score-vp">${getAssetValue(p)}価値</div>
     </div>
   `).join('');
   showScreen('victoryScreen');
@@ -690,20 +511,26 @@ function renderPlayerPanels() {
     const panel = document.createElement('div');
     panel.className = 'player-panel' + (i === gs.currentPlayerIndex ? ' active-player' : '');
     const region = REGION_DATA[p.position];
-    const resHtml = Object.entries(p.resources)
-      .filter(([,v]) => v > 0)
-      .map(([k,v]) => `<span class="res-chip"><span class="res-dot" style="background:${RESOURCE_COLORS[k]}"></span>${RESOURCE_NAMES[k].slice(0,3)} ×${v}</span>`)
-      .join('');
-    const buildHtml = p.buildings.map(b => `<span class="building-tag">${BUILDINGS[b.type]?.icon}${REGION_DATA[b.regionId]?.name?.slice(0,3)}</span>`).join('');
+    const meta = getRegionStrategy(p.position);
+    const cardTags = p.cards.slice(-4).map(id => {
+      const strat = getRegionStrategy(id);
+      return `<span class="card-tag">${strat?.name || id}</span>`;
+    }).join('');
+    const setProgress = getSetIds().map(setId => {
+      const progress = getSetProgress(p, setId);
+      const done = p.completedSets.includes(setId);
+      return `<span class="set-chip${done ? ' done' : ''}">${getSetLabel(setId)} ${progress.count}/${progress.total}</span>`;
+    }).join('');
     panel.innerHTML = `
       <div class="player-header">
         <div class="player-dot" style="background:${p.color}"></div>
         <div class="player-name">${p.isAI ? '🤖 ' : ''}${p.name}</div>
-        <div style="text-align:right"><div class="player-vp">${p.vp}</div><div class="player-vp-label">pts</div></div>
+        <div style="text-align:right"><div class="player-vp">${getAssetValue(p)}</div><div class="player-vp-label">価値</div></div>
       </div>
-      <div class="player-location">📍 ${region?.name || ''}</div>
-      <div class="resource-list">${resHtml || '<span style="font-size:10px;color:#555">なし</span>'}</div>
-      ${buildHtml ? `<div class="player-buildings">${buildHtml}</div>` : ''}
+      <div class="player-location">📍 ${region?.name || ''} / ${meta?.setLabel || ''}</div>
+      <div class="player-stats">カード ${p.cards.length} / セット ${p.completedSets.length}</div>
+      ${cardTags ? `<div class="player-cards">${cardTags}</div>` : ''}
+      ${setProgress ? `<div class="player-sets">${setProgress}</div>` : ''}
     `;
     container.appendChild(panel);
   });
@@ -712,18 +539,28 @@ function renderPlayerPanels() {
 function renderTurnInfo() {
   const p = currentPlayer();
   const el = document.getElementById('turnInfo');
+  const market = gs.marketEvent;
   el.innerHTML = `
     <div class="current-player" style="color:${p.color}">${p.isAI ? '🤖 ' : ''}${p.name}</div>
     <div class="turn-num">S${gs.season}/${SEASONS_TOTAL} — T${gs.turnInSeason}/${TURNS_PER_SEASON}</div>
     ${p.isAI ? '<div class="ai-thinking">考え中…</div>' : ''}
+    ${market ? `<div class="market-chip">${market.name}</div>` : ''}
   `;
 }
 
 function renderActionPhase() {
   const p = currentPlayer();
   const region = REGION_DATA[p.position];
+  const meta = getRegionStrategy(p.position);
+  const owner = region?.claimedBy ? getPlayerById(region.claimedBy) : null;
   document.getElementById('landedRegionName').textContent = `📍 ${region?.name || ''}`;
-  document.getElementById('collectedRes').textContent = '';
+  document.getElementById('collectedRes').innerHTML = `
+    <span>${meta?.setLabel || ''}</span>
+    <span>・</span>
+    <span>価値 ${meta?.value || 0}</span>
+    <span>・</span>
+    <span>${owner ? `保有: ${owner.name}` : '未取得'}</span>
+  `;
 }
 
 function setPhase(phase) {
@@ -780,107 +617,205 @@ function addLog(message, player) {
   `).join('');
 }
 
-// ===== AI プレイヤー =====
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-async function aiTakeTurn() {
-  if (!gs || !currentPlayer()?.isAI || gs.phase !== 'roll') return;
-
-  await sleep(900);
-  if (!gs || !currentPlayer()?.isAI) return;
-
-  // サイコロ（アニメーションなし）
-  const p = currentPlayer();
-  const penalty = p.bonbyPenalty || 0;
-  const d1 = Math.ceil(Math.random() * 6);
-  const d2 = Math.ceil(Math.random() * 6);
-  const total = Math.max(1, d1 + d2 - penalty);
-  if (penalty > 0) { p.bonbyPenalty = 0; addLog(`${p.name}に貧乏神ペナルティ！移動-${penalty}`, p); }
-  document.getElementById('die1').textContent = d1;
-  document.getElementById('die2').textContent = d2;
-  gs.diceResult = { d1, d2, total };
-  gs.stepsLeft = total;
-  gs.phase = 'move';
-  gs.reachableRegions = getReachable(p.position, 1);
-  addLog(`${p.name}がサイコロを振った: ${d1}+${d2}=${total}`, p);
-  setPhase('move');
-  renderAll();
-
-  await sleep(700);
-
-  // 移動（ステップごと）
-  while (gs && gs.stepsLeft > 0 && gs.reachableRegions.length > 0) {
-    if (!currentPlayer()?.isAI) return;
-    movePlayerTo(chooseBestRegion(gs.reachableRegions));
-    await sleep(520);
-  }
-
-  await sleep(400);
-  if (!gs || gs.phase !== 'action' || !currentPlayer()?.isAI) return;
-
-  await aiPerformActions();
-
-  await sleep(500);
-  if (!gs || gs.phase !== 'action' || !currentPlayer()?.isAI) return;
-
-  // ターン終了
-  endTurn();
-
-  await sleep(1600);
-  if (!gs || gs.phase !== 'event') return;
-
-  closeEvent();
+function getPlayerById(playerId) {
+  return gs?.players.find(p => p.id === playerId) || null;
 }
 
-function chooseBestRegion(regionIds) {
-  const p = currentPlayer();
-  let bestId = regionIds[0];
-  let bestScore = -Infinity;
-  for (const id of regionIds) {
-    let score = Math.random() * 0.5;
-    if (id === gs.destination) score += 10;
-    if (gs.regions[id]?.buildings.vineyard === p.id) score += 4;
-    const res = REGION_DATA[id]?.resource;
-    if (res) score += Math.max(0, 4 - (p.resources[res] || 0));
-    if (REGION_DATA[id]?.adjacent.some(a => gs.regions[a]?.buildings.winery === p.id)) score += 2;
-    if (score > bestScore) { bestScore = score; bestId = id; }
-  }
-  return bestId;
+function getSetIds() {
+  return [...new Set(Object.values(REGION_SET_MAP))];
 }
 
-async function aiPerformActions() {
-  const p = currentPlayer();
-  const regionId = p.position;
+function getSetProgress(player, setId) {
+  const regionIds = Object.keys(REGION_DATA).filter(id => getSetId(id) === setId && isRegionVisible(id, gs));
+  const owned = regionIds.filter(id => gs.regions[id]?.claimedBy === player.id).length;
+  return { count: owned, total: regionIds.length };
+}
+
+function claimRegion(player, regionId) {
   const region = gs.regions[regionId];
-  const hasCellar = p.buildings.some(b => b.type === 'cellar');
+  const meta = getRegionStrategy(regionId);
+  if (!region || !meta) return;
 
-  // 醸造（高VP優先）
-  if (hasWineryNear(p, regionId)) {
-    const best = WINE_RECIPES.filter(r => canPay(p.resources, r.cost)).sort((a, b) => b.vp - a.vp)[0];
-    if (best) { brew(best, hasCellar); await sleep(300); }
+  if (!player.visitedRegions.includes(regionId)) {
+    player.visitedRegions.push(regionId);
+    if (!region.discoveredBy.includes(player.id)) {
+      region.discoveredBy.push(player.id);
+    }
+    if (!player.cards.includes(regionId)) {
+      player.cards.push(regionId);
+    }
+    player.vp += 1;
+    addLog(`${player.name}が${meta.name}を初訪問 +1価値`, player);
   }
 
-  // 建設（畑 > 醸造所 > セラー）
-  for (const type of ['vineyard', 'winery', 'cellar']) {
-    if (!region.buildings[type] && canPay(p.resources, BUILDINGS[type].cost)) {
-      buildAt(type, regionId);
-      await sleep(300);
-      break;
+  if (!region.claimedBy) {
+    region.claimedBy = player.id;
+    region.claimedTurn = gs.turn;
+    let gain = meta.value;
+    if (gs.marketEvent && matchesMarketTarget(regionId, gs.marketEvent)) {
+      gain += gs.marketEvent.valueBonus || 0;
+    }
+    if (player.moveBonus > 0) {
+      gain += player.moveBonus;
+      player.moveBonus = 0;
+    }
+    player.vp += gain;
+    addLog(`${player.name}が${meta.name}を獲得 +${gain}価値`, player);
+    completeSetsForPlayer(player);
+    playClaimSound();
+    return;
+  }
+
+  if (region.claimedBy === player.id) {
+    addLog(`${player.name}は${meta.name}をすでに保有`, player);
+    return;
+  }
+
+  const owner = getPlayerById(region.claimedBy);
+  addLog(`${meta.name}は${owner?.name || '他プレイヤー'}が先取り済み`, player);
+}
+
+function completeSetsForPlayer(player) {
+  for (const setId of getSetIds()) {
+    if (player.completedSets.includes(setId)) continue;
+    const regionIds = Object.keys(REGION_DATA).filter(id => getSetId(id) === setId && isRegionVisible(id, gs));
+    if (!regionIds.length) continue;
+    const ownedCount = regionIds.filter(id => gs.regions[id]?.claimedBy === player.id).length;
+    if (ownedCount >= regionIds.length) {
+      const bonus = getSetBonus(setId);
+      player.completedSets.push(setId);
+      player.vp += bonus;
+      addLog(`${player.name}が${getSetLabel(setId)}を完成！+${bonus}価値`, player);
     }
   }
 }
 
-async function aiAutoQuiz() {
-  await sleep(900);
+function playStepSound() {
+  if (typeof window === 'undefined') return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = playStepSound.ctx || (playStepSound.ctx = new AudioContextClass());
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = 'triangle';
+  o.frequency.value = 440;
+  g.gain.value = 0.02;
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+  o.stop(ctx.currentTime + 0.09);
+}
+
+function playClaimSound() {
+  if (typeof window === 'undefined') return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = playClaimSound.ctx || (playClaimSound.ctx = new AudioContextClass());
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = 'sine';
+  o.frequency.value = 660;
+  g.gain.value = 0.03;
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+  o.stop(ctx.currentTime + 0.13);
+}
+
+function animateTokenMove(player, fromRegion, toRegion, duration = 250) {
+  return new Promise(resolve => {
+    const start = performance.now();
+    player.moveAnim = { from: fromRegion, to: toRegion, start, duration };
+
+    const tick = (now) => {
+      if (!player.moveAnim) return resolve();
+      const t = Math.min(1, (now - start) / duration);
+      if (t >= 1) {
+        player.moveAnim = null;
+        resolve();
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  });
+}
+
+function unlockZoneForRegion(regionId) {
   if (!gs) return;
-  const p = currentPlayer();
-  if (Math.random() < 0.35) {
-    p.vp++;
-    addLog(`${p.name}がクイズ正解！+1点`, p);
-    checkVictory();
-  } else {
-    addLog(`${p.name}がクイズに挑戦（不正解）`, p);
+  const meta = getRegionStrategy(regionId);
+  if (!meta) return;
+  if (!gs.unlockedZones.has(meta.zone)) {
+    gs.unlockedZones.add(meta.zone);
+    const zoneMembers = Object.keys(REGION_DATA).filter(id => getRegionStrategy(id)?.zone === meta.zone);
+    zoneMembers.forEach(id => {
+      if (!gs.visibleRegions.includes(id)) gs.visibleRegions.push(id);
+    });
+    addLog(`🗺 ${getZoneLabel(meta.zone)} が解放された`, null);
   }
-  renderAll();
-  nextPlayer();
+}
+
+function matchesMarketTarget(regionId, marketEvent) {
+  if (!marketEvent) return false;
+  const meta = getRegionStrategy(regionId);
+  if (!meta) return false;
+  const target = marketEvent.target || {};
+  if (target.climate && meta.climate !== target.climate) return false;
+  if (target.resource && meta.resource !== target.resource) return false;
+  if (target.zone && meta.zone !== target.zone) return false;
+  if (target.keyword && !meta.id.includes(target.keyword) && !meta.name.includes(target.keyword) && !(meta.specialEffect || '').includes(target.keyword)) return false;
+  return true;
+}
+
+function getAssetValue(player) {
+  return player.vp || 0;
+}
+
+function grantKnowledgeReward(player, q, source) {
+  const rewards = ['marketIntel', 'moveBonus'];
+  const reward = rewards[Math.floor(Math.random() * rewards.length)];
+  if (reward === 'marketIntel') {
+    player.moveBonus = (player.moveBonus || 0) + 1;
+    addLog(`${player.name}が市場のヒントを得た`, player);
+  } else {
+    player.moveBonus = (player.moveBonus || 0) + 1;
+    addLog(`${player.name}が次の収集を少し有利にする`, player);
+  }
+  if (source === 'event' && player.isAI) {
+    // AI の場合は即時継続
+  }
+}
+
+async function aiTakeTurn() {
+  if (!gs) return;
+  addLog('AIはMVP外のため自動操作は行いません', null);
+  endTurn();
+}
+
+function openRegionDexModal() {
+  const modal = document.getElementById('dexModal');
+  const grid = document.getElementById('dexGrid');
+  grid.innerHTML = '';
+  const visibleIds = getVisibleRegionIds(gs).slice().sort((a, b) => getRegionStrategy(b).value - getRegionStrategy(a).value);
+
+  for (const id of visibleIds) {
+    const meta = getRegionStrategy(id);
+    const card = document.createElement('div');
+    card.className = 'dex-card';
+    const discoveredBy = (gs.regions[id]?.discoveredBy || []).length;
+    const resourceTags = (meta.resources || []).map(r => RESOURCE_NAMES[r] || r).join(' / ');
+    card.innerHTML = `
+      <div class="dex-title">${meta.name}</div>
+      <div class="dex-sub">${meta.country} / ${meta.zone}</div>
+      <div class="dex-value">価値 ${meta.value}</div>
+      <div class="dex-meta">${meta.climate} / ${resourceTags}</div>
+      <div class="dex-effect">${meta.specialEffect}</div>
+      <div class="dex-foot">発見 ${discoveredBy}</div>
+    `;
+    grid.appendChild(card);
+  }
+  modal.classList.remove('hidden');
 }

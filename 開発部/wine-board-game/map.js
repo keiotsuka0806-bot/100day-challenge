@@ -9,32 +9,332 @@ const RESOURCE_COLORS = {
   pinot:      '#C0392B',
   chardonnay: '#C9A84C',
   riesling:   '#7AAE60',
-  blend:      '#7D3C98'
+  blend:      '#7D3C98',
+  gold:       '#D4AF37',
+  knowledge:  '#3A7BD5'
 };
 const RESOURCE_NAMES = {
   cabernet:   'カベルネ',
   pinot:      'ピノ・ノワール',
   chardonnay: 'シャルドネ',
   riesling:   'リースリング',
-  blend:      'ブレンド'
+  blend:      'ブレンド',
+  gold:       'ゴールド',
+  knowledge:  '知識'
 };
 const RESOURCE_ICONS = {
-  cabernet: '🍇', pinot: '🍷', chardonnay: '🌕', riesling: '🌿', blend: '🔮'
+  cabernet: '🍇', pinot: '🍷', chardonnay: '🌕', riesling: '🌿', blend: '🔮', gold: '🪙', knowledge: '🧭'
 };
+
+const STARTER_VISIBLE_REGION_IDS = [
+  'paris', 'champagne', 'chablis', 'alsace', 'burgundy',
+  'loire', 'touraine', 'anjou', 'muscadet', 'sancerre',
+  'bordeaux', 'medoc', 'sauternes', 'cognac', 'bergerac',
+  'rhone', 'beaujolais', 'macon', 'jura', 'pouillyfume'
+];
+
+const COUNTRY_ZONE_MAP = {
+  'フランス': 'france_core',
+  'スペイン': 'western_europe',
+  'ポルトガル': 'western_europe',
+  'モロッコ': 'western_europe',
+  'アルジェリア': 'western_europe',
+  'イタリア': 'mediterranean_arc',
+  'ギリシャ': 'mediterranean_arc',
+  'クロアチア': 'mediterranean_arc',
+  'スロヴェニア': 'mediterranean_arc',
+  'ボスニア': 'mediterranean_arc',
+  'トルコ': 'mediterranean_arc',
+  'キプロス': 'mediterranean_arc',
+  'イスラエル': 'mediterranean_arc',
+  'レバノン': 'mediterranean_arc',
+  'ジョージア': 'eastern_frontier',
+  'アルメニア': 'eastern_frontier',
+  'モルドバ': 'eastern_frontier',
+  'ルーマニア': 'eastern_frontier',
+  'ブルガリア': 'eastern_frontier',
+  'ハンガリー': 'central_europe',
+  'チェコ': 'central_europe',
+  'ドイツ': 'central_europe',
+  'オーストリア': 'central_europe',
+  'スイス': 'central_europe',
+  'カナダ': 'americas',
+  'アメリカ': 'americas',
+  'アルゼンチン': 'americas',
+  'チリ': 'americas',
+  '南アフリカ': 'southern_hemisphere',
+  'オーストラリア': 'southern_hemisphere',
+  'ニュージーランド': 'southern_hemisphere',
+  'ケニア': 'southern_hemisphere',
+  'エチオピア': 'southern_hemisphere',
+  '中国': 'asia_frontier',
+  '日本': 'asia_frontier'
+};
+
+const ZONE_LABELS = {
+  france_core: 'フランス',
+  western_europe: '西ヨーロッパ',
+  mediterranean_arc: '地中海圏',
+  central_europe: '中欧',
+  eastern_frontier: '東方圏',
+  americas: 'アメリカ大陸',
+  southern_hemisphere: '南半球',
+  asia_frontier: 'アジア圏',
+  frontier: 'フロンティア'
+};
+
+const REGION_SET_MAP = {
+  paris: 'paris_ring',
+  champagne: 'paris_ring',
+  chablis: 'paris_ring',
+  alsace: 'paris_ring',
+  burgundy: 'paris_ring',
+  loire: 'loire_loop',
+  touraine: 'loire_loop',
+  anjou: 'loire_loop',
+  muscadet: 'loire_loop',
+  sancerre: 'loire_loop',
+  bordeaux: 'atlantic',
+  medoc: 'atlantic',
+  sauternes: 'atlantic',
+  cognac: 'atlantic',
+  bergerac: 'atlantic',
+  rhone: 'rhone_arc',
+  beaujolais: 'rhone_arc',
+  macon: 'rhone_arc',
+  jura: 'rhone_arc',
+  pouillyfume: 'rhone_arc'
+};
+
+const SET_LABELS = {
+  paris_ring: 'パリ環状',
+  loire_loop: 'ロワール回廊',
+  atlantic: '大西洋回廊',
+  rhone_arc: 'ローヌ弧'
+};
+
+const SET_BONUSES = {
+  paris_ring: 9,
+  loire_loop: 9,
+  atlantic: 9,
+  rhone_arc: 9
+};
+
+const REGION_STRATEGY_OVERRIDES = {
+  paris: {
+    value: 8,
+    climate: 'Cool',
+    resources: ['knowledge', 'gold'],
+    specialEffect: '最初の分岐点。どのルートにもつながる'
+  },
+  burgundy: {
+    value: 9,
+    climate: 'Cool',
+    resources: ['pinot', 'knowledge'],
+    specialEffect: 'Pinot系市場イベント時に収益+2'
+  },
+  napa: {
+    value: 8,
+    climate: 'Warm',
+    resources: ['cabernet', 'gold'],
+    specialEffect: '工房建設コスト-1'
+  },
+  mosel: {
+    value: 7,
+    climate: 'Cool',
+    resources: ['riesling', 'knowledge'],
+    specialEffect: '知識チャレンジ成功時に追加カード+1'
+  },
+  champagne: {
+    value: 8,
+    climate: 'Cool',
+    resources: ['chardonnay', 'knowledge'],
+    specialEffect: 'Sparkling系市場イベント時に収益+3'
+  },
+  rioja: {
+    value: 7,
+    climate: 'Warm',
+    resources: ['blend', 'knowledge'],
+    specialEffect: '市場情報カードの効果+1'
+  },
+  douro: {
+    value: 7,
+    climate: 'Warm',
+    resources: ['blend', 'gold'],
+    specialEffect: '市場イベント時の収益+1'
+  },
+  tuscany: {
+    value: 8,
+    climate: 'Warm',
+    resources: ['blend', 'knowledge'],
+    specialEffect: '畑建設時に追加資源+1'
+  },
+  piedmont: {
+    value: 8,
+    climate: 'Cool',
+    resources: ['blend', 'knowledge'],
+    specialEffect: '高価値カードを先に取ると資産+1'
+  },
+  willamette: {
+    value: 7,
+    climate: 'Cool',
+    resources: ['pinot', 'knowledge'],
+    specialEffect: 'ピノ系の収益+1'
+  },
+  mendoza: {
+    value: 7,
+    climate: 'Dry',
+    resources: ['cabernet', 'gold'],
+    specialEffect: '市場イベントの影響を受けやすい'
+  },
+  maipo: {
+    value: 6,
+    climate: 'Warm',
+    resources: ['cabernet', 'knowledge'],
+    specialEffect: '建設コスト-1'
+  },
+  barossa: {
+    value: 8,
+    climate: 'Hot',
+    resources: ['cabernet', 'gold'],
+    specialEffect: '熱量系イベント時に収益+2'
+  },
+  marlborough: {
+    value: 8,
+    climate: 'Cool',
+    resources: ['riesling', 'knowledge'],
+    specialEffect: '市場情報カードを引きやすい'
+  },
+  capetown: {
+    value: 7,
+    climate: 'Warm',
+    resources: ['blend', 'knowledge'],
+    specialEffect: '貿易系イベント時に収益+2'
+  },
+  swartland: {
+    value: 6,
+    climate: 'Hot',
+    resources: ['blend', 'gold'],
+    specialEffect: '畑建設コスト-1'
+  },
+  tokaj: {
+    value: 7,
+    climate: 'Cool',
+    resources: ['riesling', 'knowledge'],
+    specialEffect: '知識報酬を市場情報に変換しやすい'
+  },
+  wachau: {
+    value: 7,
+    climate: 'Cool',
+    resources: ['riesling', 'knowledge'],
+    specialEffect: '隣接地域の価値+1'
+  },
+  jerez: {
+    value: 7,
+    climate: 'Warm',
+    resources: ['blend', 'gold'],
+    specialEffect: '交易収益+1'
+  },
+  priorat: {
+    value: 7,
+    climate: 'Warm',
+    resources: ['blend', 'knowledge'],
+    specialEffect: '高価値イベントの追い風を受けやすい'
+  }
+};
+
+function getRegionZone(region) {
+  return COUNTRY_ZONE_MAP[region.country] || 'frontier';
+}
+
+function getZoneLabel(zone) {
+  return ZONE_LABELS[zone] || zone;
+}
+
+function getSetId(regionId) {
+  return REGION_SET_MAP[regionId] || null;
+}
+
+function getSetLabel(setId) {
+  return SET_LABELS[setId] || setId || '';
+}
+
+function getSetBonus(setId) {
+  return SET_BONUSES[setId] || 0;
+}
+
+function inferClimate(region) {
+  const y = region.y;
+  if (region.country === 'オーストラリア' || region.country === '南アフリカ') return y > 650 ? 'Hot' : 'Warm';
+  if (region.country === 'ニュージーランド' || region.country === 'カナダ' || region.country === 'ドイツ' || region.country === 'スイス') return 'Cool';
+  if (y < 220) return 'Cool';
+  if (y < 420) return 'Temperate';
+  if (y < 620) return 'Warm';
+  return 'Hot';
+}
+
+function getDefaultRegionValue(region) {
+  const base = { cabernet: 6, pinot: 7, chardonnay: 5, riesling: 5, blend: 6 };
+  return base[region.resource] || 5;
+}
+
+function getRegionStrategy(regionId) {
+  const region = REGION_DATA[regionId];
+  if (!region) return null;
+  const override = REGION_STRATEGY_OVERRIDES[regionId] || {};
+  const zone = getRegionZone(region);
+  const setId = getSetId(regionId);
+  return {
+    id: regionId,
+    name: region.name,
+    country: region.country,
+    zone,
+    setId,
+    setLabel: getSetLabel(setId),
+    climate: override.climate || inferClimate(region),
+    resource: region.resource,
+    value: override.value ?? getDefaultRegionValue(region),
+    resources: override.resources || [region.resource],
+    specialEffect: override.specialEffect || '市場と建設の組み合わせで価値が上がる',
+    x: region.x,
+    y: region.y,
+    adjacent: region.adjacent
+  };
+}
+
+function getVisibleRegionIds(state) {
+  const visible = new Set(STARTER_VISIBLE_REGION_IDS);
+  if (!state) return [...visible];
+
+  if (Array.isArray(state.visibleRegions)) {
+    state.visibleRegions.forEach(id => visible.add(id));
+  }
+  if (state.unlockedZones) {
+    for (const [id, region] of Object.entries(REGION_DATA)) {
+      if (state.unlockedZones.has(getRegionZone(region))) visible.add(id);
+    }
+  }
+  return [...visible];
+}
+
+function isRegionVisible(regionId, state) {
+  return getVisibleRegionIds(state).includes(regionId);
+}
 
 // ===== 産地定義（260産地）=====
 const REGION_DATA = {
 
   // ===== フランス (30) =====
+  paris:       { name: 'パリ',               country: 'フランス', resource: 'knowledge', x: 430, y: 118, adjacent: ['champagne','burgundy','loire'] },
   muscadet:    { name: 'ミュスカデ',         country: 'フランス', resource: 'riesling',   x: 278, y: 168, adjacent: ['loire','cognac'] },
   touraine:    { name: 'トゥーレーヌ',       country: 'フランス', resource: 'riesling',   x: 355, y: 148, adjacent: ['muscadet','sancerre','loire'] },
   anjou:       { name: 'アンジュー',         country: 'フランス', resource: 'blend',      x: 318, y: 155, adjacent: ['muscadet','touraine','loire'] },
   sancerre:    { name: 'サンセール',         country: 'フランス', resource: 'riesling',   x: 470, y: 172, adjacent: ['touraine','pouillyfume','chablis'] },
   pouillyfume: { name: 'プイィ・フュメ',     country: 'フランス', resource: 'riesling',   x: 490, y: 190, adjacent: ['sancerre','chablis','burgundy'] },
-  champagne:   { name: 'シャンパーニュ',     country: 'フランス', resource: 'chardonnay', x: 482, y: 108, adjacent: ['sancerre','alsace','burgundy','chablis'] },
+  champagne:   { name: 'シャンパーニュ',     country: 'フランス', resource: 'chardonnay', x: 482, y: 108, adjacent: ['paris','sancerre','alsace','burgundy','chablis'] },
   chablis:     { name: 'シャブリ',           country: 'フランス', resource: 'chardonnay', x: 506, y: 196, adjacent: ['champagne','sancerre','pouillyfume','burgundy'] },
   alsace:      { name: 'アルザス',           country: 'フランス', resource: 'riesling',   x: 602, y: 128, adjacent: ['champagne','mosel','jura','burgundy'] },
-  loire:       { name: 'ロワール',           country: 'フランス', resource: 'riesling',   x: 324, y: 162, adjacent: ['champagne','bordeaux','touraine','anjou','muscadet'] },
+  loire:       { name: 'ロワール',           country: 'フランス', resource: 'riesling',   x: 324, y: 162, adjacent: ['paris','champagne','bordeaux','touraine','anjou','muscadet'] },
   bordeaux:    { name: 'ボルドー',           country: 'フランス', resource: 'cabernet',   x: 362, y: 272, adjacent: ['loire','rioja','burgundy','cognac','bergerac','madiran'] },
   medoc:       { name: 'メドック',           country: 'フランス', resource: 'cabernet',   x: 338, y: 295, adjacent: ['bordeaux','cognac'] },
   sauternes:   { name: 'ソーテルヌ',         country: 'フランス', resource: 'chardonnay', x: 358, y: 312, adjacent: ['bordeaux','bergerac'] },
@@ -43,7 +343,7 @@ const REGION_DATA = {
   cahors:      { name: 'カオール',           country: 'フランス', resource: 'blend',      x: 402, y: 350, adjacent: ['bergerac','armagnac','madiran'] },
   armagnac:    { name: 'アルマニャック',     country: 'フランス', resource: 'blend',      x: 352, y: 385, adjacent: ['cahors','madiran'] },
   madiran:     { name: 'マディラン',         country: 'フランス', resource: 'blend',      x: 368, y: 418, adjacent: ['armagnac','cahors','rioja','vinhoverdo'] },
-  burgundy:    { name: 'ブルゴーニュ',       country: 'フランス', resource: 'pinot',      x: 530, y: 250, adjacent: ['champagne','alsace','bordeaux','rhone','beaujolais','chablis','jura','macon'] },
+  burgundy:    { name: 'ブルゴーニュ',       country: 'フランス', resource: 'pinot',      x: 530, y: 250, adjacent: ['paris','champagne','alsace','bordeaux','rhone','beaujolais','chablis','jura','macon'] },
   cotenuits:   { name: 'コート・ド・ニュイ', country: 'フランス', resource: 'pinot',      x: 548, y: 268, adjacent: ['burgundy','cotebeaune'] },
   cotebeaune:  { name: 'コート・ド・ボーヌ', country: 'フランス', resource: 'chardonnay', x: 548, y: 292, adjacent: ['cotenuits','macon','beaujolais'] },
   macon:       { name: 'マコネー',           country: 'フランス', resource: 'chardonnay', x: 536, y: 318, adjacent: ['burgundy','cotebeaune','beaujolais'] },
@@ -612,16 +912,18 @@ function drawOcean(ctx, time) {
 // ===== ルート線 =====
 const SQUARE_ICONS = { trivia:'📖', tasting:'🍷', market:'🛒', event:'🎲' };
 
-function drawConnections(ctx) {
+function drawConnections(ctx, state) {
   ctx.save();
+  const visible = new Set(getVisibleRegionIds(state));
   const drawn = new Set();
   for (const [id, region] of Object.entries(REGION_DATA)) {
+    if (!visible.has(id)) continue;
     for (const adjId of region.adjacent) {
       const key = [id, adjId].sort().join('-');
       if (drawn.has(key)) continue;
       drawn.add(key);
       const adj = REGION_DATA[adjId];
-      if (!adj) continue;
+      if (!adj || !visible.has(adjId)) continue;
       const overseas = isOverseasRoute(id, adjId);
       const squares = getRouteSquares(id, adjId);
       const total = squares.length + 2;
@@ -668,17 +970,21 @@ function renderMap(canvas, state, time = 0) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
   drawOcean(ctx, time);
-  drawConnections(ctx);
+  drawConnections(ctx, state);
 
   const regions  = state ? state.regions : REGION_DATA;
   const reachable = state ? (state.reachableRegions || []) : [];
   const players  = state ? state.players : [];
   const curPlayer = state ? players[state.currentPlayerIndex] : null;
+  const visibleRegions = new Set(getVisibleRegionIds(state));
 
   for (const [id, region] of Object.entries(REGION_DATA)) {
+    if (!visibleRegions.has(id)) continue;
     const isReachable   = reachable.includes(id);
     const isCurrentPos  = curPlayer && curPlayer.position === id;
     const isDestination = state && state.destination === id;
+    const regionState = regions[id] || {};
+    const ownerPlayer = state && regionState.claimedBy ? players.find(p => p.id === regionState.claimedBy) : null;
 
     const base  = RESOURCE_COLORS[region.resource];
     const fill  = blendColor(base, '#080300', 0.5);
@@ -701,7 +1007,8 @@ function renderMap(canvas, state, time = 0) {
       ctx.restore();
     }
 
-    const strokeColor = isReachable ? '#FFD700'
+    const strokeColor = ownerPlayer ? ownerPlayer.color
+      : isReachable ? '#FFD700'
       : isCurrentPos ? '#ffffff'
       : isDestination ? '#FF6060'
       : blendColor(base, '#111', 0.4);
@@ -768,9 +1075,16 @@ function renderMap(canvas, state, time = 0) {
     const p = players[i];
     const region = REGION_DATA[p.position];
     if (!region) continue;
+    const anim = p.moveAnim;
+    const fromRegion = anim ? anim.from : region;
+    const toRegion = anim ? anim.to : region;
+    const progress = anim ? Math.min(1, (time - anim.start) / anim.duration) : 1;
+    const eased = anim ? (1 - Math.pow(1 - Math.max(0, progress), 2)) : 1;
+    const txBase = anim ? fromRegion.x + (toRegion.x - fromRegion.x) * eased : region.x;
+    const tyBase = anim ? fromRegion.y + (toRegion.y - fromRegion.y) * eased : region.y;
     const off = getTokenOffset(i, players, p.position);
-    const tx = region.x + off.x;
-    const ty = region.y + off.y;
+    const tx = txBase + off.x;
+    const ty = tyBase + off.y;
     const r  = HEX_RADIUS * 0.58;
     const isActive = state && state.currentPlayerIndex === i;
 
@@ -810,6 +1124,25 @@ function renderMap(canvas, state, time = 0) {
     ctx.fillText(i + 1, tx, ty);
     ctx.restore();
   }
+
+  if (state) {
+    const wrapper = document.querySelector('.map-wrapper');
+    const active = players[state.currentPlayerIndex];
+    if (wrapper && active) {
+      const activeAnim = active.moveAnim;
+      const activeRegion = activeAnim ? activeAnim.to : REGION_DATA[active.position];
+      if (activeRegion) {
+        const focusX = activeAnim
+          ? activeAnim.from.x + (activeAnim.to.x - activeAnim.from.x) * Math.min(1, (time - activeAnim.start) / activeAnim.duration)
+          : activeRegion.x;
+        const focusY = activeAnim
+          ? activeAnim.from.y + (activeAnim.to.y - activeAnim.from.y) * Math.min(1, (time - activeAnim.start) / activeAnim.duration)
+          : activeRegion.y;
+        wrapper.scrollLeft = Math.max(0, focusX - wrapper.clientWidth / 2);
+        wrapper.scrollTop = Math.max(0, focusY - wrapper.clientHeight / 2);
+      }
+    }
+  }
 }
 
 function lightenColor(hex, amount) {
@@ -829,9 +1162,11 @@ function getTokenOffset(playerIndex, players, posId) {
   return offsets[myIdx] || {x:(myIdx-1)*10, y:HEX_RADIUS+4};
 }
 
-function getRegionAtPoint(x, y) {
+function getRegionAtPoint(x, y, state) {
+  const visibleRegions = new Set(getVisibleRegionIds(state));
   let closest = null, closestDist = HEX_RADIUS * 1.1;
   for (const [id, region] of Object.entries(REGION_DATA)) {
+    if (!visibleRegions.has(id)) continue;
     const d = Math.sqrt((x-region.x)**2 + (y-region.y)**2);
     if (d < closestDist) { closest = id; closestDist = d; }
   }

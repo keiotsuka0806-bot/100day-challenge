@@ -143,11 +143,21 @@ html, body {
 .player-vp { font-size: 18px; font-weight: 800; color: var(--gold); }
 .player-vp-label { font-size: 9px; color: var(--text-muted); }
 .player-location { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.resource-list { display: flex; flex-wrap: wrap; gap: 3px; }
-.res-chip { display: flex; align-items: center; gap: 2px; background: var(--bg-panel); border-radius: 4px; padding: 2px 4px; font-size: 10px; }
-.res-dot { width: 6px; height: 6px; border-radius: 50%; }
-.player-buildings { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 3px; }
-.building-tag { background: var(--bg-panel); border-radius: 4px; padding: 2px 4px; font-size: 10px; }
+.player-stats { font-size: 10px; color: var(--gold); margin-bottom: 4px; }
+.player-cards, .player-sets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.card-tag, .set-chip {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+.set-chip.done {
+  color: var(--gold);
+  border-color: rgba(201,168,76,0.55);
+  background: rgba(201,168,76,0.12);
+}
 
 /* ===== Map (中央) ===== */
 .map-wrapper {
@@ -171,6 +181,8 @@ html, body {
 }
 .region-tooltip .tt-name { font-weight: 700; color: var(--gold); font-size: 14px; }
 .region-tooltip .tt-country { color: var(--text-muted); }
+.region-tooltip .tt-meta { color: #9bc6ff; font-size: 11px; }
+.region-tooltip .tt-effect { color: #f0d7a4; white-space: normal; max-width: 260px; }
 
 .help-btn {
   position: absolute; bottom: 12px; right: 12px;
@@ -194,6 +206,16 @@ html, body {
 }
 .turn-info .current-player { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
 .turn-info .turn-num { font-size: 10px; color: var(--gold); }
+.market-chip {
+  margin-top: 6px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(201,168,76,0.14);
+  border: 1px solid rgba(201,168,76,0.28);
+  color: var(--gold);
+  font-size: 10px;
+  line-height: 1.2;
+}
 
 .phase-panel {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -226,7 +248,7 @@ html, body {
 
 /* アクションフェーズ */
 .landed-name { font-size: 14px; font-weight: 700; color: var(--gold); text-align: center; }
-.collected-res { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--green); min-height: 16px; }
+.collected-res { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--green); min-height: 16px; flex-wrap: wrap; text-align: center; }
 .action-btns { display: flex; gap: 5px; }
 
 /* イベント */
@@ -254,6 +276,7 @@ html, body {
   width: 90%; max-width: 460px; max-height: 85vh;
   overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
 }
+.dex-box { max-width: 860px; }
 .modal-box h3 { font-size: 17px; color: var(--gold); }
 .modal-subtitle { font-size: 12px; color: var(--text-muted); }
 .option-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -268,6 +291,25 @@ html, body {
 .option-card .opt-cost { font-size: 11px; color: var(--text-muted); }
 .option-card .opt-effect { font-size: 11px; color: var(--green); }
 .option-card .opt-vp { font-size: 13px; color: var(--gold); font-weight: 700; }
+
+.dex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.dex-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dex-title { font-size: 14px; font-weight: 700; color: var(--gold); }
+.dex-sub, .dex-meta, .dex-foot { font-size: 10px; color: var(--text-muted); }
+.dex-value { font-size: 12px; color: var(--text); }
+.dex-effect { font-size: 11px; color: #f0d7a4; line-height: 1.4; }
 
 /* 遊び方 */
 .howto-box { max-width: 520px; }

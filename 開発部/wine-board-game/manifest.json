@@ -1,7 +1,7 @@
 {
-  "name": "VinRoute — ワインボードゲーム",
+  "name": "VinRoute — 産地交易ゲーム",
   "short_name": "VinRoute",
-  "description": "世界のワイン産地を旅するボードゲーム",
+  "description": "分岐ルートを旅して産地カードを集めるボードゲーム",
   "start_url": "/wine-board-game/",
   "display": "standalone",
   "background_color": "#0d0500",
