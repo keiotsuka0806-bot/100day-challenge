@@ -198,6 +198,7 @@ hookを入れ直す場合は以下を実行する。
 
 ### 旧体制の痕跡と復元方法
 
+- **クラウドルーティン6本**（claude.ai/code/routines のスケジュールエージェント: 企画部アイデア生成 / Daily Org Improvement Report / 夜の自動Retrospective / job-scout / 夜間リサーチエージェント / nightly-tech-research-kikakubu）は 2026-06-11 に全て無効化済み。設定とプロンプトは https://claude.ai/code/routines に残っており、再有効化すれば復活する
 - launchd plist 4件は `~/Library/LaunchAgents.disabled/` に退避済み（`com.100daychallenge.*`）。戻せば自動実行が復活するが、6/15以降はクレジットを消費する
 - `運用部/scripts/routine-*.sh`、`run-in-automation-worktree.sh`、`automation-push-main.sh`、`automation-ownership-check.sh` は記録として残しているが **現在は未使用**
 - automation worktree（`/Users/kei/dev/.automation-worktrees/`）と `automation/*` ブランチは削除済み（未マージのコミットは無かった）
