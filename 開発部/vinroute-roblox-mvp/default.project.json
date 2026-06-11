@@ -1,0 +1,26 @@
+{
+  "name": "VinRouteRobloxMvp",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "VinRoute": {
+        "$path": "ReplicatedStorage/VinRoute"
+      }
+    },
+    "ServerScriptService": {
+      "VinRouteServer": {
+        "$path": "ServerScriptService/VinRouteServer"
+      }
+    },
+    "StarterGui": {
+      "VinRouteGui": {
+        "$path": "StarterGui/VinRouteGui"
+      }
+    },
+    "Workspace": {
+      "VinRouteBoard": {
+        "$path": "Workspace/VinRouteBoard"
+      }
+    }
+  }
+}
