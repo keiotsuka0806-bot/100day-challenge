@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeSanitizer — AI生成コードのセキュリティチェッカー</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0f">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo-wrap">
+      <span class="logo-icon">🧹</span>
+      <div>
+        <h1>VibeSanitizer</h1>
+        <p class="subtitle">Vibe coding のセキュリティリスクを瞬時スキャン</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- 左: コード入力 -->
+    <section class="panel panel-input">
+      <div class="panel-header">
+        <h2>コードを貼り付け</h2>
+        <span id="lang-badge" class="lang-badge hidden"></span>
+      </div>
+      <textarea
+        id="code-input"
+        class="code-area"
+        placeholder="Cursor / Copilot / Lovable で生成したコードをここに貼り付け..."
+        spellcheck="false"
+      ></textarea>
+      <div class="input-footer">
+        <span id="line-count" class="line-count">0 行</span>
+        <button id="clear-btn" class="btn-ghost">クリア</button>
+        <button id="scan-btn" class="btn-primary" disabled>
+          <span class="btn-text">🔍 スキャン</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 右: 結果 -->
+    <section class="panel panel-result">
+
+      <!-- 空状態 -->
+      <div id="state-empty" class="state-empty">
+        <div class="state-icon">🛡️</div>
+        <p>コードを貼り付けて<br>スキャンを実行してください</p>
+      </div>
+
+      <!-- ローディング -->
+      <div id="state-loading" class="state-loading hidden">
+        <div class="spinner"></div>
+        <p>Claude がスキャン中...</p>
+      </div>
+
+      <!-- 結果 -->
+      <div id="state-result" class="hidden">
+        <!-- スコア -->
+        <div class="score-section">
+          <div id="score-ring" class="score-ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="42"/>
+              <circle id="ring-fill" class="ring-fill" cx="50" cy="50" r="42"
+                stroke-dasharray="264" stroke-dashoffset="264"/>
+            </svg>
+            <div class="score-inner">
+              <span id="score-num" class="score-num">—</span>
+              <span class="score-label">安全度</span>
+            </div>
+          </div>
+          <div class="score-meta">
+            <div id="score-verdict" class="score-verdict"></div>
+            <div id="issue-summary" class="issue-summary"></div>
+            <div class="result-actions">
+              <button id="copy-btn" class="btn-sm">📋 コピー</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 問題カード一覧 -->
+        <div id="issue-list" class="issue-list"></div>
+
+        <!-- 問題なし -->
+        <div id="no-issues" class="no-issues hidden">
+          <span>✅</span>
+          <p>問題は検出されませんでした</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
