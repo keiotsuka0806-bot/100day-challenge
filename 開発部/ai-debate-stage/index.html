@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="description" content="AIが賛否両論で本気討論。あなたはどちらを支持する？">
+  <title>AI Debate Stage</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ① イントロ画面 -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-inner">
+      <div class="logo-area">
+        <div class="logo-icon">⚔️</div>
+        <h1>AI Debate Stage</h1>
+        <p class="subtitle">AIが賛否両論で本気討論。<br>あなたはどちらを支持する？</p>
+      </div>
+
+      <div class="input-area">
+        <input
+          type="text"
+          id="topic-input"
+          placeholder="討論テーマを入力…（例：週4日労働制を導入すべきか）"
+          maxlength="60"
+          autocomplete="off"
+        >
+        <p id="topic-error" class="topic-error"></p>
+        <div class="examples">
+          <span class="ex-label">テーマ例：</span>
+          <button class="ex-btn" data-topic="AIはクリエイターの仕事を奪うか">AIとクリエイター</button>
+          <button class="ex-btn" data-topic="リモートワークは生産性を上げるか">リモートワーク</button>
+          <button class="ex-btn" data-topic="週4日労働制は導入すべきか">週4日労働</button>
+          <button class="ex-btn" data-topic="SNSは人を幸福にするか">SNSと幸福</button>
+          <button id="prev-topic-btn" class="ex-btn prev-topic-btn" style="display:none"></button>
+        </div>
+        <button id="start-btn">討論を開始する →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 討論画面 -->
+  <div id="screen-debate" class="screen">
+    <header class="debate-header">
+      <div class="side-chip pro">推進派</div>
+      <div class="header-topic" id="header-topic"></div>
+      <div class="side-chip con">懐疑派</div>
+    </header>
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-label" id="progress-label">ターン 0 / 6</span>
+    </div>
+    <div class="debate-arena" id="debate-arena"></div>
+    <div class="thinking-bar" id="thinking-bar">
+      <span id="thinking-label"></span>が考えています<span class="dots"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+
+  <!-- ③ 投票・結果画面 -->
+  <div id="screen-result" class="screen">
+    <div class="result-inner">
+      <h2>討論終了！</h2>
+      <p class="result-topic" id="result-topic"></p>
+
+      <!-- 討論ログ（投票前に読み返せる） -->
+      <div class="debate-log-section">
+        <button id="debate-log-toggle" class="debate-log-toggle">討論を振り返る ▼</button>
+        <div id="debate-log-content" class="debate-log-content"></div>
+      </div>
+
+      <p class="vote-heading">どちらの主張が説得力がありましたか？</p>
+
+      <div class="vote-row" id="vote-row">
+        <button class="vote-btn pro-btn" data-result="pro">
+          <span class="vote-icon">🔵</span>
+          <span class="vote-name">推進派</span>
+          <span class="vote-win">の勝ち</span>
+        </button>
+        <button class="vote-btn draw-btn" data-result="draw">
+          <span class="vote-icon">🤝</span>
+          <span class="vote-name">引き分け</span>
+        </button>
+        <button class="vote-btn con-btn" data-result="con">
+          <span class="vote-icon">🔴</span>
+          <span class="vote-name">懐疑派</span>
+          <span class="vote-win">の勝ち</span>
+        </button>
+      </div>
+
+      <div class="winner-panel" id="winner-panel">
+        <div class="winner-text" id="winner-text"></div>
+        <div class="action-row">
+          <button class="action-btn share-btn" id="share-btn">📋 シェア文をコピー</button>
+          <button class="action-btn retry-btn" id="retry-btn">🔄 別のテーマで討論</button>
+        </div>
+        <p class="copied-msg" id="copied-msg">コピーしました！</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
+  </script>
+</body>
+</html>
