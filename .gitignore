@@ -16,9 +16,9 @@ node_modules/
 .agents/
 **/.agents/
 skills-lock.json
-.claude/
-記憶庫/
-運用部/
+.claude/*
+!.claude/skills/
+運用部/logs/
 並行プロジェクト管理ガイド.md
 企画部/IDEA_LOG.md
 
