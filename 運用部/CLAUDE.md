@@ -184,48 +184,133 @@ hookを入れ直す場合は以下を実行する。
 運用部/scripts/install-git-hooks.sh
 ```
 
-## Automation Worktrees
+## Morning Routine（朝会）
 
-自動で `git commit` / `git push` する朝ルーティンは、メイン作業ツリーではなく `/Users/kei/dev/.automation-worktrees/100day-challenge/` 配下の専用 worktree で実行する。
+旧・夜間自動ルーティン4本（kikakubu / org-report / retrospective / job-scout）は、2026-06-15のAnthropic課金変更（ヘッドレス実行・Agent SDK等が月次クレジット制になる）に伴い **2026-06-11に全廃** した。同じ業務は `.claude/skills/morning-routine/SKILL.md`（朝会スキル）に統合済みで、Claude Codeの対話セッション（課金枠の対象外）で実行する。
 
-各ルーティンは最初に `運用部/scripts/run-in-automation-worktree.sh` へ自己委譲する。これにより、Keiの手元作業がメイン worktree に残っていても、AIルーティンは専用ブランチ `automation/[routine]` 上で clean tree から始める。
+運用方法: 朝、Claude Codeを開いて「朝会して」と言う。1セッションで以下を順に実行する。
 
-automation worktree から main に反映する場合、push は `運用部/scripts/automation-push-main.sh [routine]` を使う。通常の `git push` や `git push origin main` は使わない。
+1. 記憶庫レトロスペクティブ（昨日分）
+2. 企画部 今日の企画10案
+3. 組織改善レポート
+4. Job Scout
+5. スコープ単位のcommit & push
 
-### Routine Ownership
+### 旧体制の痕跡と復元方法
 
-各ルーティンは commit 前に `運用部/scripts/automation-ownership-check.sh` で担当範囲を検査する。`AUTOMATION_ROUTINE` が設定された automation worktree では、pre-commit から自動実行される。
-
-| Routine | 触ってよい範囲 |
-|---|---|
-| `kikakubu` | `企画部/specs/*-idea*.md`, `企画部/research/*.md`, `企画部/IDEA_LOG.md` |
-| `org-report` | `運用部/reports/org-improvement-*.md`, `運用部/org-improvement/*.md` |
-| `retrospective` | `記憶庫/lessons.md`, `記憶庫/reusable-patterns.md`, `記憶庫/decisions.md` |
-| `job-scout` | `運用部/reports/job-scout-*.md`, `運用部/job-scout/seen-jobs.json` |
-
-### Automation Report
-
-`run-in-automation-worktree.sh` は各実行後に `運用部/reports/automation-YYYY-MM-DD.md` へ、exit code、worktree、before/after commit、作業ツリー状態、ログパスを追記する。朝の確認ではまずこのファイルを見る。
+- launchd plist 4件は `~/Library/LaunchAgents.disabled/` に退避済み（`com.100daychallenge.*`）。戻せば自動実行が復活するが、6/15以降はクレジットを消費する
+- `運用部/scripts/routine-*.sh`、`run-in-automation-worktree.sh`、`automation-push-main.sh`、`automation-ownership-check.sh` は記録として残しているが **現在は未使用**
+- automation worktree（`/Users/kei/dev/.automation-worktrees/`）と `automation/*` ブランチは削除済み（未マージのコミットは無かった）
+- 経緯の詳細は `記憶庫/decisions.md` の 2026-06-11 エントリを参照
 
 ### Organization Health Check
 
 組織の定点観測は `運用部/scripts/organization-health-check.sh` で行う。`運用部/reports/organization-health-YYYY-MM-DD.md` を出力し、`共有可能` の数、`要修正` の数、今日の学び、混入リスク、次の1手を固定で記録する。
 
-### Push Conflict Handling
-
-`automation-push-main.sh` は `origin/main` を fetch して rebase してから `HEAD:main` へpushする。push reject時はもう一度 fetch/rebase/push を試す。rebase conflict または retry失敗時は `運用部/reports/automation-YYYY-MM-DD.md` と `運用部/logs/automation-push-[routine].log` に状態を残して停止する。
-
 ## 日次レポート形式
 
-「日報更新して」と言われたら、以下の3ファイルをすべて作成・更新する。
+「日報更新して」と言われたら、以下を**同時に**一括で行う。
+
+1. その日の運用日報を作成・更新する
+2. Obsidian の **3フォルダすべて** を更新する（どれか1つでも欠けてはいけない）
+3. その日に変化したプロジェクトがあれば `project-registry.json` と Obsidian のプロジェクトノートも更新する
 
 | ファイル | パス |
 |---|---|
 | Daily Control Sheet | `運用部/daily/YYYY-MM-DD.md` |
-| Obsidian 日報（100日チャレンジ） | `/Users/kei/Documents/Kei/100 Day Challenge/日報/YYYY-MM-DD.md` |
-| Obsidian 日報（root） | `/Users/kei/Documents/Kei/日報/YYYY-MM-DD.md` |
+| Obsidian 100日チャレンジ日報 | `/Users/kei/Documents/Kei/100 Day Challenge/100日チャレンジ日報/YYYY-MM-DD.md` |
+| Obsidian 日報 | `/Users/kei/Documents/Kei/100 Day Challenge/日報/YYYY-MM-DD.md` |
+| Obsidian プロジェクトノート | `/Users/kei/Documents/Kei/100 Day Challenge/プロジェクト/Day N [Project].md` |
 
-Obsidian の root 日報は `100 Day Challenge/日報/` と同じ内容をコピーする。
+`100日チャレンジ日報/` と `日報/` は同じ内容でよい。
+
+### Obsidian 日報のフォーマット（必須）
+
+必ず過去ファイル（`日報/YYYY-MM-DD.md` の直近ファイル）を読んでから書く。
+
+```markdown
+## 日報
+
+### 今日の一言
+[1〜2文]
+
+---
+
+### 今日の成果
+[プロジェクト1件につき以下の表を1つ。複数あれば並べる]
+
+| 項目 | 内容 |
+| --- | --- |
+| 本日の選定 | [プロジェクト名] |
+| 完成物 | [説明] |
+| URL | https://... |
+| 状態 | デプロイ済み / 開発中 |
+| 主な技術 | [スタック] |
+
+---
+
+### 今日の流れ
+1. ...
+
+---
+
+### 開発部
+**[プロジェクト名]** ✅/🟡 [一言ステータス]
+[説明]
+#### 実装済み機能
+| 機能 | 状態 |
+| --- | --- |
+| ... | ✅ |   ← ✅ を使う。「完了」は使わない
+
+---
+
+### 運用部
+- [デプロイ・設定変更の箇条書き]
+
+---
+
+### 今日の学び
+- [箇条書き]
+
+---
+
+### 途中プロジェクト
+| プロジェクト | 場所 | 状態 | 次に見ること |
+| --- | --- | --- | --- |
+
+---
+
+### Next Action
+- [ ] ...
+```
+
+### Obsidian プロジェクトノートのフォーマット（必須）
+
+- **デプロイ済みプロジェクト** → `Day N [ProjectName].md`（N は通し番号。デプロイされるたびに増やす）
+- **構想・企画段階** → `企画 [ProjectName].md`（Day 番号はつけない）
+
+```markdown
+# Day N [ProjectName]
+
+## 概要
+## 実装場所
+## 共有URL
+## 実装したこと
+[✅ テーブル]
+## 今日の判断
+[箇条書き]
+## 確認
+[箇条書き]
+## 次の改善候補
+[箇条書き]
+```
+
+`日報更新` に含まれる「プロジェクト更新」は、次のどれかを指す。
+
+- `運用部/project-registry.json` の status / url / lastDeploy / lastCouncil / lastReleaseCheck を更新する
+- 変更のあったプロジェクトの `SHARE.md` や運用メモがあれば更新する
+- 対応する Obsidian のプロジェクトノートを更新する
+- 共有可能になったプロジェクトがあれば日報の「稼働中プロジェクト」と `project-registry.json` を一致させる
 
 `reports/YYYY-MM-DD.md` に以下の形式で保存する:
 
