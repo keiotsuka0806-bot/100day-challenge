@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会議コストメーター</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+
+  <!-- 設定画面 -->
+  <div id="screen-setup" class="screen active">
+    <header>
+      <div class="logo">💸</div>
+      <h1>会議コストメーター</h1>
+      <p class="subtitle">この会議、本当に必要ですか？</p>
+    </header>
+
+    <section class="section">
+      <h2>参加者を設定</h2>
+      <div id="participant-list"></div>
+      <button id="add-participant" class="btn-secondary">＋ 役職を追加</button>
+    </section>
+
+    <div class="total-preview">
+      <span class="total-label">合計コスト</span>
+      <span id="total-hourly">0</span>
+      <span class="total-unit">円 / 月（合計）</span>
+    </div>
+
+    <button id="start-btn" class="btn-primary">▶ タイマースタート</button>
+
+    <section class="section history-section">
+      <h2>過去の会議</h2>
+      <div id="history-list"></div>
+    </section>
+  </div>
+
+  <!-- カウンター画面 -->
+  <div id="screen-counter" class="screen">
+    <div class="counter-wrap">
+      <div class="cost-label">この会議のコスト</div>
+      <div id="cost-value" class="cost-value">¥0</div>
+      <div id="elapsed-time" class="elapsed-time">00:00</div>
+    </div>
+    <div id="buy-list" class="buy-list"></div>
+    <button id="stop-btn" class="btn-danger">■ 会議終了</button>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="screen-result" class="screen">
+    <div id="result-card" class="result-card">
+      <div class="result-header">💸 会議コスト報告</div>
+      <div id="result-cost" class="result-cost"></div>
+      <div id="result-time" class="result-meta"></div>
+      <div id="result-members" class="result-meta"></div>
+      <div id="result-buys" class="result-buys"></div>
+    </div>
+    <div class="result-actions">
+      <button id="share-btn" class="btn-primary">📸 画像で保存</button>
+      <button id="tweet-btn" class="btn-twitter">𝕏 にポスト</button>
+      <button id="restart-btn" class="btn-secondary">もう一度</button>
+    </div>
+  </div>
+
+  <script src="app.js?v=3" defer></script>
+</body>
+</html>

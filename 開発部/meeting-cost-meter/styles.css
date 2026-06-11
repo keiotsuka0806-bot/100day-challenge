@@ -1,0 +1,146 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #ff6b6b;
+  --primary-dark: #e55555;
+  --bg: #0d0d1a;
+  --bg2: #16213e;
+  --surface: #1e2d50;
+  --text: #f0f0f0;
+  --muted: #7a8aaa;
+  --danger: #e74c3c;
+  --twitter: #1d9bf0;
+  --green: #2ecc71;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Screens ── */
+.screen { display: none; padding: 20px; max-width: 560px; margin: 0 auto; }
+.screen.active { display: block; }
+#screen-counter.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+
+/* ── Setup ── */
+header { text-align: center; padding: 32px 0 24px; }
+.logo { font-size: 48px; line-height: 1; margin-bottom: 8px; }
+h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.subtitle { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+.section { margin-top: 28px; }
+h2 { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+.participant-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg2); border-radius: 14px; padding: 14px; margin-bottom: 8px;
+}
+.participant-main { flex: 1; }
+.input-role {
+  background: transparent; border: none; color: var(--text);
+  font-size: 16px; font-weight: 700; width: 100%; margin-bottom: 10px; outline: none;
+}
+.participant-nums { display: flex; gap: 16px; flex-wrap: wrap; }
+.num-group { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+.num-group label { color: var(--muted); font-size: 11px; }
+.num-group input {
+  background: var(--surface); border: none; color: var(--text);
+  padding: 5px 8px; border-radius: 8px; width: 72px; font-size: 14px; text-align: right; outline: none;
+}
+.num-group input:focus { outline: 1px solid var(--primary); }
+.num-group span { color: var(--muted); font-size: 12px; }
+.btn-remove {
+  background: none; border: none; color: var(--muted);
+  font-size: 18px; cursor: pointer; padding: 6px; border-radius: 8px; line-height: 1;
+  transition: color 0.2s;
+}
+.btn-remove:hover { color: var(--primary); }
+
+.total-preview {
+  margin: 20px 0; padding: 14px 20px;
+  background: var(--bg2); border-radius: 14px;
+  display: flex; align-items: baseline; gap: 8px; justify-content: center;
+}
+.total-label { color: var(--muted); font-size: 13px; }
+#total-hourly { color: var(--primary); font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.total-unit { color: var(--muted); font-size: 13px; }
+
+/* ── Buttons ── */
+.btn-primary, .btn-secondary, .btn-danger, .btn-twitter {
+  display: block; width: 100%; border: none; border-radius: 14px;
+  font-size: 17px; font-weight: 700; cursor: pointer; padding: 16px;
+  margin: 8px 0; transition: opacity 0.15s, transform 0.1s;
+}
+.btn-primary:active, .btn-secondary:active, .btn-danger:active, .btn-twitter:active { transform: scale(0.98); }
+.btn-primary  { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--bg2); color: var(--text); border: 1px solid var(--surface); }
+.btn-danger   { background: var(--danger); color: #fff; }
+.btn-twitter  { background: var(--twitter); color: #fff; }
+
+/* ── Counter ── */
+.counter-wrap { text-align: center; margin-bottom: 32px; }
+.cost-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+.cost-value {
+  font-size: clamp(52px, 16vw, 88px); font-weight: 900;
+  color: var(--primary); line-height: 1;
+  font-variant-numeric: tabular-nums;
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{opacity:1} 50%{opacity:.8} }
+.elapsed-time { font-size: 22px; color: var(--muted); margin-top: 10px; font-variant-numeric: tabular-nums; }
+
+.buy-list { width: 100%; max-width: 420px; margin-bottom: 20px; }
+.buy-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg2); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
+}
+.buy-emoji { font-size: 26px; }
+.buy-name  { flex: 1; font-size: 14px; color: var(--text); }
+.buy-count { font-weight: 800; color: var(--primary); font-size: 18px; }
+.buy-placeholder { color: var(--muted); font-size: 13px; text-align: center; padding: 24px; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#buy-list.fade-in .buy-equivalent { animation: fadeInUp 0.35s ease; }
+
+.buy-equivalent {
+  background: var(--bg2); border-radius: 14px; padding: 14px 18px;
+  width: 100%; max-width: 420px; text-align: center;
+}
+.buy-eq-label { display: block; font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.buy-eq-item { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.buy-eq-item .buy-emoji { font-size: 30px; }
+.buy-eq-item .buy-name  { font-size: 16px; font-weight: 600; }
+.buy-eq-item .buy-count { font-size: 22px; font-weight: 900; color: var(--primary); }
+
+.result-equivalent { font-size: 15px; color: var(--text); }
+
+/* ── Result ── */
+.result-card {
+  background: linear-gradient(145deg, var(--bg2), var(--surface));
+  border: 1px solid rgba(255,107,107,.25); border-radius: 20px;
+  padding: 32px 24px; margin: 24px 0; text-align: center;
+}
+.result-header { font-size: 14px; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; }
+.result-cost { font-size: clamp(52px, 16vw, 80px); font-weight: 900; color: var(--primary); line-height: 1.1; }
+.result-meta { font-size: 15px; color: var(--muted); margin-top: 8px; }
+.result-buys {
+  margin-top: 20px; padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-size: 14px; line-height: 2.2; color: var(--text);
+}
+.result-actions { display: flex; flex-direction: column; }
+
+/* ── History ── */
+.history-section { margin-top: 32px; padding-bottom: 32px; }
+.history-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--bg2); border-radius: 10px; margin-bottom: 6px;
+}
+.history-date  { color: var(--muted); font-size: 12px; min-width: 72px; }
+.history-cost  { flex: 1; color: var(--primary); font-weight: 700; font-size: 16px; }
+.history-time  { color: var(--muted); font-size: 12px; }
+.empty-text { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }

@@ -1,0 +1,13 @@
+{
+  "name": "会議コストメーター",
+  "short_name": "会議コスト",
+  "description": "会議のコストをリアルタイムで可視化するツール",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d1a",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
