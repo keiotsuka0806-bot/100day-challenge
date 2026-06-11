@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetroSnap — レトロデジカメフィルター</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1c1008">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>📷 RetroSnap</h1>
+    <p class="subtitle">写真をレトロデジカメ風に変換</p>
+  </header>
+
+  <!-- Upload Zone -->
+  <div id="upload-zone" class="upload-zone">
+    <div class="upload-inner">
+      <div class="upload-icon">📸</div>
+      <p class="upload-label">写真をドロップ、またはタップして選択</p>
+      <p class="upload-hint">JPG / PNG / HEIC 対応</p>
+    </div>
+    <input type="file" id="file-input" accept="image/*" hidden>
+  </div>
+
+  <!-- Editor (hidden until image loaded) -->
+  <div id="editor" class="editor hidden">
+
+    <!-- Canvas preview -->
+    <div class="canvas-wrap">
+      <canvas id="preview"></canvas>
+    </div>
+
+    <!-- Filter presets -->
+    <section class="section">
+      <h2>フィルター</h2>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="ccd">
+          <span class="preset-icon">📷</span>
+          <span>CCD 2000年代</span>
+        </button>
+        <button class="preset-btn" data-preset="film">
+          <span class="preset-icon">🎞️</span>
+          <span>フィルム 90年代</span>
+        </button>
+        <button class="preset-btn" data-preset="polaroid">
+          <span class="preset-icon">🟦</span>
+          <span>ポラロイド</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="section">
+      <h2>調整</h2>
+      <div class="controls">
+        <div class="control-row">
+          <label>強度</label>
+          <input type="range" id="intensity" min="0" max="100" value="70">
+          <span id="intensity-val">70</span>
+        </div>
+        <div class="control-row">
+          <label>グレイン</label>
+          <input type="range" id="grain" min="0" max="100" value="40">
+          <span id="grain-val">40</span>
+        </div>
+        <div class="control-row">
+          <label>ビネット</label>
+          <input type="range" id="vignette" min="0" max="100" value="50">
+          <span id="vignette-val">50</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Date stamp -->
+    <section class="section">
+      <h2>日付スタンプ</h2>
+      <div class="stamp-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="date-toggle" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          日付を表示
+        </label>
+        <input type="date" id="date-input" class="date-input">
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button id="download-jpg" class="btn-primary">💾 JPEG保存</button>
+      <button id="download-png" class="btn-secondary">📋 PNG保存</button>
+    </div>
+    <button id="change-photo" class="btn-ghost">別の写真を選ぶ</button>
+
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
