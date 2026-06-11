@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Project OS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ホーム画面 -->
+  <div id="home-screen" class="screen active">
+    <div class="home-wrap">
+      <div class="home-header">
+        <div class="logo">🗺️</div>
+        <h1>AI Project OS</h1>
+        <p class="tagline">「次に何をすればいいか」を可視化する<br>AI時代のプロジェクト地図</p>
+      </div>
+
+      <div class="home-form card">
+        <div class="form-group">
+          <label for="project-name">プロジェクト名</label>
+          <input type="text" id="project-name" placeholder="例: WhiskyNote, MoodForecast, LexWorld">
+        </div>
+        <div class="form-group">
+          <label for="project-desc">作りたいもの・目的</label>
+          <textarea id="project-desc" rows="3" placeholder="例: ウイスキーのテイスティングノートをFirebaseに記録・共有するアプリ"></textarea>
+        </div>
+        <button class="btn-primary" id="generate-btn">ワークフローを生成する →</button>
+      </div>
+
+      <div id="saved-section" class="saved-section" style="display:none">
+        <h3 class="saved-title">進行中のプロジェクト</h3>
+        <div id="project-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ワークフロー画面 -->
+  <div id="workflow-screen" class="screen">
+
+    <!-- ヘッダー -->
+    <header class="wf-header">
+      <button class="btn-back" id="back-btn">← ホーム</button>
+      <div class="wf-title-block">
+        <span class="wf-project-name" id="wf-project-name"></span>
+        <span class="wf-project-desc" id="wf-project-desc"></span>
+      </div>
+      <div class="progress-block">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">0 / 7 完了</span>
+      </div>
+    </header>
+
+    <!-- 3ペイン -->
+    <div class="wf-body">
+
+      <!-- 左: ステップ一覧 -->
+      <nav class="steps-nav" id="steps-nav"></nav>
+
+      <!-- 中央: ステップ詳細 -->
+      <main class="detail-main" id="detail-main">
+        <div class="empty-hint">← ステップを選んでください</div>
+      </main>
+
+      <!-- 右: 実行プロンプト -->
+      <aside class="prompt-aside" id="prompt-aside">
+        <div class="prompt-empty">ステップを選ぶと<br>実行プロンプトが<br>表示されます</div>
+      </aside>
+
+    </div>
+  </div>
+
+  <script src="workflow-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
