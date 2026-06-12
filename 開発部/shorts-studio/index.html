@@ -69,11 +69,9 @@
               </select>
             </label>
           </div>
-          <button id="transcribeBtn" class="btn-ghost">🎙 音源から自動で文字起こし</button>
-          <p class="hint" id="transcribeStatus">AIが歌詞・セリフを聞き取ってタイム付き字幕を自動生成します(初回のみAIモデルを約250MBダウンロード/解析はすべて端末内)</p>
           <div id="subList"></div>
           <button id="addSubBtn" class="btn-ghost">＋ 字幕を追加(再生位置から)</button>
-          <p class="hint">⏱ボタンで「いまの再生位置」を開始/終了タイムに入れられます。自動生成した字幕もここで修正できます</p>
+          <p class="hint">⏱ボタンで「いまの再生位置」を開始/終了タイムに入れられます</p>
         </div>
       </div>
     </section>
@@ -106,7 +104,7 @@
   </footer>
 
   <audio id="audioEl"></audio>
-  <script src="app.js?v=2" defer></script>
+  <script src="app.js?v=1" defer></script>
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
   </script>
