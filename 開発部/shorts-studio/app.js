@@ -215,7 +215,12 @@ async function loadFFmpeg(onStatus) {
   }
   if (!ffmpegLoaded) {
     const { createFFmpeg } = FFmpeg;
-    window._ff = createFFmpeg({ corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js', log: false });
+    // crossOriginIsolated(COOP/COEPヘッダーあり)ならマルチスレッド版(速い)、
+    // なければシングルスレッド版(SharedArrayBuffer不要でどこでも動く)
+    const useMT = !!window.crossOriginIsolated;
+    window._ff = createFFmpeg(useMT
+      ? { corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js', log: false }
+      : { corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js', mainName: 'main', log: false });
     await window._ff.load();
     ffmpegLoaded = true;
   }
