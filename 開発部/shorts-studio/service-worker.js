@@ -1,5 +1,5 @@
 // SWキャッシュ更新の4点セット: キャッシュ名インクリメント + skipWaiting + 旧キャッシュ削除 + clients.claim
-const CACHE = 'shorts-studio-v2';
+const CACHE = 'shorts-studio-v3';
 const ASSETS = ['./', './index.html', './app.js', './styles.css', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

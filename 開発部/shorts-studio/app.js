@@ -153,6 +153,100 @@ function renderSubList() {
   }
 }
 
+/* ---------- 自動文字起こし(Transformers.js + Whisper / すべて端末内で実行) ---------- */
+
+let whisperPipeline = null;
+
+async function loadWhisper(onStatus) {
+  if (whisperPipeline) return whisperPipeline;
+  onStatus('文字起こしAIを読み込み中…');
+  const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3');
+  const progress_callback = (p) => {
+    if (p.status === 'progress' && p.total) {
+      onStatus(`AIモデルをダウンロード中…(初回のみ)${Math.round(p.progress)}% — ${p.file}`);
+    }
+  };
+  const model = 'Xenova/whisper-small';
+  try {
+    // WebGPU(ブラウザのGPU実行)が使えれば高速に。ダメならCPU版へフォールバック
+    whisperPipeline = await pipeline('automatic-speech-recognition', model, {
+      device: 'webgpu',
+      dtype: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
+      progress_callback,
+    });
+  } catch (_) {
+    whisperPipeline = await pipeline('automatic-speech-recognition', model, {
+      dtype: 'q8',
+      progress_callback,
+    });
+  }
+  return whisperPipeline;
+}
+
+// Whisperは16kHzモノラルの生波形を受け取るため、音源ファイルをデコード&リサンプリングする
+async function decodeTo16kMono(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const decoded = await ac.decodeAudioData(arrayBuffer);
+  ac.close();
+  const sr = 16000;
+  const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * sr), sr);
+  const src = offline.createBufferSource();
+  src.buffer = decoded;
+  src.connect(offline.destination);
+  src.start();
+  const rendered = await offline.startRendering();
+  return rendered.getChannelData(0);
+}
+
+$('transcribeBtn').addEventListener('click', async () => {
+  if (!state.audioFile) { alert('先に音源を選んでください'); return; }
+
+  const hasUserSubs = state.subs.some((s) => s.text.trim() && s.text !== 'ここに歌詞やメッセージ');
+  if (hasUserSubs && !confirm('今ある字幕を消して、自動文字起こしの結果に置き換えます。よろしいですか?')) return;
+
+  const btn = $('transcribeBtn');
+  const setStatus = (msg) => { $('transcribeStatus').textContent = msg; };
+  btn.disabled = true;
+
+  try {
+    const transcriber = await loadWhisper(setStatus);
+
+    setStatus('音源を解析する準備をしています…');
+    const audio = await decodeTo16kMono(state.audioFile);
+
+    setStatus(`文字起こし中…(${fmtTime(state.audioDuration)}の音源を解析しています。少し時間がかかります)`);
+    const out = await transcriber(audio, {
+      language: 'japanese',
+      task: 'transcribe',
+      chunk_length_s: 30,
+      stride_length_s: 5,
+      return_timestamps: true,
+    });
+
+    const chunks = (out.chunks || []).filter((c) => c.text && c.text.trim());
+    if (chunks.length === 0) {
+      setStatus('⚠ 歌声やセリフを聞き取れませんでした(インスト曲の場合は手動で字幕を追加してください)');
+      return;
+    }
+
+    state.subs = [];
+    for (const c of chunks) {
+      const start = c.timestamp[0] ?? 0;
+      let end = c.timestamp[1];
+      if (end == null || end <= start) end = Math.min(start + 3.5, state.audioDuration || start + 3.5);
+      addSub(start, end, c.text.trim());
+    }
+    renderPreviewSub();
+    setStatus(`✅ ${state.subs.length}件の字幕を自動生成しました。テキストやタイミングは下のリストで修正できます`);
+  } catch (err) {
+    console.error(err);
+    setStatus('❌ 文字起こしに失敗しました: ' + err.message + '(通信環境を確認して再度お試しください)');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 /* ---------- 字幕PNGの生成(Canvasで日本語フォントを焼き込み) ---------- */
 
 async function renderSubPng(sub) {
