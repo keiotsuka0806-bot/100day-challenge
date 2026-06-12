@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShortsStudio — 音楽ショート動画メーカー</title>
+  <meta name="description" content="音源と画像から字幕付きの縦動画(TikTok/Shorts)をブラウザだけで作成。アップロード不要、ファイルは外部に送信されません。">
+  <meta name="theme-color" content="#0f0f17">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <header>
+    <h1>🎬 ShortsStudio</h1>
+    <p class="tagline">音源 + 画像 + 字幕 → 縦動画(MP4)をブラウザだけで書き出し。<br>ファイルは外部に送信されません。</p>
+  </header>
+
+  <main>
+    <!-- Step 1: 音源 -->
+    <section class="card" id="audioCard">
+      <h2><span class="step">1</span> 音源を選ぶ</h2>
+      <label class="dropzone" id="audioDrop">
+        <input type="file" id="audioInput" accept="audio/*" hidden>
+        <span id="audioLabel">🎵 タップして音源を選択(MP3 / WAV / M4A)<br><small>またはここにドラッグ&ドロップ</small></span>
+      </label>
+      <div class="fileinfo hidden" id="audioInfo"></div>
+    </section>
+
+    <!-- Step 2: 背景画像 -->
+    <section class="card" id="imageCard">
+      <h2><span class="step">2</span> 背景画像を選ぶ</h2>
+      <label class="dropzone" id="imageDrop">
+        <input type="file" id="imageInput" accept="image/*" hidden>
+        <span id="imageLabel">🖼 タップして画像を選択<br><small>縦動画(1080×1920)に合わせて自動トリミングされます</small></span>
+      </label>
+    </section>
+
+    <!-- Step 3: プレビュー & 字幕 -->
+    <section class="card hidden" id="editorCard">
+      <h2><span class="step">3</span> 字幕を付ける</h2>
+
+      <div class="editor-layout">
+        <div class="preview-wrap">
+          <div class="preview" id="preview">
+            <div class="preview-sub" id="previewSub"></div>
+          </div>
+          <div class="transport">
+            <button id="playBtn" class="btn-ghost">▶ 再生</button>
+            <span class="time" id="timeDisplay">0:00.0 / 0:00.0</span>
+          </div>
+          <input type="range" id="seekBar" min="0" max="100" step="0.1" value="0">
+        </div>
+
+        <div class="subs-wrap">
+          <div class="sub-style">
+            <label>文字サイズ
+              <select id="fontSize">
+                <option value="56">小</option>
+                <option value="72" selected>中</option>
+                <option value="92">大</option>
+              </select>
+            </label>
+            <label>位置
+              <select id="subPos">
+                <option value="top">上</option>
+                <option value="center">中央</option>
+                <option value="bottom" selected>下</option>
+              </select>
+            </label>
+          </div>
+          <div id="subList"></div>
+          <button id="addSubBtn" class="btn-ghost">＋ 字幕を追加(再生位置から)</button>
+          <p class="hint">⏱ボタンで「いまの再生位置」を開始/終了タイムに入れられます</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: 書き出し -->
+    <section class="card hidden" id="exportCard">
+      <h2><span class="step">4</span> 書き出す</h2>
+      <div class="export-opts">
+        <label>なめらかさ
+          <select id="fpsSelect">
+            <option value="12">軽い(12fps)</option>
+            <option value="24" selected>標準(24fps)</option>
+            <option value="30">なめらか(30fps)</option>
+          </select>
+        </label>
+        <span class="hint">背景が静止画なので「標準」で十分きれいです</span>
+      </div>
+      <button id="exportBtn" class="btn-main">📦 MP4を書き出す</button>
+      <div class="progress hidden" id="progressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <p class="progress-text" id="progressText">準備中…</p>
+      </div>
+      <a class="btn-main hidden" id="downloadLink" download>⬇ MP4をダウンロード</a>
+      <p class="hint">⚠ 変換はブラウザ内で行うため、曲の長さによって数分かかります。タブを閉じずにお待ちください。</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>#100Day Challenge Day 14 — ShortsStudio / ファイルはすべて端末内で処理されます</p>
+  </footer>
+
+  <audio id="audioEl"></audio>
+  <script src="app.js?v=1" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+  </script>
+</body>
+</html>
