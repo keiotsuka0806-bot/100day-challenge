@@ -1,0 +1,106 @@
+:root {
+  --paper: #f5f0e6;
+  --ink: #1c1a16;
+  --rule: #8a8270;
+  --accent: #9b2d1f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #e8e2d4;
+  color: var(--ink);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  min-height: 100vh;
+}
+
+.site-head { text-align: center; padding: 26px 16px 10px; }
+.site-head h1 { font-size: 1.8rem; letter-spacing: 0.1em; }
+.tagline { color: #6a6354; font-size: 0.88rem; margin-top: 6px; }
+
+main { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+.card {
+  background: #fffdf7; border: 1px solid #d8d0bc; border-radius: 10px;
+  padding: 18px; box-shadow: 0 2px 8px rgba(60, 50, 20, 0.08);
+}
+.field { display: block; margin-bottom: 14px; }
+.field-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+textarea {
+  width: 100%; border: 1px solid #c9c0a8; border-radius: 8px; padding: 10px 12px;
+  font-family: inherit; font-size: 0.95rem; background: #fffef9; color: var(--ink);
+  resize: vertical;
+}
+textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+.btn-main {
+  display: block; width: 100%; background: var(--ink); color: #fffdf2;
+  border: none; border-radius: 8px; padding: 13px; font-size: 1.05rem;
+  font-family: inherit; font-weight: 600; letter-spacing: 0.08em; cursor: pointer;
+}
+.btn-main:hover { background: #3a352c; }
+.btn-main:disabled { opacity: 0.5; cursor: wait; }
+.btn-ghost {
+  display: block; width: 100%; background: none; border: 1px solid var(--rule);
+  border-radius: 8px; padding: 11px; font-family: inherit; font-size: 0.95rem;
+  color: var(--ink); cursor: pointer; margin-top: 8px;
+}
+.status { margin-top: 10px; font-size: 0.88rem; color: var(--accent); text-align: center; }
+.hidden { display: none !important; }
+
+/* ---------- 新聞紙面 ---------- */
+.paper {
+  background: var(--paper);
+  background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 2px, transparent 2px 4px);
+  border: 1px solid #c5bca4; padding: 22px 20px 16px; margin-top: 18px;
+  box-shadow: 0 3px 14px rgba(60, 50, 20, 0.18);
+}
+.paper-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 3px double var(--ink); padding-bottom: 8px; margin-bottom: 14px; gap: 8px;
+}
+.paper-date { font-size: 0.72rem; color: #555; white-space: nowrap; }
+.paper-title { font-size: 1.65rem; font-weight: 800; letter-spacing: 0.12em; text-align: center; }
+.paper-edition { font-size: 0.72rem; color: #555; white-space: nowrap; }
+
+.headline {
+  font-size: 1.7rem; font-weight: 800; line-height: 1.35; letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+.lead {
+  font-size: 0.95rem; line-height: 1.9; border-left: 4px solid var(--ink);
+  padding-left: 12px; margin-bottom: 18px;
+}
+
+.articles {
+  column-count: 2; column-gap: 22px; column-rule: 1px solid var(--rule);
+  border-top: 1px solid var(--rule); padding-top: 14px; margin-bottom: 18px;
+}
+.article { break-inside: avoid; margin-bottom: 14px; }
+.article h3 {
+  font-size: 1.05rem; font-weight: 700; margin-bottom: 5px;
+  border-bottom: 1px dotted var(--rule); padding-bottom: 3px;
+}
+.article p { font-size: 0.86rem; line-height: 1.85; text-align: justify; }
+
+.column-box { border: 2px solid var(--ink); padding: 12px 14px; margin-bottom: 12px; }
+.column-label {
+  display: inline-block; background: var(--ink); color: var(--paper);
+  font-size: 0.72rem; padding: 2px 10px; letter-spacing: 0.25em; margin-bottom: 8px;
+}
+.column-box p { font-size: 0.87rem; line-height: 1.95; text-align: justify; }
+
+.tomorrow {
+  font-size: 0.82rem; color: #444; border-top: 1px solid var(--rule); padding-top: 8px;
+}
+.tomorrow::before { content: "▶ 明日の見出し予想: "; font-weight: 700; color: var(--accent); }
+
+.paper-actions { margin-top: 14px; }
+
+.site-foot { text-align: center; color: #8d8672; font-size: 0.72rem; padding: 26px 16px; }
+
+@media (max-width: 560px) {
+  .articles { column-count: 1; }
+  .headline { font-size: 1.4rem; }
+  .paper-title { font-size: 1.3rem; }
+}

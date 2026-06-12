@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AsaBrief — あなた専用の朝刊ジェネレーター</title>
+  <meta name="description" content="昨日のメモと今日の予定から、AIがあなた専用の「朝刊一面」を新聞レイアウトで生成。画像保存してシェアもできます。">
+  <meta name="theme-color" content="#f5f0e6">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <header class="site-head">
+    <h1>☀ AsaBrief</h1>
+    <p class="tagline">昨日のメモを貼るだけ。あなたの毎日が「朝刊一面」になる。</p>
+  </header>
+
+  <main>
+    <section class="card" id="inputCard">
+      <label class="field">
+        <span class="field-label">📝 昨日のメモ・日報(必須)</span>
+        <textarea id="notesInput" rows="8" placeholder="昨日やったこと・あったこと・考えたことを、箇条書きでも文章でもそのまま貼り付けてください"></textarea>
+      </label>
+      <label class="field">
+        <span class="field-label">📅 今日の予定(任意)</span>
+        <textarea id="planInput" rows="3" placeholder="今日やる予定のこと(「明日の見出し予想」に使われます)"></textarea>
+      </label>
+      <button id="generateBtn" class="btn-main">🗞 朝刊を発行する</button>
+      <p class="status hidden" id="status"></p>
+    </section>
+
+    <section class="hidden" id="paperSection">
+      <div class="paper" id="paper">
+        <div class="paper-head">
+          <div class="paper-date" id="paperDate"></div>
+          <div class="paper-title" id="paperName"></div>
+          <div class="paper-edition">朝刊 / 第一面</div>
+        </div>
+        <h2 class="headline" id="topHeadline"></h2>
+        <p class="lead" id="lead"></p>
+        <div class="articles" id="articles"></div>
+        <div class="column-box">
+          <div class="column-label">一面コラム</div>
+          <p id="column"></p>
+        </div>
+        <div class="tomorrow" id="tomorrow"></div>
+      </div>
+      <div class="paper-actions">
+        <button id="saveBtn" class="btn-main">📷 画像として保存</button>
+        <button id="againBtn" class="btn-ghost">✍ 書き直す</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <p>#100Day Challenge Day 13 — AsaBrief / メモはAI生成のためだけに使われ、保存されません</p>
+  </footer>
+
+  <script src="app.js?v=1" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+  </script>
+</body>
+</html>
