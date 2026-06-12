@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokenDiet — 言葉の燃費計</title>
+  <meta name="description" content="プロンプトや文書を貼るだけで、AIに送るトークン数と料金を即計算。削れる箇所も提案する「言葉の燃費計」。すべてブラウザ内で動作、データは送信されません。">
+  <meta name="theme-color" content="#101418">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <header>
+    <h1>⛽ TokenDiet</h1>
+    <p class="tagline">プロンプトを貼るだけ。AIに送る「言葉の燃費」と料金が見える。<br>すべて端末内で計算 — 文章はどこにも送信されません。</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <textarea id="textInput" rows="9" placeholder="ここにプロンプト・文書・CLAUDE.mdなどを貼り付けてください"></textarea>
+      <div class="meter-row">
+        <div class="meter"><span class="meter-num" id="charCount">0</span><span class="meter-label">文字</span></div>
+        <div class="meter main-meter"><span class="meter-num" id="tokenCount">0</span><span class="meter-label" id="tokenLabel">トークン(計算中…)</span></div>
+        <div class="meter"><span class="meter-num" id="lineCount">0</span><span class="meter-label">行</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>💴 この文章を1回送ると(入力料金)</h2>
+      <div class="rate-row">
+        <label>為替レート: 1ドル = <input type="number" id="jpyRate" value="150" min="1" step="1"> 円</label>
+        <label>1日 <input type="number" id="dailyCalls" value="10" min="1" step="1"> 回使う場合の月額も表示</label>
+      </div>
+      <table class="price-table">
+        <thead>
+          <tr><th>モデル</th><th>1回</th><th>月額(×30日)</th></tr>
+        </thead>
+        <tbody id="priceBody"></tbody>
+      </table>
+      <p class="hint">単価は2026年6月時点の入力トークン料金(出力は含みません)。Fable 5は$10/100万トークン。</p>
+    </section>
+
+    <section class="card">
+      <h2>✂️ ダイエット提案</h2>
+      <div id="suggestions"><p class="hint">文章を入力すると、削っても意味が変わりにくい箇所を検出します</p></div>
+      <button id="dietBtn" class="btn-main hidden">🏃 スリム版を作る</button>
+      <div id="dietResult" class="hidden">
+        <div class="diet-summary" id="dietSummary"></div>
+        <textarea id="dietOutput" rows="7" readonly></textarea>
+        <button id="copyBtn" class="btn-ghost">📋 スリム版をコピー</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>#100Day Challenge Day 13 — TokenDiet / 計算はすべて端末内で行われます</p>
+  </footer>
+
+  <script src="app.js?v=1" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+  </script>
+</body>
+</html>
