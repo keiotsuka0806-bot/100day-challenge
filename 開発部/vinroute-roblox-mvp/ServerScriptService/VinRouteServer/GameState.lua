@@ -61,6 +61,7 @@ function GameState:AddPlayer(player)
 		userId = player.UserId,
 		name = player.DisplayName,
 		position = startRegion.id,
+		lastPosition = nil,
 		resources = copyResources(GameConstants.StartingResources),
 		discovered = {},
 		buildings = {},

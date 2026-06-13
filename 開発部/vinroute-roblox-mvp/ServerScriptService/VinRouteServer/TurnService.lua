@@ -19,7 +19,9 @@ function TurnService.RollDice(state, player)
 
 	state.dice = math.random(1, GameConstants.DiceSides)
 	state.phase = "Move"
-	state:AddLog(state:GetCurrentPlayer().name .. " rolled " .. tostring(state.dice) .. ".")
+	local current = state:GetCurrentPlayer()
+	current.lastPosition = nil
+	state:AddLog(current.name .. " rolled " .. tostring(state.dice) .. ".")
 	return true, state.dice
 end
 

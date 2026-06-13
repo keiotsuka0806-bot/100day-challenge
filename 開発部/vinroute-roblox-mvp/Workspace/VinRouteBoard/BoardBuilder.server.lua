@@ -44,6 +44,17 @@ for index, region in ipairs(RegionData.List) do
 		end
 	end)
 
+	-- 盤面を見下ろしたままクリックで進めるようにする(桃鉄の方向選択にあたる)
+	local click = Instance.new("ClickDetector")
+	click.MaxActivationDistance = math.huge
+	click.Parent = part
+	click.MouseClick:Connect(function(player)
+		local move = _G.VinRouteServerMove
+		if move then
+			move(player, region.id)
+		end
+	end)
+
 	local label = Instance.new("BillboardGui")
 	label.Size = UDim2.fromOffset(140, 40)
 	label.StudsOffset = Vector3.new(0, 4, 0)
