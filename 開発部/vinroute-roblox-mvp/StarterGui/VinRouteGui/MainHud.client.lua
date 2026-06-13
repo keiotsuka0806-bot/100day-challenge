@@ -146,7 +146,7 @@ local function updateHud(state)
 		end
 	end
 
-	status.Text = "VinRoute Roblox MVP\nMode: " .. tostring(state.mode) .. "\nSeason: " .. tostring(state.season) .. "/" .. tostring(state.maxSeasons) .. "\nPhase: " .. tostring(state.phase) .. "\nTurn: " .. currentName .. "\nDice: " .. tostring(state.dice or 0)
+	status.Text = "VinRoute Roblox MVP\nMode: " .. tostring(state.mode) .. "\nSeason: " .. tostring(state.season) .. "/" .. tostring(state.maxSeasons) .. "\nPhase: " .. tostring(state.phase) .. "\nTurn: " .. currentName .. "\n残りマス: " .. tostring(state.dice or 0)
 
 	if localState then
 		resources.Text = "Resources\n" .. formatResources(localState.resources) .. "\nAsset: " .. tostring(localState.assetValue or 0)
