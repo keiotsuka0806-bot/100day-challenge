@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI処方箋 — ChatGPTに“何を打てばいいか”がわかる</title>
+  <meta name="description" content="仕事の「面倒」を選ぶと、ChatGPTにそのまま貼れる効くプロンプトが出てきます。コピーして貼るだけ。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>AI処方箋</h1>
+    <p class="tagline">ChatGPTは持ってる。でも<strong>何を打てばいいか分からない</strong>あなたへ。<br>面倒を選ぶ → 効く言葉が出る → <strong>コピーして貼るだけ。</strong></p>
+  </header>
+
+  <main>
+    <!-- カテゴリ -->
+    <nav class="filters" id="filters" aria-label="カテゴリ"></nav>
+
+    <!-- 処方箋一覧 -->
+    <section class="grid" id="grid"></section>
+  </main>
+
+  <!-- 詳細モーダル -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-bg" id="modalBg"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <button class="modal-close" id="modalClose" aria-label="閉じる">×</button>
+      <span class="m-cat" id="mCat"></span>
+      <h2 id="mTitle"></h2>
+      <p class="m-desc" id="mDesc"></p>
+
+      <div id="mFields" class="m-fields"></div>
+
+      <label class="m-prevlabel">ChatGPTに貼る文(下を埋めると自動で変わります)</label>
+      <pre class="m-preview" id="mPreview"></pre>
+
+      <div class="m-actions">
+        <button class="btn btn-primary" id="copyBtn">この文をコピー</button>
+        <a class="btn btn-ghost" id="openGpt" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPTを開く</a>
+      </div>
+      <p class="m-tip" id="mTip"></p>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <span>AI処方箋 — 100 Day Challenge</span>
+    <span class="muted">キー不要・無料 / あなたのChatGPTがそのまま使えます</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

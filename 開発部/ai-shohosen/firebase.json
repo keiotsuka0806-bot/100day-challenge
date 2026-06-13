@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "ai-shohosen-kei-2026",
+    "public": ".",
+    "ignore": ["firebase.json", "**/.*"]
+  }
+}
