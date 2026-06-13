@@ -39,3 +39,6 @@ CLAUDE.local.md
 /*.jpg
 /*.jpeg
 .vercel
+
+# Claude Code 個人設定(共有しない)
+.claude/settings.local.json
