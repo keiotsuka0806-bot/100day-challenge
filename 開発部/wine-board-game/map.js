@@ -826,6 +826,17 @@ function hexPath(ctx, cx, cy, r) {
   ctx.closePath();
 }
 
+function roundRect(ctx, x, y, w, h, radius) {
+  const r = Math.min(radius, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
 function drawHex(ctx, cx, cy, r, fill, stroke, strokeW = 1.5, alpha = 1) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -966,107 +977,112 @@ function drawConnections(ctx, state) {
 }
 
 // ===== メイン描画 =====
-function renderMap(canvas, state, time = 0) {
-  const ctx = canvas.getContext('2d');
+// 静的な盤面(海・線路・産地・地名・建物)を裏画面に一度だけ描いてキャッシュする。
+// 毎フレーム全再描画すると重く、サイコロ演出がカクつくため。
+let _boardLayer = null;
+let _boardDirty = true;
+function markBoardDirty() { _boardDirty = true; }
+
+function buildBoardLayer(state) {
+  if (!_boardLayer) _boardLayer = document.createElement('canvas');
+  _boardLayer.width = CANVAS_W;
+  _boardLayer.height = CANVAS_H;
+  const ctx = _boardLayer.getContext('2d');
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-  drawOcean(ctx, time);
+  drawOcean(ctx, 0);          // 波紋アニメは焼かない(time=0)
   drawConnections(ctx, state);
 
-  const regions  = state ? state.regions : REGION_DATA;
-  const reachable = state ? (state.reachableRegions || []) : [];
-  const players  = state ? state.players : [];
-  const curPlayer = state ? players[state.currentPlayerIndex] : null;
+  const regions = state ? state.regions : REGION_DATA;
+  const players = state ? state.players : [];
   const visibleRegions = new Set(getVisibleRegionIds(state));
 
   for (const [id, region] of Object.entries(REGION_DATA)) {
     if (!visibleRegions.has(id)) continue;
-    const isReachable   = reachable.includes(id);
-    const isCurrentPos  = curPlayer && curPlayer.position === id;
-    const isDestination = state && state.destination === id;
     const regionState = regions[id] || {};
     const ownerPlayer = state && regionState.claimedBy ? players.find(p => p.id === regionState.claimedBy) : null;
+    const base = RESOURCE_COLORS[region.resource];
 
-    const base  = RESOURCE_COLORS[region.resource];
-    const fill  = blendColor(base, '#080300', 0.5);
-
-    // 到達可能グロー（アニメ）
-    if (isReachable) {
-      const pulse = time > 0 ? 0.25 + 0.15 * Math.sin(time * 0.004) : 0.3;
-      ctx.save();
-      hexPath(ctx, region.x, region.y, HEX_RADIUS + 6);
-      ctx.fillStyle = `rgba(255,215,0,${pulse})`;
-      ctx.fill();
-      ctx.restore();
-    }
-    if (isDestination) {
-      const pulse = time > 0 ? 0.2 + 0.15 * Math.sin(time * 0.005 + 1) : 0.28;
-      ctx.save();
-      hexPath(ctx, region.x, region.y, HEX_RADIUS + 8);
-      ctx.fillStyle = `rgba(255,80,80,${pulse})`;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    const strokeColor = ownerPlayer ? ownerPlayer.color
-      : isReachable ? '#FFD700'
-      : isCurrentPos ? '#ffffff'
-      : isDestination ? '#FF6060'
-      : blendColor(base, '#111', 0.4);
-    const strokeW = (isReachable || isCurrentPos) ? 2 : 1.2;
-
-    // ヘックス本体（グラデ）
-    ctx.save();
     hexPath(ctx, region.x, region.y, HEX_RADIUS);
     const grad = ctx.createRadialGradient(region.x - 3, region.y - 4, 2, region.x, region.y, HEX_RADIUS);
     grad.addColorStop(0, blendColor(base, '#1a1000', 0.7));
     grad.addColorStop(1, blendColor(base, '#030100', 0.35));
     ctx.fillStyle = grad;
     ctx.fill();
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = strokeW;
+    ctx.strokeStyle = ownerPlayer ? ownerPlayer.color : blendColor(base, '#111', 0.4);
+    ctx.lineWidth = ownerPlayer ? 2 : 1.2;
     ctx.stroke();
-    ctx.restore();
 
-    // リソースアイコン
     ctx.font = `${HEX_RADIUS * 0.65}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(RESOURCE_ICONS[region.resource], region.x, region.y - 5);
 
-    // 地名（ハロー付き）
-    ctx.save();
     ctx.font = `bold ${HEX_RADIUS * 0.56}px "Hiragino Kaku Gothic ProN","Helvetica Neue",sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     ctx.strokeStyle = 'rgba(0,0,0,0.8)';
     ctx.lineWidth = 2.5;
     ctx.strokeText(region.name, region.x, region.y + 6);
     ctx.fillStyle = '#f0e0cc';
     ctx.fillText(region.name, region.x, region.y + 6);
-    ctx.restore();
 
-    // 建物アイコン
-    if (state && regions[id]) {
-      const b = regions[id].buildings || {};
-      const icons = [];
-      if (b.vineyard) icons.push('🌿');
-      if (b.winery)   icons.push('🍾');
-      if (b.cellar)   icons.push('🏛️');
-      if (icons.length) {
-        ctx.font = `${HEX_RADIUS * 0.5}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(icons.join(''), region.x, region.y + HEX_RADIUS - 4);
-      }
+    const b = regionState.buildings || {};
+    const icons = [];
+    if (b.vineyard) icons.push('🌿');
+    if (b.winery)   icons.push('🍾');
+    if (b.cellar)   icons.push('🏛️');
+    if (icons.length) {
+      ctx.font = `${HEX_RADIUS * 0.5}px serif`;
+      ctx.fillText(icons.join(''), region.x, region.y + HEX_RADIUS - 4);
     }
+  }
+}
 
-    if (isDestination) {
-      ctx.save();
-      ctx.font = `bold ${HEX_RADIUS * 0.5}px sans-serif`;
-      ctx.fillStyle = '#FF9090';
-      ctx.textAlign = 'center';
-      ctx.fillText('🎯', region.x, region.y - HEX_RADIUS - 5);
-      ctx.restore();
+function renderMap(canvas, state, time = 0) {
+  const ctx = canvas.getContext('2d');
+  if (_boardDirty || !_boardLayer) { buildBoardLayer(state); _boardDirty = false; }
+  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.drawImage(_boardLayer, 0, 0);
+
+  const reachable = state ? (state.reachableRegions || []) : [];
+  const players  = state ? state.players : [];
+  const curPlayer = state ? players[state.currentPlayerIndex] : null;
+
+  // 動的な強調表示だけ毎フレーム上描き(対象は数マスのみで軽い)
+  if (state) {
+    const highlightIds = new Set(reachable);
+    if (state.destination) highlightIds.add(state.destination);
+    if (curPlayer) highlightIds.add(curPlayer.position);
+    for (const id of highlightIds) {
+      const region = REGION_DATA[id];
+      if (!region) continue;
+      const isReachable = reachable.includes(id);
+      const isDestination = state.destination === id;
+      const isCurrentPos = curPlayer && curPlayer.position === id;
+
+      if (isReachable) {
+        const pulse = 0.25 + 0.15 * Math.sin(time * 0.004);
+        hexPath(ctx, region.x, region.y, HEX_RADIUS + 6);
+        ctx.fillStyle = `rgba(255,215,0,${pulse})`;
+        ctx.fill();
+      } else if (isDestination) {
+        const pulse = 0.2 + 0.15 * Math.sin(time * 0.005 + 1);
+        hexPath(ctx, region.x, region.y, HEX_RADIUS + 8);
+        ctx.fillStyle = `rgba(255,80,80,${pulse})`;
+        ctx.fill();
+      }
+
+      if (isReachable || isCurrentPos || isDestination) {
+        hexPath(ctx, region.x, region.y, HEX_RADIUS);
+        ctx.strokeStyle = isReachable ? '#FFD700' : isCurrentPos ? '#ffffff' : '#FF6060';
+        ctx.lineWidth = (isReachable || isCurrentPos) ? 2.5 : 2;
+        ctx.stroke();
+      }
+
+      if (isDestination) {
+        ctx.font = `bold ${HEX_RADIUS * 0.5}px sans-serif`;
+        ctx.fillStyle = '#FF9090';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎯', region.x, region.y - HEX_RADIUS - 5);
+      }
     }
   }
 
@@ -1138,11 +1154,44 @@ function renderMap(canvas, state, time = 0) {
         const focusY = activeAnim
           ? activeAnim.from.y + (activeAnim.to.y - activeAnim.from.y) * Math.min(1, (time - activeAnim.start) / activeAnim.duration)
           : activeRegion.y;
-        wrapper.scrollLeft = Math.max(0, focusX - wrapper.clientWidth / 2);
-        wrapper.scrollTop = Math.max(0, focusY - wrapper.clientHeight / 2);
+        // キャンバスには CSS で 600px の余白がある(#mapCanvas margin)。
+        // その分を足して、端の産地でも自分が常に画面中央に来るようにする。
+        const MAP_MARGIN = 600;
+        wrapper.scrollLeft = Math.max(0, focusX + MAP_MARGIN - wrapper.clientWidth / 2);
+        wrapper.scrollTop = Math.max(0, focusY + MAP_MARGIN - wrapper.clientHeight / 2);
       }
     }
+    updateStepsBadge(state, wrapper);
   }
+}
+
+// 盤面右上に「あと○マス」を固定表示(桃鉄風)。
+// .map-wrapper は常時スクロールするので、毎フレーム可視領域の右上へ置き直す。
+function ensureStepsBadge(wrapper) {
+  let badge = document.getElementById('stepsBadge');
+  if (badge) return badge;
+  badge = document.createElement('div');
+  badge.id = 'stepsBadge';
+  badge.className = 'steps-badge';
+  badge.innerHTML = `<span class="steps-badge-die">🎲</span><span class="steps-badge-text"></span>`;
+  wrapper.appendChild(badge);
+  return badge;
+}
+
+function updateStepsBadge(state, wrapper) {
+  if (!wrapper) return;
+  const badge = ensureStepsBadge(wrapper);
+  const show = state.phase === 'move' && state.stepsLeft > 0;
+  if (!show) { if (badge.style.display !== 'none') badge.style.display = 'none'; return; }
+  const txt = `あと ${state.stepsLeft} マス`;
+  const textEl = badge.querySelector('.steps-badge-text');
+  // 幅の再計測(offsetWidth)は毎フレームやるとレイアウト再計算で重いので、変化時のみ。
+  if (textEl.textContent !== txt) { textEl.textContent = txt; badge._w = 0; }
+  if (badge.style.display !== 'flex') { badge.style.display = 'flex'; badge._w = 0; }
+  if (!badge._w) badge._w = badge.offsetWidth;
+  // 可視領域の右上に固定(スクロール量を加味)
+  badge.style.left = (wrapper.scrollLeft + wrapper.clientWidth - badge._w - 18) + 'px';
+  badge.style.top = (wrapper.scrollTop + 18) + 'px';
 }
 
 function lightenColor(hex, amount) {

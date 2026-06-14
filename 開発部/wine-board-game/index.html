@@ -157,7 +157,11 @@
   <script src="map.js"></script>
   <script src="app.js"></script>
   <script>
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    // 開発中はService Workerのキャッシュで更新が反映されない事故を防ぐため一旦無効化。
+    // 公開前に register('./sw.js') へ戻す。
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+    }
   </script>
 </body>
 </html>

@@ -170,6 +170,7 @@ html, body {
 
 #mapCanvas {
   display: block;        /* 自然サイズ(1800×1000)のまま表示 */
+  margin: 600px;         /* 端の産地でも自分を中央に置けるよう余白を確保 */
 }
 
 .region-tooltip {
@@ -239,6 +240,60 @@ html, body {
   0%,100% { transform: rotate(0) scale(1); }
   25% { transform: rotate(-15deg) scale(0.9); }
   75% { transform: rotate(15deg) scale(1.1); }
+}
+
+/* 中央サイコロ演出(桃鉄風) */
+.dice-overlay {
+  position: fixed; inset: 0; z-index: 7;
+  background: transparent;          /* 盤面はそのまま見える */
+  pointer-events: none;             /* 盤面のクリックを妨げない */
+  perspective: 600px;
+}
+.dice-overlay.hidden { display: none; }
+.die-cube {
+  position: absolute; width: 64px; height: 64px;
+  margin-left: -32px; margin-top: -32px; /* left/top をサイコロ中心に合わせる */
+  transform-style: preserve-3d;
+  transform: rotateX(-25deg) rotateY(-35deg);
+  will-change: transform;
+}
+/* 回転中に毎フレーム再ラスタライズされるため、影やグラデは使わず単色で軽くする */
+.die-face {
+  position: absolute; width: 64px; height: 64px;
+  background: #f6efe0;
+  border: 2px solid #b9a484; border-radius: 6px; box-sizing: border-box;
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  padding: 7px;
+  backface-visibility: hidden; /* 裏向きの面は描かない(面同士は接しているので隙間は出ない) */
+}
+.die-slot { display: flex; align-items: center; justify-content: center; }
+.die-pip {
+  display: block; width: 11px; height: 11px; border-radius: 50%;
+  background: #3a1414;
+}
+.dice-overlay-hint {
+  position: fixed; bottom: 18%; left: 0; right: 0; text-align: center;
+  color: #ffe9a8; font-size: 30px; font-weight: 900; letter-spacing: 2px;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.8), 0 0 18px rgba(255,180,60,0.5);
+  opacity: 0; transform: scale(0.7); transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2,1.4,0.4,1);
+}
+.dice-overlay-hint.show { opacity: 1; transform: scale(1); }
+
+/* 盤面右上の「あと○マス」固定バッジ(桃鉄風) */
+.steps-badge {
+  position: absolute; z-index: 6; display: none;
+  align-items: center; gap: 10px;
+  padding: 8px 18px 8px 14px;
+  background: linear-gradient(180deg, #fffdf8 0%, #f3e7cf 100%);
+  border: 3px solid #8a6a3f; border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8);
+  pointer-events: none; white-space: nowrap;
+}
+.steps-badge-die { font-size: 26px; line-height: 1; }
+.steps-badge-text {
+  font-size: 26px; font-weight: 900; color: #5a3a1a;
+  font-family: "Hiragino Kaku Gothic ProN","Helvetica Neue",sans-serif;
+  letter-spacing: 1px;
 }
 
 /* 移動フェーズ */

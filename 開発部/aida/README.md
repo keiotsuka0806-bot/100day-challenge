@@ -37,7 +37,7 @@ service cloud.firestore {
 
 ### 2. OpenAI API キー
 - Vercel プロジェクトの環境変数に `OPENAI_API_KEY` を設定する（既存の課金済みキーを利用）
-- ローカル確認時は `vercel dev` を使うと `api/translate.js` も動く（`.env.local` に `OPENAI_API_KEY=...`）
+- ローカル確認時は `vercel dev` を使うと `api/translate.js` も動く（`.env.local` に環境変数 `OPENAI_API_KEY` を設定する）
 
 ### 3. ローカル開発 / デプロイ
 ```bash

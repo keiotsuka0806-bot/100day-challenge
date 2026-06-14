@@ -15,30 +15,6 @@ function MovementService.GetReachable(regionId)
 	return region.adjacent
 end
 
--- 桃鉄ルール: 来た道(lastPosition)には戻れない。
--- ただし行き止まりで他に道が無いときだけ、引き返しを許可する。
-function MovementService.GetNextSteps(playerState)
-	local region = RegionData.ById[playerState.position]
-	if not region then
-		return {}
-	end
-
-	local options = {}
-	for _, adjacentId in ipairs(region.adjacent) do
-		if adjacentId ~= playerState.lastPosition then
-			table.insert(options, adjacentId)
-		end
-	end
-
-	if #options == 0 then
-		for _, adjacentId in ipairs(region.adjacent) do
-			table.insert(options, adjacentId)
-		end
-	end
-
-	return options
-end
-
 function MovementService.CanMove(fromRegionId, toRegionId)
 	local fromRegion = RegionData.ById[fromRegionId]
 	if not fromRegion then

@@ -1,0 +1,161 @@
+:root {
+  --bg: #14121a;
+  --panel: #1e1b27;
+  --panel-2: #272233;
+  --ink: #f3eefb;
+  --muted: #a79db8;
+  --accent: #5e9fc9;       /* PersonaForgeは青系で区別 */
+  --accent-soft: #89c1e7;
+  --line: #2f3644;
+  --ok: #7fcf9b;
+  --err: #e98b8b;
+  --radius: 14px;
+  --shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, #222a36 0%, transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.site-header { text-align: center; padding: 48px 20px 20px; }
+.site-header h1 {
+  margin: 0;
+  font-size: 2.6rem;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  background: linear-gradient(120deg, var(--accent-soft), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tagline { margin: 8px 0 0; color: var(--muted); }
+.tagline strong { color: var(--accent-soft); }
+
+main { max-width: 760px; margin: 0 auto; padding: 8px 16px 60px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+
+label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
+.req { color: var(--accent); font-size: 0.75rem; margin-left: 4px; font-weight: 600; }
+
+input, select {
+  width: 100%;
+  padding: 11px 13px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+  font-family: inherit;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input::placeholder { color: #6f6781; }
+
+.field { margin-bottom: 16px; }
+.field-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.field-row .field { flex: 1 1 200px; }
+.field-narrow { flex: 0 0 160px !important; }
+
+.key-card { background: var(--panel-2); }
+.key-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.key-row label { margin: 0; flex: 0 0 auto; }
+.key-row input { flex: 1 1 200px; }
+.key-note { font-size: 0.82rem; color: var(--muted); margin: 10px 0 0; }
+.key-note a { color: var(--accent-soft); }
+.key-status { font-size: 0.85rem; }
+.key-status.ok { color: var(--ok); }
+
+.btn {
+  border: none; border-radius: 10px; padding: 12px 18px;
+  font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: transform 0.05s ease, filter 0.15s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(120deg, var(--accent), #3f7aa0);
+  color: #0f1620;
+}
+.btn-primary:hover { filter: brightness(1.07); }
+.btn-primary:disabled { opacity: 0.55; cursor: progress; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--line);
+  color: var(--ink); padding: 10px 14px;
+}
+.btn-ghost:hover { border-color: var(--accent); }
+
+.error { color: var(--err); margin: 12px 0 0; font-size: 0.9rem; white-space: pre-wrap; }
+
+/* ペルソナカード */
+.results { display: grid; gap: 16px; }
+.persona {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.persona h3 { margin: 0 0 2px; font-size: 1.3rem; color: var(--accent-soft); }
+.persona .situation { color: var(--muted); font-size: 0.92rem; margin: 0 0 12px; }
+
+.p-block { margin: 10px 0; }
+.p-block .p-label { font-size: 0.78rem; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; }
+.p-block .p-body { margin-top: 2px; }
+.p-block ul { margin: 4px 0 0; padding-left: 1.2em; }
+.p-block li { margin: 2px 0; }
+
+.lead {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  font-size: 0.98rem;
+}
+.lead .p-label { display: block; margin-bottom: 4px; }
+
+.persona-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.persona-actions .btn { padding: 8px 12px; font-size: 0.88rem; }
+.copied { color: var(--ok) !important; border-color: var(--ok) !important; }
+
+.fav-card h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.fav-list { display: grid; gap: 10px; }
+.fav-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px;
+}
+.fav-item .fav-title { font-weight: 700; }
+.fav-item .fav-del { background: none; border: none; color: var(--err); cursor: pointer; font-size: 0.9rem; }
+
+.loading { text-align: center; color: var(--muted); padding: 18px; }
+.dots::after { content: "…"; animation: blink 1.2s infinite; }
+@keyframes blink { 0%, 20% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+
+.site-footer {
+  text-align: center; padding: 26px 16px 40px; color: var(--muted);
+  display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem;
+}
+.muted { opacity: 0.7; }
+
+@media (max-width: 520px) {
+  .field-narrow { flex: 1 1 100% !important; }
+  .site-header h1 { font-size: 2.1rem; }
+}

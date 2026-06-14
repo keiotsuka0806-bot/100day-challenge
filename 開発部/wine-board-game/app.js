@@ -72,6 +72,7 @@ function initGame(playerNames) {
       name,
       color: PLAYER_COLORS[i],
       position: startPositions[i],
+      lastPosition: null,
       resources: {},
       cards: [],
       completedSets: [],
@@ -104,6 +105,8 @@ function initGame(playerNames) {
   setupGameEventListeners();
   showScreen('gameScreen');
   setupCanvas();
+  markBoardDirty(); // 新しい盤面を裏画面に焼き直す
+  ensureDiceOverlay(); // サイコロのレイヤーを先に用意し、初回ロールの引っかかりを防ぐ
   setPhase('roll');
   renderAll();
   startAnimLoop();
@@ -224,39 +227,40 @@ function setupGameEventListeners() {
 // ===== ターンフロー =====
 function rollDice() {
   const p = currentPlayer();
-  const d1 = Math.ceil(Math.random() * 6);
-  const d2 = Math.ceil(Math.random() * 6);
-  const total = Math.max(1, d1 + d2);
+  const values = Array.from({ length: DICE_COUNT }, () => Math.ceil(Math.random() * 6));
+  const total = values.reduce((a, b) => a + b, 0);
 
-  // サイコロアニメーション
-  const die1El = document.getElementById('die1');
-  const die2El = document.getElementById('die2');
-  die1El.classList.add('rolling');
-  die2El.classList.add('rolling');
-  setTimeout(() => {
-    die1El.textContent = d1;
-    die2El.textContent = d2;
-    die1El.classList.remove('rolling');
-    die2El.classList.remove('rolling');
-  }, 400);
+  // 横パネルのサイコロ(2マス分)にも数字を反映
+  document.getElementById('die1').textContent = values[0];
+  document.getElementById('die2').textContent = values[1];
 
-  gs.diceResult = { d1, d2, total };
+  gs.diceResult = { values, total };
   gs.stepsLeft = total;
   gs.phase = 'move';
+  p.lastPosition = null; // 振り直すたびに分岐制限をリセット(最初の一歩はどこへでも行ける)
   gs.reachableRegions = getReachable(p.position, 1);
 
-  addLog(`${p.name}がサイコロを振った: ${d1}+${d2}=${total}`, p);
+  addLog(`${p.name}がサイコロを振った: ${values.join('+')}=${total}`, p);
 
-  setTimeout(() => {
+  // 盤面の自分の脇に3Dサイコロが落ちて弾む → 着地+ワンテンポ後に移動フェーズ(右上にあと○マス)
+  showDiceRoll(values).then(() => {
+    if (!gs) return;
     setPhase('move');
     renderAll();
-  }, 450);
+  });
 }
 
 function getReachable(posId, steps) {
   const region = REGION_DATA[posId];
   if (!region) return [];
-  return region.adjacent.filter(id => REGION_DATA[id] && isRegionVisible(id, gs));
+  let options = region.adjacent.filter(id => REGION_DATA[id] && isRegionVisible(id, gs));
+  // 桃鉄ルール: 来た道には戻れない。ただし行き止まりで他に道が無いときだけ引き返しを許可する。
+  const last = currentPlayer()?.lastPosition;
+  if (last) {
+    const noBacktrack = options.filter(id => id !== last);
+    if (noBacktrack.length > 0) options = noBacktrack;
+  }
+  return options;
 }
 
 async function movePlayerTo(regionId) {
@@ -273,6 +277,7 @@ async function movePlayerTo(regionId) {
   playStepSound();
   await animateTokenMove(p, fromRegion, toRegion, 260);
 
+  p.lastPosition = fromId; // 次の一歩で来た道(fromId)へは戻れないようにする
   p.position = regionId;
   gs.stepsLeft = Math.max(0, gs.stepsLeft - 1);
   claimRegion(p, regionId);
@@ -300,6 +305,7 @@ function skipMovement() {
 }
 
 function enterActionPhase() {
+  clearDice(); // 移動が終わったら盤面のサイコロを片付ける
   const p = currentPlayer();
   const region = REGION_DATA[p.position];
   const meta = getRegionStrategy(p.position);
@@ -390,6 +396,7 @@ function nextPlayer() {
   gs.diceResult = null;
   gs.stepsLeft = 0;
   gs.reachableRegions = [];
+  currentPlayer().lastPosition = null;
   document.getElementById('die1').textContent = '🎲';
   document.getElementById('die2').textContent = '🎲';
   setPhase('roll');
@@ -651,6 +658,7 @@ function claimRegion(player, regionId) {
   if (!region.claimedBy) {
     region.claimedBy = player.id;
     region.claimedTurn = gs.turn;
+    markBoardDirty(); // 取得で枠色が変わるので盤面キャッシュを更新
     let gain = meta.value;
     if (gs.marketEvent && matchesMarketTarget(regionId, gs.marketEvent)) {
       gain += gs.marketEvent.valueBonus || 0;
@@ -687,6 +695,162 @@ function completeSetsForPlayer(player) {
       player.vp += bonus;
       addLog(`${player.name}が${getSetLabel(setId)}を完成！+${bonus}価値`, player);
     }
+  }
+}
+
+// ===== 中央サイコロ演出(桃鉄風 3D ロール)=====
+const DIE_PIP_CELLS = {
+  1: [5], 2: [1, 9], 3: [1, 5, 9],
+  4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9]
+};
+// 各面の数字(向かい合う面の和は7): front1 / back6 / right3 / left4 / top2 / bottom5
+const DIE_FACE_TRANSFORMS = {
+  1: 'translateZ(32px)',
+  6: 'rotateY(180deg) translateZ(32px)',
+  3: 'rotateY(90deg) translateZ(32px)',
+  4: 'rotateY(-90deg) translateZ(32px)',
+  2: 'rotateX(90deg) translateZ(32px)',
+  5: 'rotateX(-90deg) translateZ(32px)'
+};
+// その数字を正面に向ける静止回転
+const DIE_REST = { 1: [0, 0], 2: [-90, 0], 3: [0, -90], 4: [0, 90], 5: [90, 0], 6: [0, 180] };
+
+function buildDieFace(n) {
+  const face = document.createElement('div');
+  face.className = 'die-face';
+  face.style.transform = DIE_FACE_TRANSFORMS[n];
+  for (let cell = 1; cell <= 9; cell++) {
+    const slot = document.createElement('span');
+    slot.className = 'die-slot';
+    if (DIE_PIP_CELLS[n].includes(cell)) {
+      const pip = document.createElement('span');
+      pip.className = 'die-pip';
+      slot.appendChild(pip);
+    }
+    slot.style.gridColumn = ((cell - 1) % 3) + 1;
+    slot.style.gridRow = Math.ceil(cell / 3);
+    face.appendChild(slot);
+  }
+  return face;
+}
+
+function buildDieCube() {
+  const cube = document.createElement('div');
+  cube.className = 'die-cube';
+  for (let n = 1; n <= 6; n++) cube.appendChild(buildDieFace(n));
+  return cube;
+}
+
+const DICE_COUNT = 3;
+// 自分(画面中央)から左上にずらした塊。自分のコマと被らない位置に置く。
+const DICE_CLUSTER = { x: -178, y: -36 };
+// サイコロ同士が重ならず、かつ離れすぎない緩い山(目安: 中心間 ~105px)
+const DICE_SCATTER = [
+  { x: -62, y: 14 },
+  { x: 18, y: -50 },
+  { x: 50, y: 46 }
+];
+
+function ensureDiceOverlay() {
+  let overlay = document.getElementById('diceOverlay');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.id = 'diceOverlay';
+  overlay.className = 'dice-overlay hidden';
+  for (let i = 0; i < DICE_COUNT; i++) overlay.appendChild(buildDieCube());
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+// 転がり終えたサイコロを盤面から消す。
+function clearDice() {
+  const overlay = document.getElementById('diceOverlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function easeOutBounce(t) {
+  const n1 = 7.5625, d1 = 2.75;
+  if (t < 1 / d1) return n1 * t * t;
+  if (t < 2 / d1) { t -= 1.5 / d1; return n1 * t * t + 0.75; }
+  if (t < 2.5 / d1) { t -= 2.25 / d1; return n1 * t * t + 0.9375; }
+  t -= 2.625 / d1; return n1 * t * t + 0.984375;
+}
+
+// 上空から落下→バウンドしつつ多軸を速く長く回転→斜めアングルで出目の面を上に着地。
+const DIE_DUR = 1700; // 落下〜静止までの時間(ms)
+function animateDieThrow(cube, value, delayMs) {
+  const [rx, ry] = DIE_REST[value];
+  const DROP = 300;   // 落下開始の高さ(px)
+  const startAt = performance.now() + delayMs;
+
+  const buildTransform = (ty, spinFactor) =>
+    `translateY(${ty.toFixed(1)}px) rotateX(-25deg) rotateY(-35deg) ` +
+    `rotateX(${(rx + spinFactor * 2880).toFixed(1)}deg) ` +  // 回転数を増やして速く
+    `rotateY(${(ry + spinFactor * 2160).toFixed(1)}deg) ` +
+    `rotateZ(${(spinFactor * 1080).toFixed(1)}deg)`;
+
+  function frame(now) {
+    let p = (now - startAt) / DIE_DUR;
+    if (p <= 0) { cube.style.transform = buildTransform(-DROP, 1); requestAnimationFrame(frame); return; }
+    if (p > 1) p = 1;
+    const ty = -DROP * (1 - easeOutBounce(p)); // 0でバウンド着地
+    const spin = 1 - easeOutCubic(p);          // 回転は減速して静止
+    cube.style.transform = buildTransform(ty, spin);
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  cube.style.transition = 'none';
+  cube.style.transform = buildTransform(-DROP, 1);
+  requestAnimationFrame(frame);
+}
+
+// サイコロは盤面上(自分の左上)に落として残す。転がり終えてワンテンポ置いてから resolve。
+function showDiceRoll(values) {
+  return new Promise(resolve => {
+    const overlay = ensureDiceOverlay();
+    const cubes = overlay.querySelectorAll('.die-cube');
+    overlay.classList.remove('hidden');
+
+    // 自分(=盤面中央)を基準に配置。盤面は常に自分が中央に来るようスクロールされる。
+    const wrap = document.querySelector('.map-wrapper');
+    const wr = wrap.getBoundingClientRect();
+    const cx = wr.left + wr.width / 2;
+    const cy = wr.top + wr.height / 2;
+
+    const lastDelay = (DICE_COUNT - 1) * 150;
+    cubes.forEach((cube, i) => {
+      const base = DICE_SCATTER[i] || { x: (i - 1) * 60, y: 0 };
+      const jx = DICE_CLUSTER.x + base.x + (Math.random() * 20 - 10);
+      const jy = DICE_CLUSTER.y + base.y + (Math.random() * 20 - 10);
+      cube.style.left = (cx + jx).toFixed(0) + 'px';
+      cube.style.top = (cy + jy).toFixed(0) + 'px';
+      animateDieThrow(cube, values[i], i * 150); // 少しずつ時間差で落とす
+    });
+    playDiceSound();
+
+    // 全部着地 + ワンテンポ(450ms)置いてから移動フェーズへ(=右上のあと○マス表示)
+    setTimeout(resolve, lastDelay + DIE_DUR + 450);
+  });
+}
+
+function playDiceSound() {
+  if (typeof window === 'undefined') return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = playDiceSound.ctx || (playDiceSound.ctx = new AudioContextClass());
+  // カラカラ転がる音: 短いクリックを連続で
+  for (let i = 0; i < 7; i++) {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'square';
+    o.frequency.value = 180 + Math.random() * 220;
+    g.gain.value = 0.015;
+    o.connect(g); g.connect(ctx.destination);
+    const t = ctx.currentTime + i * 0.11;
+    o.start(t);
+    g.gain.setValueAtTime(0.015, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+    o.stop(t + 0.07);
   }
 }
 
@@ -754,6 +918,7 @@ function unlockZoneForRegion(regionId) {
     zoneMembers.forEach(id => {
       if (!gs.visibleRegions.includes(id)) gs.visibleRegions.push(id);
     });
+    markBoardDirty(); // 産地が増えたので盤面キャッシュを更新
     addLog(`🗺 ${getZoneLabel(meta.zone)} が解放された`, null);
   }
 }

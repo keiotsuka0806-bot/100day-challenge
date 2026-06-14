@@ -39,14 +39,7 @@ local state = GameState.new("Standard")
 local pendingChallenges = {}
 
 local function broadcast()
-	local public = state:GetPublicState()
-	if state.status == "Running" and state.phase == "Move" then
-		local current = state:GetCurrentPlayer()
-		if current then
-			public.moveOptions = MovementService.GetNextSteps(current)
-		end
-	end
-	ClientStateUpdate:FireAllClients(public)
+	ClientStateUpdate:FireAllClients(state:GetPublicState())
 end
 
 local function tryStart()
@@ -81,25 +74,14 @@ local function requestMove(player, regionId)
 	end
 
 	local playerState = state:GetCurrentPlayer()
-
-	local allowed = false
-	for _, optionId in ipairs(MovementService.GetNextSteps(playerState)) do
-		if optionId == regionId then
-			allowed = true
-			break
-		end
-	end
-	if not allowed then
+	if not MovementService.CanMove(playerState.position, regionId) then
 		return
 	end
 
-	local fromRegionId = playerState.position
 	local ok = MovementService.ResolveArrival(state, playerState, regionId)
 	if ok then
-		playerState.lastPosition = fromRegionId
 		state.dice = math.max(0, (state.dice or 0) - 1)
 		if state.dice <= 0 then
-			playerState.lastPosition = nil
 			state.phase = "Build"
 		end
 		broadcast()

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LyricSpark — 歌詞プロンプト変換器</title>
+  <meta name="description" content="テーマと気分から、Suno用の歌詞＋スタイルプロンプトを3案生成。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>LyricSpark</h1>
+    <p class="tagline">テーマと気分から、<strong>Suno用の歌詞＋スタイルプロンプト</strong>を3案つくる。</p>
+  </header>
+
+  <main>
+    <!-- APIキー設定 -->
+    <section class="card key-card" id="keyCard">
+      <div class="key-row">
+        <label for="apiKey">Anthropic APIキー</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-... を貼り付け" autocomplete="off" />
+        <button id="saveKey" class="btn btn-ghost">保存</button>
+        <span id="keyStatus" class="key-status"></span>
+      </div>
+      <p class="key-note">
+        キーはこのブラウザ内(localStorage)だけに保存され、生成時にAnthropicへ直接送られます。サーバーには一切送りません。
+        キーは <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> で取得できます。
+      </p>
+    </section>
+
+    <!-- 入力 -->
+    <section class="card">
+      <div class="field">
+        <label for="theme">テーマ <span class="req">必須</span></label>
+        <input type="text" id="theme" placeholder="例：終電を逃した夜の解放感 / 別れた街をひとりで歩く" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="mood">気分・雰囲気</label>
+          <input type="text" id="mood" placeholder="例：切ないけど前向き / 疾走感" />
+        </div>
+        <div class="field">
+          <label for="genre">ジャンルのヒント(任意)</label>
+          <input type="text" id="genre" placeholder="例：シティポップ / ロック / lo-fi" />
+        </div>
+        <div class="field field-narrow">
+          <label for="lang">言語</label>
+          <select id="lang">
+            <option value="日本語">日本語</option>
+            <option value="English">English</option>
+            <option value="日本語+英語サビ">日本語(サビ英語)</option>
+          </select>
+        </div>
+      </div>
+      <button id="generate" class="btn btn-primary">3案つくる</button>
+      <p id="error" class="error" hidden></p>
+    </section>
+
+    <!-- 結果 -->
+    <section id="results" class="results"></section>
+
+    <!-- お気に入り -->
+    <section class="card fav-card" id="favSection" hidden>
+      <h2>お気に入り</h2>
+      <div id="favList" class="fav-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>LyricSpark — 100 Day Challenge</span>
+    <span class="muted">完全クライアントサイド / あなたのキーで動きます</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

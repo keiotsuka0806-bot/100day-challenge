@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PersonaForge — 読者ペルソナ生成</title>
+  <meta name="description" content="記事やプロダクトのテーマから、届ける読者をN=1の人物像で3人つくる。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>PersonaForge</h1>
+    <p class="tagline">「誰に書くか」を先に決める。<strong>届ける読者をN=1で3人</strong>つくる。</p>
+  </header>
+
+  <main>
+    <!-- APIキー設定 -->
+    <section class="card key-card" id="keyCard">
+      <div class="key-row">
+        <label for="apiKey">Anthropic APIキー</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-... を貼り付け" autocomplete="off" />
+        <button id="saveKey" class="btn btn-ghost">保存</button>
+        <span id="keyStatus" class="key-status"></span>
+      </div>
+      <p class="key-note">
+        キーはこのブラウザ内(localStorage)だけに保存され、生成時にAnthropicへ直接送られます。サーバーには一切送りません。
+        キーは <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> で取得できます。
+      </p>
+    </section>
+
+    <!-- 入力 -->
+    <section class="card">
+      <div class="field">
+        <label for="theme">記事・プロダクトのテーマ <span class="req">必須</span></label>
+        <input type="text" id="theme" placeholder="例：非エンジニアがAIと会社を経営する話 / 朝の習慣を続ける道具" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="goal">届けたい狙い(任意)</label>
+          <input type="text" id="goal" placeholder="例：noteのフォロワーを増やす / メンバーシップに誘導" />
+        </div>
+        <div class="field field-narrow">
+          <label for="medium">媒体</label>
+          <select id="medium">
+            <option value="note記事">note記事</option>
+            <option value="X(ポスト)">X(ポスト)</option>
+            <option value="プロダクトのLP">プロダクトLP</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+      </div>
+      <button id="generate" class="btn btn-primary">読者を3人つくる</button>
+      <p id="error" class="error" hidden></p>
+    </section>
+
+    <!-- 結果 -->
+    <section id="results" class="results"></section>
+
+    <!-- 保存したペルソナ -->
+    <section class="card fav-card" id="favSection" hidden>
+      <h2>保存したペルソナ</h2>
+      <div id="favList" class="fav-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>PersonaForge — 100 Day Challenge</span>
+    <span class="muted">完全クライアントサイド / あなたのキーで動きます</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

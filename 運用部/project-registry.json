@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-11",
+  "updatedAt": "2026-06-14T06:28:42.004Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -159,6 +159,20 @@
       "status": "ドロップ",
       "hosting": "firebase",
       "droppedAt": "2026-06-11"
+    },
+    "aida": {
+      "path": "開発部/aida",
+      "url": "https://aida-deploy-sooty.vercel.app",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "要修正",
+      "lastCouncil": "2026-06-14",
+      "lastDeploy": "2026-06-14",
+      "councilReport": "デザイン部/reports/2026-06-14-aida-genius-council.md",
+      "lastVerifiedAt": "2026-06-14T06:28:41.957Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://aida-deploy-sooty.vercel.app",
+      "lastReleaseCheck": "2026-06-14"
     }
   }
 }
