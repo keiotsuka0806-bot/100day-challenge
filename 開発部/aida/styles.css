@@ -174,7 +174,40 @@ body {
   background: linear-gradient(100deg, var(--a), var(--b));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+.r-header .r-sub { color: var(--ink-soft); font-size: 0.88rem; margin-top: 8px; }
 .result { display: flex; flex-direction: column; gap: 14px; }
+
+/* 問いごとの対話カード */
+.exchanges { display: flex; flex-direction: column; gap: 14px; }
+.exchange {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; padding: 16px; box-shadow: var(--shadow);
+}
+.exchange .q { font-weight: 700; font-size: 0.98rem; margin-bottom: 12px; line-height: 1.5; }
+.exchange .ans {
+  border-radius: 12px; padding: 10px 12px; margin-bottom: 8px;
+}
+.exchange .ans .who {
+  display: inline-block; font-size: 0.72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
+}
+.exchange .ans .a-text { font-size: 0.94rem; line-height: 1.6; }
+.exchange .ans.you { background: var(--a-soft); }
+.exchange .ans.you .who { background: var(--a); color: #fff; }
+.exchange .ans.them { background: var(--b-soft); }
+.exchange .ans.them .who { background: var(--b); color: #fff; }
+.exchange .bridge {
+  margin-top: 12px; padding: 12px;
+  border-left: 3px solid var(--accent);
+  background: linear-gradient(100deg, var(--a-soft), var(--b-soft));
+  border-radius: 8px;
+}
+.exchange .bridge .label {
+  display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--accent); margin-bottom: 6px;
+}
+.exchange .bridge .b-text { font-size: 0.95rem; line-height: 1.7; }
+.r-block.closing { border-left: 4px solid var(--b); }
 .r-block {
   background: var(--card); border: 1px solid var(--line);
   border-radius: 16px; padding: 18px; box-shadow: var(--shadow);

@@ -1,23 +1,41 @@
 // あいだ — AI翻訳エンドポイント（Vercel Serverless Function / Node.js）
-// 二人の非公開回答を受け取り、AIが「あいだ」にある共通点と本心の翻訳を返す。
+// 二人の非公開回答を受け取り、AIが「問いごとに」二人のあいだを橋渡しして返す。
 // OPENAI_API_KEY はサーバ側だけに置く（クライアントには絶対に出さない）。
 import OpenAI from "openai";
 
 const client = new OpenAI(); // OPENAI_API_KEY を環境変数から読む
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o";
 
-// 構造化出力のスキーマ（strict対応：全プロパティ required / additionalProperties:false）
+// 構造化出力スキーマ（strict対応：全プロパティ required / additionalProperties:false）
 const SCHEMA = {
   type: "object",
   properties: {
+    exchanges: {
+      type: "array",
+      description: "各問いごとの橋渡し。questions と同じ順番・同じ数で返す。",
+      items: {
+        type: "object",
+        properties: {
+          question: { type: "string", description: "対象の問い（そのまま）。" },
+          bridge: {
+            type: "string",
+            description:
+              "この問いについての橋渡し。二人それぞれの答えの奥にある本当の気持ちを汲み、隠れた共通点、またはやさしいすれ違いを、両方に届くように2〜4文で。二人の実際の言葉を手がかりにする。",
+          },
+        },
+        required: ["question", "bridge"],
+        additionalProperties: false,
+      },
+    },
     commonGround: {
       type: "array",
       items: { type: "string" },
-      description: "ふたりが本当は同じことを思っていた共通点。具体的に1〜2個。",
+      description: "全問を通して見えた、ふたりが本当は同じだった一点を2〜3個。",
     },
-    aTrueHeart: { type: "string", description: "Aさんの言葉の奥にある本心を、やさしく翻訳した文。" },
-    bTrueHeart: { type: "string", description: "Bさんの言葉の奥にある本心を、やさしく翻訳した文。" },
-    nextStep: { type: "string", description: "二人で今日できる、小さくて押し付けがましくない一歩を1つ。" },
+    closing: {
+      type: "string",
+      description: "全体を踏まえた、二人へのあたたかい締めくくりと、今日できる小さな一歩。3〜5文。",
+    },
     safety: {
       type: "object",
       properties: {
@@ -28,42 +46,50 @@ const SCHEMA = {
       additionalProperties: false,
     },
   },
-  required: ["commonGround", "aTrueHeart", "bTrueHeart", "nextStep", "safety"],
+  required: ["exchanges", "commonGround", "closing", "safety"],
   additionalProperties: false,
 };
 
 const SYSTEM = `あなたは「あいだ」という、二人の人間の本当の理解を橋渡しする通訳です。
-二人（AさんとBさん）が、お互いに見せずに同じ問いへ正直に答えました。あなたの仕事は、要約でも採点でもありません。次の3つだけを返します。
+二人（AさんとBさん）が、お互いの答えを見せずに、同じ複数の問いへ正直に答えました。
 
-1. commonGround: 二人の言葉の"あいだ"に隠れていた共通点——本当は同じことを思っていたのに言えていなかった一点——を、具体的に1〜2個。
-2. aTrueHeart / bTrueHeart: それぞれの防御的・遠回しな言い方の奥にある本当の気持ちを、本人にも相手にも届くように、やさしく翻訳する。
-3. nextStep: 二人で今日できる、小さくて押し付けがましくない一歩を1つだけ。命令でなく提案として。
+あなたの仕事は要約でも採点でもありません。**問いごとに、二人のあいだに立って通訳する**ことです。
+
+【exchanges（問いごとの橋渡し）】
+- 渡された questions と**同じ順番・同じ数**で返す。
+- 各 bridge では、その問いに対する**二人それぞれの答えの奥にある本当の気持ち**を汲み取り、
+  ・本当は同じことを感じていた点（隠れた共通点）、または
+  ・やさしいすれ違い（同じ言葉でも見ているものが違う点）
+  を、**AさんにもBさんにも届くように**、二人の実際の言葉を引きながら2〜4文で書く。
+- 「Aさんは〜と言っていて、その奥には〜という気持ちがあるのかもしれません。Bさんの〜という答えと、実は〜の点で重なっています」のように、**間に立って通訳している感**を出す。
+
+【commonGround】全問を通して見えた「本当は同じだった一点」を2〜3個、具体的に。
+【closing】全体を踏まえたあたたかい締めくくりと、今日二人でできる小さな一歩（押し付けでなく提案）を3〜5文で。
 
 絶対に守ること（このルールは品質より上位）：
 - 感情を捏造しない。書かれていないことを足さない。回答にない気持ちを「あるはず」と決めつけない。
 - どちらの肩も持たない。優劣・正誤・どちらが悪いの判定をしない。
-- 診断・断定をしない（「あなたは〇〇な人」と決めない）。相手への否定的な評価を増幅しない。
-- やさしく、具体的で、短い言葉で。きれいごとや一般論で薄めない。二人の実際の言葉を手がかりにする。
+- 診断・断定をしない。相手への否定的な評価を増幅しない。
+- やさしく、具体的に。きれいごとや一般論で薄めない。
 - 日本語で書く。温かいが、甘すぎない誠実なトーン。
 
 安全について：
-- 回答から、暴力（DV）・自傷・他害の危険が読み取れる場合は、safety.concern を true にし、safety.message に「ひとりで抱えず、専門の窓口に相談してください」という趣旨の短い案内（例：いのちの電話やDV相談窓口に触れる）を入れる。その場合でも翻訳は通常どおり丁寧に行う。
-- 危険がなければ safety.concern は false、safety.message は空文字。`;
+- 暴力（DV）・自傷・他害の危険が読み取れる場合は safety.concern を true にし、safety.message に「ひとりで抱えず専門の窓口に相談を」という短い案内を入れる（その場合も通訳は丁寧に行う）。危険がなければ concern は false、message は空文字。`;
 
 function buildUserContent({ relationLabel, aName, bName, qa }) {
   const lines = [];
   lines.push(`関係: ${relationLabel}`);
   lines.push(`Aさん = ${aName} / Bさん = ${bName}`);
   lines.push("");
-  lines.push("二人が同じ問いに、お互い非公開で答えました：");
+  lines.push(`二人が次の${qa.length}つの問いに、お互い非公開で答えました：`);
   qa.forEach((item, i) => {
     lines.push("");
-    lines.push(`問い${i + 1}: ${item.q}`);
+    lines.push(`【問い${i + 1}】${item.q}`);
     lines.push(`　Aさん(${aName})の答え: ${item.a || "（無回答）"}`);
     lines.push(`　Bさん(${bName})の答え: ${item.b || "（無回答）"}`);
   });
   lines.push("");
-  lines.push("この二人の『あいだ』を、ルールに従って通訳してください。");
+  lines.push("各問いごとに、二人の『あいだ』をルールに従って通訳してください。exchanges は上の問いと同じ順番・同じ数で。");
   return lines.join("\n");
 }
 
@@ -93,6 +119,7 @@ export default async function handler(req, res) {
 
     const completion = await client.chat.completions.create({
       model: MODEL,
+      max_tokens: 4000,
       messages: [
         { role: "system", content: SYSTEM },
         { role: "user", content: buildUserContent({ relationLabel, aName, bName, qa }) },
@@ -105,7 +132,6 @@ export default async function handler(req, res) {
 
     const msg = completion.choices?.[0]?.message;
 
-    // 安全フィルタ等で拒否された場合
     if (msg?.refusal) {
       res.status(200).json({
         error: "refusal",
@@ -113,7 +139,6 @@ export default async function handler(req, res) {
       });
       return;
     }
-
     if (!msg?.content) {
       res.status(502).json({ error: "no_text", message: "応答の取得に失敗しました。" });
       return;

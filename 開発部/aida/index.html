@@ -82,28 +82,21 @@
 
       <header class="r-header">
         <h2>ふたりの、あいだ</h2>
+        <p class="r-sub">同じ問いに、お互い別々に答えました。AIが二人のあいだを通訳します。</p>
       </header>
 
       <div class="result">
+        <!-- 問いごとの対話(JSで生成) -->
+        <div id="r-exchanges" class="exchanges"></div>
+
         <div class="r-block common" id="r-common">
           <h3>本当は、同じだった</h3>
           <ul id="r-common-list"></ul>
         </div>
 
-        <div class="r-twin">
-          <div class="r-block heart" id="r-a">
-            <h3 id="r-a-name">Aさんの、本当の気持ち</h3>
-            <p id="r-a-text"></p>
-          </div>
-          <div class="r-block heart" id="r-b">
-            <h3 id="r-b-name">Bさんの、本当の気持ち</h3>
-            <p id="r-b-text"></p>
-          </div>
-        </div>
-
-        <div class="r-block step" id="r-step">
-          <h3>今日、二人でできる小さな一歩</h3>
-          <p id="r-step-text"></p>
+        <div class="r-block closing" id="r-closing">
+          <h3>これから、二人で</h3>
+          <p id="r-closing-text"></p>
         </div>
       </div>
 
