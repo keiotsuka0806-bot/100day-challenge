@@ -1,17 +1,17 @@
 :root {
-  --bg: #f6f4ef;
-  --ink: #26262e;
-  --ink-soft: #5a5a66;
-  --line: #e4e0d7;
-  --card: #fffefb;
-  --a: #3f8a7c;      /* Aさん側 = 緑(つなぐ) */
-  --a-soft: #eaf3f0;
-  --b: #b9744a;      /* Bさん側 = 琥珀(温かさ) */
-  --b-soft: #f6ece3;
-  --accent: #3f8a7c;
-  --danger: #b23a48;
-  --radius: 18px;
-  --shadow: 0 10px 30px rgba(38, 38, 46, 0.08);
+  --bg: #faf4ea;      /* 温かいアイボリー */
+  --ink: #3b302a;     /* 温かいダークブラウン */
+  --ink-soft: #8a7b6d;
+  --line: #ece0cf;
+  --card: #fffdf7;
+  --a: #5f9b86;       /* あなた = やわらかいセージグリーン */
+  --a-soft: #e8f1ec;
+  --b: #cf7e63;       /* 相手 = 温かいテラコッタ */
+  --b-soft: #f8ebe4;
+  --accent: #c98a4a;  /* メイン = 温かいハニー */
+  --danger: #b2503f;
+  --radius: 20px;
+  --shadow: 0 12px 34px rgba(120, 84, 52, 0.12);  /* 温かい影 */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,7 +19,7 @@
 html, body { height: 100%; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+  font-family: "Zen Maru Gothic", -apple-system, BlinkMacSystemFont, "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
   color: var(--ink);
   background: var(--bg);
   line-height: 1.75;
@@ -32,8 +32,9 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 0% 0%, rgba(63, 138, 124, 0.10), transparent 60%),
-    radial-gradient(60% 50% at 100% 100%, rgba(185, 116, 74, 0.10), transparent 60%);
+    radial-gradient(60% 50% at 0% 0%, rgba(95, 155, 134, 0.12), transparent 60%),
+    radial-gradient(70% 55% at 100% 100%, rgba(207, 126, 99, 0.14), transparent 60%),
+    radial-gradient(80% 60% at 50% 50%, rgba(201, 138, 74, 0.06), transparent 70%);
 }
 
 #app { max-width: 640px; margin: 0 auto; padding: 28px 20px 64px; }

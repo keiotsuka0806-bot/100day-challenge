@@ -1,4 +1,4 @@
-const CACHE = "aida-v3";
+const CACHE = "aida-v4";
 const ASSETS = ["/", "/index.html", "/app.js", "/questions.js", "/styles.css", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
