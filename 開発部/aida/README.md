@@ -11,11 +11,11 @@
 |------|------|
 | フロント | Vanilla JS（ビルドなし） |
 | 部屋・回答の同期 | Firebase Firestore（クライアントSDK / CDN compat 10.12.0） |
-| AI翻訳 | Vercel Serverless Function `api/translate.js`（Claude を `@anthropic-ai/sdk` で呼ぶ。`claude-opus-4-8` / 構造化出力） |
+| AI翻訳 | Vercel Serverless Function `api/translate.js`（OpenAI を `openai` SDK で呼ぶ。`gpt-4o` / 構造化出力 json_schema strict） |
 | ホスティング | Vercel |
 | PWA | manifest + service-worker |
 
-**APIキーはサーバ側だけ**：`ANTHROPIC_API_KEY` は Vercel の環境変数に置き、ブラウザには一切出さない（BYOK・キー直書きは禁止）。
+**APIキーはサーバ側だけ**：`OPENAI_API_KEY` は Vercel の環境変数に置き、ブラウザには一切出さない（BYOK・キー直書きは禁止）。モデルは `OPENAI_MODEL` 環境変数で変更可（既定 `gpt-4o`）。あとから Claude に戻す場合は `api/translate.js` を `@anthropic-ai/sdk` 版に差し替える。
 
 ## セットアップ
 
@@ -35,9 +35,9 @@ service cloud.firestore {
 }
 ```
 
-### 2. Claude API キー
-- Vercel プロジェクトの環境変数に `ANTHROPIC_API_KEY` を設定する
-- ローカル確認時は `vercel dev` を使うと `api/translate.js` も動く（`.env.local` に `ANTHROPIC_API_KEY=...`）
+### 2. OpenAI API キー
+- Vercel プロジェクトの環境変数に `OPENAI_API_KEY` を設定する（既存の課金済みキーを利用）
+- ローカル確認時は `vercel dev` を使うと `api/translate.js` も動く（`.env.local` に `OPENAI_API_KEY=...`）
 
 ### 3. ローカル開発 / デプロイ
 ```bash

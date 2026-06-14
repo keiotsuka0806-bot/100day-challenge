@@ -5,6 +5,6 @@
   "type": "module",
   "description": "あいだ — 二人の本当の対話を、AIが通訳する",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.69.0"
+    "openai": "^4.77.0"
   }
 }

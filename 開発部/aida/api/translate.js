@@ -1,11 +1,12 @@
 // あいだ — AI翻訳エンドポイント（Vercel Serverless Function / Node.js）
-// 二人の非公開回答を受け取り、Claude が「あいだ」にある共通点と本心の翻訳を返す。
-// ANTHROPIC_API_KEY はサーバ側だけに置く（クライアントには絶対に出さない）。
-import Anthropic from "@anthropic-ai/sdk";
+// 二人の非公開回答を受け取り、AIが「あいだ」にある共通点と本心の翻訳を返す。
+// OPENAI_API_KEY はサーバ側だけに置く（クライアントには絶対に出さない）。
+import OpenAI from "openai";
 
-const client = new Anthropic(); // ANTHROPIC_API_KEY を環境変数から読む
+const client = new OpenAI(); // OPENAI_API_KEY を環境変数から読む
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o";
 
-// 構造化出力のスキーマ。両者に同じものを提示する。
+// 構造化出力のスキーマ（strict対応：全プロパティ required / additionalProperties:false）
 const SCHEMA = {
   type: "object",
   properties: {
@@ -14,23 +15,14 @@ const SCHEMA = {
       items: { type: "string" },
       description: "ふたりが本当は同じことを思っていた共通点。具体的に1〜2個。",
     },
-    aTrueHeart: {
-      type: "string",
-      description: "Aさんの言葉の奥にある本心を、やさしく翻訳した文。",
-    },
-    bTrueHeart: {
-      type: "string",
-      description: "Bさんの言葉の奥にある本心を、やさしく翻訳した文。",
-    },
-    nextStep: {
-      type: "string",
-      description: "二人で今日できる、小さくて押し付けがましくない一歩を1つ。",
-    },
+    aTrueHeart: { type: "string", description: "Aさんの言葉の奥にある本心を、やさしく翻訳した文。" },
+    bTrueHeart: { type: "string", description: "Bさんの言葉の奥にある本心を、やさしく翻訳した文。" },
+    nextStep: { type: "string", description: "二人で今日できる、小さくて押し付けがましくない一歩を1つ。" },
     safety: {
       type: "object",
       properties: {
         concern: { type: "boolean", description: "暴力・自傷など専門の助けが必要な兆候があれば true。" },
-        message: { type: "string", description: "concern が true のとき、翻訳より先に伝える案内文。なければ空文字。" },
+        message: { type: "string", description: "concern が true のとき翻訳より先に伝える案内文。なければ空文字。" },
       },
       required: ["concern", "message"],
       additionalProperties: false,
@@ -99,21 +91,22 @@ export default async function handler(req, res) {
 
     const qa = questions.map((q, i) => ({ q, a: a[i] ?? "", b: b[i] ?? "" }));
 
-    const response = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 8000,
-      thinking: { type: "adaptive" },
-      output_config: {
-        effort: "high",
-        format: { type: "json_schema", schema: SCHEMA },
-      },
-      system: SYSTEM,
+    const completion = await client.chat.completions.create({
+      model: MODEL,
       messages: [
+        { role: "system", content: SYSTEM },
         { role: "user", content: buildUserContent({ relationLabel, aName, bName, qa }) },
       ],
+      response_format: {
+        type: "json_schema",
+        json_schema: { name: "aida_translation", strict: true, schema: SCHEMA },
+      },
     });
 
-    if (response.stop_reason === "refusal") {
+    const msg = completion.choices?.[0]?.message;
+
+    // 安全フィルタ等で拒否された場合
+    if (msg?.refusal) {
       res.status(200).json({
         error: "refusal",
         message: "この内容では通訳できませんでした。表現を少し変えてもう一度試してください。",
@@ -121,13 +114,12 @@ export default async function handler(req, res) {
       return;
     }
 
-    const textBlock = response.content.find((blk) => blk.type === "text");
-    if (!textBlock) {
+    if (!msg?.content) {
       res.status(502).json({ error: "no_text", message: "応答の取得に失敗しました。" });
       return;
     }
 
-    const result = JSON.parse(textBlock.text);
+    const result = JSON.parse(msg.content);
     res.status(200).json({ result });
   } catch (err) {
     console.error("translate error:", err);
