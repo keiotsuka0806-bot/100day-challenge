@@ -229,6 +229,7 @@ function enterWaiting() {
     const d = snap.data();
     const aDone = !!(d.a && d.a.answers);
     const bDone = !!(d.b && d.b.answers);
+    document.getElementById("btn-retry").hidden = true;
 
     // 結果が出ていれば表示
     if (d.result) {
@@ -239,6 +240,7 @@ function enterWaiting() {
     if (d.error) {
       document.getElementById("wait-title").textContent = "通訳に失敗しました";
       document.getElementById("wait-sub").textContent = d.error;
+      document.getElementById("btn-retry").hidden = false;
       return;
     }
 
@@ -401,12 +403,43 @@ document.getElementById("btn-again").addEventListener("click", () => {
 // ───────────────────────────────────────────────
 // コピー
 // ───────────────────────────────────────────────
-function copyCode() {
+function copyShareLink(btn) {
   if (!currentCode) return;
-  navigator.clipboard?.writeText(currentCode);
+  const url = `${location.origin}/?room=${currentCode}`;
+  navigator.clipboard?.writeText(url);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = "コピー済み✓";
+    setTimeout(() => { btn.textContent = orig; }, 1600);
+  }
 }
-document.getElementById("btn-copy").addEventListener("click", copyCode);
-document.getElementById("btn-copy2").addEventListener("click", copyCode);
+document.getElementById("btn-copy").addEventListener("click", (e) => copyShareLink(e.currentTarget));
+document.getElementById("btn-copy2").addEventListener("click", (e) => copyShareLink(e.currentTarget));
+
+// 通訳に失敗したときの再試行(errorをクリアすると、onSnapshotが再び翻訳を試みる)
+document.getElementById("btn-retry").addEventListener("click", async () => {
+  if (!currentCode) return;
+  document.getElementById("btn-retry").hidden = true;
+  document.getElementById("wait-title").textContent = "もう一度試しています";
+  document.getElementById("wait-sub").textContent = "少しだけ時間をください…";
+  try {
+    await rooms.doc(currentCode).update({ error: null, translating: false });
+  } catch (e) {
+    console.error(e);
+    document.getElementById("btn-retry").hidden = false;
+  }
+});
+
+// 招待リンク(?room=CODE)で来たら、参加コードを自動入力する
+(function initFromUrl() {
+  const code = new URLSearchParams(location.search).get("room");
+  if (!code) return;
+  const input = document.getElementById("join-code");
+  input.value = code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  const hint = document.getElementById("home-hint");
+  if (hint) hint.textContent = "招待コードが入りました。「参加する」を押してください。";
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+})();
 
 // ───────────────────────────────────────────────
 // ユーティリティ
