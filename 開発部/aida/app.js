@@ -111,6 +111,7 @@ btnCreate.addEventListener("click", async () => {
     });
     currentCode = code;
     myRole = "a";
+    localStorage.setItem(`aida_role_${code}`, "a");
     enterQuestions(picked, true);
   } catch (e) {
     console.error(e);
