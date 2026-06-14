@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>あいだ — 二人の本当の対話を、AIが通訳する</title>
+  <meta name="description" content="大切な誰かと一緒に。お互い別々に正直に答えると、AIが二人の『あいだ』にある本心を翻訳します。" />
+  <meta name="theme-color" content="#3f8a7c" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase (Firestore で二人の部屋を同期) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="bridge-bg" aria-hidden="true"></div>
+
+  <main id="app">
+    <!-- ホーム -->
+    <section class="screen active" id="screen-home">
+      <header class="hero">
+        <h1 class="logo">あいだ</h1>
+        <p class="tagline">大切な誰かと、本当の対話を。<br />お互い別々に答えると、AIが二人の<em>あいだ</em>にある本心を通訳します。</p>
+      </header>
+
+      <div class="card">
+        <h2 class="card-title">誰と話しますか</h2>
+        <div class="relations" id="relations"></div>
+
+        <div class="actions">
+          <button class="btn primary" id="btn-create" disabled>この人と部屋を作る</button>
+          <div class="divider"><span>または</span></div>
+          <div class="join-row">
+            <input id="join-code" inputmode="text" autocapitalize="characters" maxlength="6" placeholder="コードを入力" aria-label="参加コード" />
+            <button class="btn ghost" id="btn-join">参加する</button>
+          </div>
+          <p class="hint" id="home-hint"></p>
+        </div>
+      </div>
+
+      <p class="note">回答はその部屋の二人だけのもの。AIが感情を作り話すことはありません。</p>
+    </section>
+
+    <!-- 質問 -->
+    <section class="screen" id="screen-questions">
+      <div class="code-banner" id="code-banner" hidden>
+        <span>相手に渡すコード</span>
+        <strong id="code-text">------</strong>
+        <button class="btn tiny" id="btn-copy">コピー</button>
+      </div>
+
+      <header class="q-header">
+        <h2 id="q-title">あなたの番です</h2>
+        <p class="q-sub">相手には見えません。正直に、思ったままで大丈夫。</p>
+      </header>
+
+      <form id="q-form" class="q-form"></form>
+
+      <div class="actions sticky">
+        <button class="btn primary" id="btn-submit">答えを送る</button>
+        <p class="hint" id="q-hint"></p>
+      </div>
+    </section>
+
+    <!-- 待機 -->
+    <section class="screen" id="screen-waiting">
+      <div class="waiting">
+        <div class="pulse" aria-hidden="true"><span></span><span></span><span></span></div>
+        <h2 id="wait-title">相手の答えを待っています</h2>
+        <p id="wait-sub" class="q-sub"></p>
+        <div class="code-banner inline" id="wait-code-banner" hidden>
+          <span>コード</span><strong id="wait-code-text">------</strong>
+          <button class="btn tiny" id="btn-copy2">コピー</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section class="screen" id="screen-result">
+      <div id="safety-box" class="safety" hidden></div>
+
+      <header class="r-header">
+        <h2>ふたりの、あいだ</h2>
+      </header>
+
+      <div class="result">
+        <div class="r-block common" id="r-common">
+          <h3>本当は、同じだった</h3>
+          <ul id="r-common-list"></ul>
+        </div>
+
+        <div class="r-twin">
+          <div class="r-block heart" id="r-a">
+            <h3 id="r-a-name">Aさんの、本当の気持ち</h3>
+            <p id="r-a-text"></p>
+          </div>
+          <div class="r-block heart" id="r-b">
+            <h3 id="r-b-name">Bさんの、本当の気持ち</h3>
+            <p id="r-b-text"></p>
+          </div>
+        </div>
+
+        <div class="r-block step" id="r-step">
+          <h3>今日、二人でできる小さな一歩</h3>
+          <p id="r-step-text"></p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btn-again">別の人ともう一度</button>
+      </div>
+      <p class="note">この結果は二人だけのもの。スクリーンショットで残せます。</p>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
