@@ -6,15 +6,14 @@
 // Firebase 設定（要変更：自分の Firebase プロジェクトの値に差し替える）
 // Firestore を有効化し、下の config を貼り替えてください。
 // ───────────────────────────────────────────────
-// WhiskyNote と同じ Firebase プロジェクト(whisky-note-e137d)を流用。
-// データは別コレクション(aidaRooms)に入る。Firestoreは既に有効化済み。
+// あいだ専用の Firebase プロジェクト(aida-3cc6f)。WhiskyNoteとは完全分離。
 const firebaseConfig = {
-  apiKey: "AIzaSyBjp0JcBlh6Ytg1Zm22Hqk_vyCx_Z7x2lw",
-  authDomain: "whisky-note-e137d.firebaseapp.com",
-  projectId: "whisky-note-e137d",
-  storageBucket: "whisky-note-e137d.firebasestorage.app",
-  messagingSenderId: "650822267689",
-  appId: "1:650822267689:web:4a8bd6949ace83d90efd38",
+  apiKey: "AIzaSyAWkXrtPU_u6ih2IEDS_AgORz5PdlhJNmo",
+  authDomain: "aida-3cc6f.firebaseapp.com",
+  projectId: "aida-3cc6f",
+  storageBucket: "aida-3cc6f.firebasestorage.app",
+  messagingSenderId: "53691443876",
+  appId: "1:53691443876:web:49dbc2486ee0a550259431",
 };
 
 firebase.initializeApp(firebaseConfig);
