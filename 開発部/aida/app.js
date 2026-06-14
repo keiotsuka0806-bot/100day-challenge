@@ -350,9 +350,6 @@ async function runTranslation(code, d) {
 // ───────────────────────────────────────────────
 function renderResult(d) {
   const r = d.result;
-  const otherRole = myRole === "a" ? "b" : "a";
-  const myAns = (d[myRole] && d[myRole].answers) || [];
-  const otherAns = (d[otherRole] && d[otherRole].answers) || [];
   const questions = d.questions || [];
 
   // 安全
@@ -368,28 +365,16 @@ function renderResult(d) {
   const wrap = document.getElementById("r-exchanges");
   wrap.innerHTML = "";
   const exchanges = r.exchanges || [];
+  // 生の回答は表示しない。問いと「あいだ」の通訳だけを見せる。
   questions.forEach((q, i) => {
     const bridge = (exchanges[i] && exchanges[i].bridge) || "";
     const card = document.createElement("div");
     card.className = "exchange";
     card.appendChild(el("p", "q", `Q${i + 1}. ${q}`));
-
-    const you = el("div", "ans you");
-    you.appendChild(el("span", "who", "あなた"));
-    you.appendChild(el("p", "a-text", myAns[i] || "（無回答）"));
-    card.appendChild(you);
-
-    const them = el("div", "ans them");
-    them.appendChild(el("span", "who", "相手"));
-    them.appendChild(el("p", "a-text", otherAns[i] || "（無回答）"));
-    card.appendChild(them);
-
-    if (bridge) {
-      const br = el("div", "bridge");
-      br.appendChild(el("span", "label", "あいだ"));
-      br.appendChild(el("p", "b-text", bridge));
-      card.appendChild(br);
-    }
+    const br = el("div", "bridge");
+    br.appendChild(el("span", "label", "あいだ"));
+    br.appendChild(el("p", "b-text", bridge || "（この問いの通訳は生成されませんでした）"));
+    card.appendChild(br);
     wrap.appendChild(card);
   });
 
