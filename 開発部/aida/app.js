@@ -50,6 +50,7 @@ let selectedRelation = null;
 let currentCode = null;
 let myRole = null; // 'a' | 'b'
 let unsub = null;
+let staleTimer = null; // 翻訳が固まったときの復帰用
 
 // ───────────────────────────────────────────────
 // 画面切り替え
@@ -230,6 +231,7 @@ function enterWaiting() {
     const aDone = !!(d.a && d.a.answers);
     const bDone = !!(d.b && d.b.answers);
     document.getElementById("btn-retry").hidden = true;
+    clearTimeout(staleTimer);
 
     // 結果が出ていれば表示
     if (d.result) {
@@ -242,6 +244,13 @@ function enterWaiting() {
       document.getElementById("wait-sub").textContent = d.error;
       document.getElementById("btn-retry").hidden = false;
       return;
+    }
+
+    // 両者回答済みなのに結果が出ない状態が30秒続いたら、固まり対策で再試行を出す
+    if (aDone && bDone) {
+      staleTimer = setTimeout(() => {
+        document.getElementById("btn-retry").hidden = false;
+      }, 30000);
     }
 
     // 進捗メッセージ
