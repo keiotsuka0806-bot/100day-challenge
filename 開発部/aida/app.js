@@ -23,63 +23,25 @@ const rooms = db.collection("aidaRooms");
 // ───────────────────────────────────────────────
 // 関係ごとの問い（言い回しを変えてある）
 // ───────────────────────────────────────────────
+// ラベルと絵文字のみ。問いの本体は questions.js の AIDA_QUESTIONS（各50問以上）から
+// 毎回ランダムで5問選ぶ。
 const RELATIONS = {
-  partner: {
-    label: "恋人・パートナー",
-    emo: "💞",
-    questions: [
-      "最近、相手のどんな瞬間に「やっぱり好きだな」と思った？",
-      "言いそびれているけど、実は感謝していることは？",
-      "本当はもっとこうしてほしい、という小さなお願いはある？",
-      "最近の出来事で、ちょっと寂しかった・引っかかった瞬間は？",
-      "二人の将来で、わくわくすること／少し不安なことは？",
-    ],
-  },
-  family: {
-    label: "親子・家族",
-    emo: "🏠",
-    questions: [
-      "面と向かっては照れて言えない「ありがとう」を、ひとつ挙げるなら？",
-      "昔のことで、今も心に少し引っかかっていることは？",
-      "本当はもっと分かってほしい、今の自分の状況や気持ちは？",
-      "相手の体や暮らしで、口には出さないけど心配していることは？",
-      "これから二人の関係が、どうなったら嬉しい？",
-    ],
-  },
-  friend: {
-    label: "友人",
-    emo: "🤝",
-    questions: [
-      "相手のどんなところを、普段は言わないけど尊敬している？",
-      "本当は会いたかった／誘いたかったのに、言えなかったことは？",
-      "助けられた・救われたのに、ちゃんと伝えられていない出来事は？",
-      "この付き合いの中で、少しモヤッとした瞬間はある？",
-      "これからもこの関係を、どんなふうに続けていきたい？",
-    ],
-  },
-  distant: {
-    label: "距離ができた人",
-    emo: "🌉",
-    questions: [
-      "あの頃、本当は言いたかったのに言えなかった一言は？",
-      "すれ違いのきっかけは、自分では何だったと思う？",
-      "それでも相手に、今も残っている良い記憶や感謝は？",
-      "もし今もう一度会えたら、まず何を伝えたい？",
-      "この関係がどうなったら、自分の気持ちが少し楽になる？",
-    ],
-  },
-  colleague: {
-    label: "仕事仲間",
-    emo: "💼",
-    questions: [
-      "相手の仕事ぶりで、密かに助かっている・尊敬していることは？",
-      "言いづらくて飲み込んでいる、仕事上の本音やお願いは？",
-      "最近のやりとりで、少しやりにくさを感じた場面は？",
-      "「もっとこう協力できたら」と思う具体的な場面はある？",
-      "これから二人がどうなったら、お互い働きやすい？",
-    ],
-  },
+  partner: { label: "恋人・パートナー", emo: "💞" },
+  family: { label: "親子・家族", emo: "🏠" },
+  friend: { label: "友人", emo: "🤝" },
+  distant: { label: "距離ができた人", emo: "🌉" },
+  colleague: { label: "仕事仲間", emo: "💼" },
 };
+
+// プールから重複なくn問ランダムに選ぶ（Fisher–Yates）
+function pickN(arr, n) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, n);
+}
 
 // ───────────────────────────────────────────────
 // 状態
@@ -134,10 +96,11 @@ btnCreate.addEventListener("click", async () => {
   try {
     const code = genCode();
     const rel = RELATIONS[selectedRelation];
+    const picked = pickN(AIDA_QUESTIONS[selectedRelation], 5);
     await rooms.doc(code).set({
       relation: selectedRelation,
       relationLabel: rel.label,
-      questions: rel.questions,
+      questions: picked,
       a: { joined: true, answers: null },
       b: { joined: false, answers: null },
       translating: false,
@@ -147,7 +110,7 @@ btnCreate.addEventListener("click", async () => {
     });
     currentCode = code;
     myRole = "a";
-    enterQuestions(rel.questions, true);
+    enterQuestions(picked, true);
   } catch (e) {
     console.error(e);
     hint.textContent = "部屋を作れませんでした。Firebaseの設定を確認してください。";
