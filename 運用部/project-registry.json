@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-14T06:28:42.004Z",
+  "updatedAt": "2026-06-14T06:31:05.234Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -165,11 +165,11 @@
       "url": "https://aida-deploy-sooty.vercel.app",
       "type": "ai",
       "council": "AI Product Council",
-      "status": "要修正",
+      "status": "共有可能",
       "lastCouncil": "2026-06-14",
       "lastDeploy": "2026-06-14",
       "councilReport": "デザイン部/reports/2026-06-14-aida-genius-council.md",
-      "lastVerifiedAt": "2026-06-14T06:28:41.957Z",
+      "lastVerifiedAt": "2026-06-14T06:31:05.204Z",
       "lastHttpStatus": "HTTP 200",
       "lastPublicUrl": "https://aida-deploy-sooty.vercel.app",
       "lastReleaseCheck": "2026-06-14"
