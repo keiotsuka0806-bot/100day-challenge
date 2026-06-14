@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // あいだの部屋: コード(ドキュメントID)を知っている人だけがその部屋にアクセスできる「共有リンク方式」。
+    match /aidaRooms/{code} {
+      // 単一ドキュメントの取得のみ許可(コードを知っていれば読める)
+      allow get: if true;
+      // コレクションの一覧・クエリは禁止(全部屋のスキャン・列挙を防ぐ)
+      allow list: if false;
+      // 部屋の作成・回答や結果の書き込みは許可
+      allow create: if true;
+      allow update: if true;
+      // 削除は禁止(運用側のみ。誤削除・荒らし防止)
+      allow delete: if false;
+    }
+
+    // それ以外は全面拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
