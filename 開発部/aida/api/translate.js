@@ -115,7 +115,17 @@ export default async function handler(req, res) {
       return;
     }
 
-    const qa = questions.map((q, i) => ({ q, a: a[i] ?? "", b: b[i] ?? "" }));
+    // 入力サイズの上限ガード(1回あたりのコストを抑え、課金の悪用を緩和)
+    if (questions.length > 12) {
+      res.status(400).json({ error: "questions は最大12件までです" });
+      return;
+    }
+    const clip = (s, n) => (typeof s === "string" ? s.slice(0, n) : "");
+    const qa = questions.slice(0, 12).map((q, i) => ({
+      q: clip(q, 300),
+      a: clip(a[i], 1500),
+      b: clip(b[i], 1500),
+    }));
 
     const completion = await client.chat.completions.create({
       model: MODEL,

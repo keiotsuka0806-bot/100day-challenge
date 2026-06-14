@@ -167,9 +167,15 @@ function enterQuestions(questions, isCreator) {
   questions.forEach((q, i) => {
     const wrap = document.createElement("div");
     wrap.className = "q-item";
-    wrap.innerHTML = `
-      <label for="q-${i}">${i + 1}. ${q}</label>
-      <textarea id="q-${i}" rows="3" placeholder="思ったままで大丈夫"></textarea>`;
+    const label = document.createElement("label");
+    label.setAttribute("for", `q-${i}`);
+    label.textContent = `${i + 1}. ${q}`; // textContentでHTMLとして解釈させない(XSS対策)
+    const ta = document.createElement("textarea");
+    ta.id = `q-${i}`;
+    ta.rows = 3;
+    ta.placeholder = "思ったままで大丈夫";
+    wrap.appendChild(label);
+    wrap.appendChild(ta);
     form.appendChild(wrap);
   });
 
