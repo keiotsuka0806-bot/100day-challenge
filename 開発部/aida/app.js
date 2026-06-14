@@ -124,7 +124,7 @@ btnCreate.addEventListener("click", async () => {
 // ───────────────────────────────────────────────
 // 参加する（自分 = B）
 // ───────────────────────────────────────────────
-document.getElementById("btn-join").addEventListener("click", async () => {
+document.getElementById("btn-join").addEventListener("click", () => {
   const input = document.getElementById("join-code");
   const code = (input.value || "").trim().toUpperCase();
   const hint = document.getElementById("home-hint");
@@ -134,31 +134,52 @@ document.getElementById("btn-join").addEventListener("click", async () => {
     hint.classList.add("error");
     return;
   }
+  enterRoom(code);
+});
+
+// コードで部屋に入る/戻る。コードを知っていれば入れる＝退出後の再入室・別ブラウザでの再開もできる。
+async function enterRoom(code) {
+  const hint = document.getElementById("home-hint");
+  hint.classList.remove("error");
   hint.textContent = "部屋を探しています…";
+  let snap;
   try {
-    const ref = rooms.doc(code);
-    const snap = await ref.get();
-    if (!snap.exists) {
-      hint.textContent = "そのコードの部屋は見つかりませんでした。";
-      hint.classList.add("error");
-      return;
-    }
-    const data = snap.data();
-    if (data.b && data.b.joined) {
-      hint.textContent = "この部屋にはもう二人います。";
-      hint.classList.add("error");
-      return;
-    }
-    await ref.update({ "b.joined": true });
-    currentCode = code;
-    myRole = "b";
-    enterQuestions(data.questions, false);
+    snap = await rooms.doc(code).get();
   } catch (e) {
     console.error(e);
     hint.textContent = "参加できませんでした。通信環境を確認してください。";
     hint.classList.add("error");
+    return;
   }
-});
+  if (!snap.exists) {
+    hint.textContent = "そのコードの部屋は見つかりませんでした。";
+    hint.classList.add("error");
+    return;
+  }
+  const data = snap.data();
+  currentCode = code;
+  const stored = localStorage.getItem(`aida_role_${code}`);
+  if (stored === "a") {
+    myRole = "a"; // 作成者として再入室
+  } else {
+    myRole = "b"; // 参加者(再入室・別ブラウザ含む)。コードが入室の鍵
+    localStorage.setItem(`aida_role_${code}`, "b");
+    if (!(data.b && data.b.joined)) {
+      try { await rooms.doc(code).update({ "b.joined": true }); } catch (e) { console.error(e); }
+    }
+  }
+  resumeByState(data);
+}
+
+// 部屋の状態に応じて画面を出し分ける(未回答→質問 / 回答済み・結果あり→待機/結果)
+function resumeByState(d) {
+  document.getElementById("home-hint").textContent = "";
+  if (d.result || (d[myRole] && d[myRole].answers)) {
+    enterWaiting();
+  } else {
+    enterQuestions(d.questions, myRole === "a");
+  }
+}
 
 // ───────────────────────────────────────────────
 // 質問画面
@@ -442,10 +463,16 @@ document.getElementById("btn-retry").addEventListener("click", async () => {
 
 // 招待リンク(?room=CODE)で来たら、参加コードを自動入力する
 (function initFromUrl() {
-  const code = new URLSearchParams(location.search).get("room");
-  if (!code) return;
+  const raw = new URLSearchParams(location.search).get("room");
+  if (!raw) return;
+  const code = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
   const input = document.getElementById("join-code");
-  input.value = code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  input.value = code;
+  // 同じ端末で既に参加済みのリンクを開き直した→自動で再入室
+  if (code.length === 6 && localStorage.getItem(`aida_role_${code}`)) {
+    enterRoom(code);
+    return;
+  }
   const hint = document.getElementById("home-hint");
   if (hint) hint.textContent = "招待コードが入りました。「参加する」を押してください。";
   input.scrollIntoView({ behavior: "smooth", block: "center" });
