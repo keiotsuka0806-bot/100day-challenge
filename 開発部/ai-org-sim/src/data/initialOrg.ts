@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
 import type { DeptData } from "../types";
-import { edgeVisual } from "../edgeDefaults";
+import { edgeStyle, type FlowKind } from "../edgeDefaults";
 
 // #100Day Challenge の初期5部署。横の流れを中心に、QAは開発の下、改善ループは下回り。
 export const initialNodes: Node<DeptData>[] = [
@@ -42,7 +42,8 @@ const edge = (
   target: string,
   label: string,
   sourceHandle: string,
-  targetHandle: string
+  targetHandle: string,
+  kind: FlowKind
 ): Edge => ({
   id,
   source,
@@ -50,15 +51,15 @@ const edge = (
   sourceHandle,
   targetHandle,
   label,
-  ...edgeVisual,
+  ...edgeStyle(kind),
 });
 
-// 横=左右 / 縦=上下 / 戻り=下回り、で線が重ならないよう接続点を指定。
+// 横=左右 / 縦=上下 / 戻り=下回り。種類ごとに色分け(青=計画/赤=品質/紫=リリース/緑=発信/橙=改善ループ)。
 export const initialEdges: Edge[] = [
-  edge("e1", "kikaku", "kaihatsu", "企画案", "out-r", "in-l"),
-  edge("e2", "kaihatsu", "qa", "仕様・成果物", "out-b", "in-t"),
-  edge("e3", "qa", "kaihatsu", "不具合報告", "out-r", "in-t"),
-  edge("e4", "kaihatsu", "unyo", "リリース物", "out-r", "in-l"),
-  edge("e5", "unyo", "kikaku", "改善データ", "out-b", "in-t"),
-  edge("e6", "unyo", "koho", "発信用素材", "out-r", "in-l"),
+  edge("e1", "kikaku", "kaihatsu", "企画案", "out-r", "in-l", "plan"),
+  edge("e2", "kaihatsu", "qa", "仕様・成果物", "out-b", "in-t", "quality"),
+  edge("e3", "qa", "kaihatsu", "不具合報告", "out-r", "in-t", "quality"),
+  edge("e4", "kaihatsu", "unyo", "リリース物", "out-r", "in-l", "release"),
+  edge("e5", "unyo", "kikaku", "改善データ", "out-b", "in-t", "feedback"),
+  edge("e6", "unyo", "koho", "発信用素材", "out-r", "in-l", "publish"),
 ];

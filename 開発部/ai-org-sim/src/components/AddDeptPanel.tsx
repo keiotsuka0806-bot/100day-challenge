@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import type { DeptData } from "../types";
-import { edgeVisual } from "../edgeDefaults";
+import { edgeStyle, FLOW_META, type FlowKind } from "../edgeDefaults";
 
 interface Props {
   nodes: Node<DeptData>[];
@@ -19,6 +19,7 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [info, setInfo] = useState("");
+  const [kind, setKind] = useState<FlowKind>("plan");
 
   const addDept = () => {
     if (!name.trim()) return;
@@ -52,7 +53,7 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
         sourceHandle: "out-r",
         targetHandle: "in-l",
         label: info.trim() || "情報",
-        ...edgeVisual,
+        ...edgeStyle(kind),
       },
     ]);
     setInfo("");
@@ -85,6 +86,12 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
         </select></div>
       <div className="field"><label>流れる情報</label>
         <input value={info} onChange={(e) => setInfo(e.target.value)} placeholder="例: デザイン案" /></div>
+      <div className="field"><label>種類(色)</label>
+        <select value={kind} onChange={(e) => setKind(e.target.value as FlowKind)}>
+          {(["plan", "quality", "release", "publish", "feedback"] as FlowKind[]).map((k) => (
+            <option key={k} value={k}>{FLOW_META[k].label}</option>
+          ))}
+        </select></div>
       <button className="btn" onClick={addConnection}>→ 接続を追加</button>
 
       <h2>部署一覧</h2>

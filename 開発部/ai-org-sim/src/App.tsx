@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNodesState, useEdgesState, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import OrgCanvas from "./components/OrgCanvas";
 import AddDeptPanel from "./components/AddDeptPanel";
 import ResultPanel from "./components/ResultPanel";
+import Legend from "./components/Legend";
 import { initialNodes, initialEdges } from "./data/initialOrg";
 import { simulate } from "./sim/simulate";
 import type { DeptData, GraphSnapshot, SimResult } from "./types";
@@ -15,6 +16,25 @@ export default function App() {
   const [result, setResult] = useState<SimResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [useApi, setUseApi] = useState(false);
+
+  // START(入口=入ってくる流れが無い) / GOAL(出口=出ていく流れが無い)を構造から算出。
+  const displayNodes = useMemo(() => {
+    const inDeg = new Map<string, number>();
+    const outDeg = new Map<string, number>();
+    nodes.forEach((n) => { inDeg.set(n.id, 0); outDeg.set(n.id, 0); });
+    edges.forEach((e) => {
+      outDeg.set(e.source, (outDeg.get(e.source) ?? 0) + 1);
+      inDeg.set(e.target, (inDeg.get(e.target) ?? 0) + 1);
+    });
+    return nodes.map((n) => ({
+      ...n,
+      data: {
+        ...n.data,
+        isStart: (inDeg.get(n.id) ?? 0) === 0 && (outDeg.get(n.id) ?? 0) > 0,
+        isEnd: (outDeg.get(n.id) ?? 0) === 0 && (inDeg.get(n.id) ?? 0) > 0,
+      },
+    }));
+  }, [nodes, edges]);
 
   const runSimulation = useCallback(async () => {
     const snapshot: GraphSnapshot = {
@@ -61,12 +81,13 @@ export default function App() {
         <AddDeptPanel nodes={nodes} setNodes={setNodes} setEdges={setEdges} />
         <div className="canvas-wrap">
           <OrgCanvas
-            nodes={nodes}
+            nodes={displayNodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             setEdges={setEdges}
           />
+          <Legend />
           {result && <ResultPanel result={result} onClose={() => setResult(null)} />}
         </div>
       </div>
