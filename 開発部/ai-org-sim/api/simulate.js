@@ -1,120 +1,80 @@
-// AIOrgSim — 組織変更の仮説を入れると、各部署キャラが寸劇でシミュレートする
-// Vercel Serverless Function。OPENAI_API_KEY は環境変数で秘匿(クライアントに出さない)。
+// AIOrgSim(任意のAI分析モード)— 組織グラフを受け取り、構造変化の影響をAIで分析する。
+// OPENAI_API_KEY は環境変数で秘匿。未設定/失敗時はフロント側がモックに自動フォールバックする。
+// ローカルの `npm run dev`(Vite)ではこの関数は動かない=モックで動作。`vercel dev` か本番でAI分析が有効。
 
-const MODEL = "gpt-4o"; // コスト最優先なら "gpt-4o-mini" に変えてもよい
+const MODEL = "gpt-4o";
 
-// #100Day Challenge の実組織(本社CLAUDE.mdの部署定義より)。寸劇の登場人物。
-const DEPARTMENTS = `
-- 企画部: アイデア生成・仕様書・技術選定。口調=好奇心旺盛で前のめり。気にすること=独自性と「使う理由」。
-- 開発部: 実装・バグ修正・リファクタリング。口調=現実的で手を動かす派。気にすること=実装コストと1日1本のペース。
-- QA部: コードレビュー・品質チェック。口調=冷静で慎重。気にすること=品質・セキュリティ・破綻。
-- 運用部: デプロイ・日次レポート・監視。口調=俯瞰的で段取り重視。気にすること=回る仕組みとデータ。
-- 広報部: note発信・マネタイズ。口調=熱くて読者目線。気にすること=物語性と「人に届くか」。
-`;
+const SYSTEM = `あなたはAI開発スタジオの組織設計コンサルタントです。
+ユーザーが「部署(ノード)」と「部署間の情報の流れ(矢印)」からなるAI組織図を送ってきます。
+その構造を読み、情報フロー・ボトルネック・副作用を分析してください。寸劇ではなく、構造分析を返します。
+平易な日本語で、各項目は短く具体的に。`;
 
-const SYSTEM = `あなたは「AIOrgSim」というアプリの頭脳です。ユーザーは「#100Day Challenge」というAIファースト開発スタジオ(1日1プロジェクトを作る会社)の経営者Keiです。
-
-Keiが「もし○○したら(組織変更の仮説)」を入力します。あなたは下記5部署それぞれのキャラクターになりきり、その変更後の組織の動きを"寸劇(short dialogue)"として演じてください。
-
-${DEPARTMENTS}
-
-ルール:
-- 5部署が必ず1回以上発言する。噛み合った会話にする(全員が同じことを言わない。賛成・反対・条件・副作用が混ざる)。
-- 嘘をつかない。実在しない事実を作らない。あくまで「こうなりそう」というシミュレーション。
-- 専門用語は避け、Keiにわかる平易な日本語で。
-- 最後に「良い変化」と「崩れる箇所(リスク)」を具体的に挙げ、1行の結論を出す。
-- 寸劇は8〜14発言程度。長すぎない。`;
-
-// 構造化出力スキーマ(OpenAI structured outputs / strict)。全objectで additionalProperties:false かつ全キー required。
 const SCHEMA = {
   type: "object",
   properties: {
-    scenes: {
+    flowSummary: { type: "string", description: "組織全体の変化と情報フローの要約(2〜3文)" },
+    improvements: { type: "array", items: { type: "string" } },
+    risks: { type: "array", items: { type: "string" } },
+    bottlenecks: { type: "array", items: { type: "string" } },
+    deptComments: {
       type: "array",
       items: {
         type: "object",
-        properties: {
-          speaker: { type: "string", description: "発言する部署名(企画部/開発部/QA部/運用部/広報部)" },
-          text: { type: "string", description: "そのキャラのセリフ" },
-        },
-        required: ["speaker", "text"],
+        properties: { dept: { type: "string" }, comment: { type: "string" } },
+        required: ["dept", "comment"],
         additionalProperties: false,
       },
     },
-    good_changes: { type: "array", items: { type: "string" } },
-    risks: { type: "array", items: { type: "string" } },
-    summary: { type: "string", description: "1行の結論" },
+    suggestions: { type: "array", items: { type: "string" } },
   },
-  required: ["scenes", "good_changes", "risks", "summary"],
+  required: ["flowSummary", "improvements", "risks", "bottlenecks", "deptComments", "suggestions"],
   additionalProperties: false,
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "POST only" });
-    return;
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    res.status(500).json({ error: "サーバー側でOPENAI_API_KEYが未設定です" });
-    return;
+  if (!apiKey) return res.status(500).json({ error: "OPENAI_API_KEY未設定(モックを使ってください)" });
+
+  const graph = req.body && req.body.graph;
+  if (!graph || !Array.isArray(graph.departments)) {
+    return res.status(400).json({ error: "graph(departments/flows)が必要です" });
   }
 
-  const hypothesis = (req.body && req.body.hypothesis ? String(req.body.hypothesis) : "").trim();
-  if (!hypothesis) {
-    res.status(400).json({ error: "仮説(hypothesis)を入力してください" });
-    return;
-  }
-  if (hypothesis.length > 1000) {
-    res.status(400).json({ error: "入力が長すぎます(1000文字以内)" });
-    return;
-  }
+  const userText =
+    "部署:\n" +
+    graph.departments.map((d) => `- ${d.name}(役割:${d.role}/得意:${d.strength || "-"}/注意:${d.risk || "-"})`).join("\n") +
+    "\n\n情報の流れ:\n" +
+    (graph.flows || []).map((f) => {
+      const name = (id) => (graph.departments.find((d) => d.id === id) || {}).name || id;
+      return `- ${name(f.from)} →[${f.info}]→ ${name(f.to)}`;
+    }).join("\n");
 
   try {
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
-      },
+      headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4000,
+        max_tokens: 1500,
         messages: [
           { role: "system", content: SYSTEM },
-          { role: "user", content: `組織変更の仮説:\n${hypothesis}` },
+          { role: "user", content: userText },
         ],
-        response_format: {
-          type: "json_schema",
-          json_schema: { name: "org_sim", strict: true, schema: SCHEMA },
-        },
+        response_format: { type: "json_schema", json_schema: { name: "org_analysis", strict: true, schema: SCHEMA } },
       }),
     });
-
     if (!r.ok) {
-      const detail = await r.text();
-      console.error("OpenAI API error", r.status, detail);
-      res.status(502).json({ error: "AIの応答に失敗しました。少し待って再試行してください。" });
-      return;
+      console.error("OpenAI error", r.status, await r.text());
+      return res.status(502).json({ error: "AI分析に失敗(モックに戻ります)" });
     }
-
     const data = await r.json();
-    const msg = data.choices && data.choices[0] && data.choices[0].message;
-
-    if (msg && msg.refusal) {
-      res.status(200).json({ error: "この内容には応答できませんでした。別の言い回しで試してください。" });
-      return;
-    }
-    if (!msg || !msg.content) {
-      res.status(502).json({ error: "AIの応答を解釈できませんでした。再試行してください。" });
-      return;
-    }
-
-    const result = JSON.parse(msg.content);
-    res.status(200).json(result);
+    const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!content) return res.status(502).json({ error: "応答を解釈できませんでした" });
+    return res.status(200).json(JSON.parse(content));
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: "予期せぬエラーが発生しました。再試行してください。" });
+    return res.status(500).json({ error: "予期せぬエラー" });
   }
 }
