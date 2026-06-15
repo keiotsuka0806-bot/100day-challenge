@@ -28,6 +28,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [useApi, setUseApi] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [leftOpen, setLeftOpen] = useState(true);
 
   // 前回シミュレーション時の状態(Before/After用)
   const prev = useRef<{ result: SimResult; snapshot: GraphSnapshot } | null>(null);
@@ -147,9 +148,21 @@ export default function App() {
         </div>
       </header>
 
-      <div className="layout">
-        <AddDeptPanel nodes={nodes} setNodes={setNodes} setEdges={setEdges} />
+      <div className={`layout${leftOpen ? "" : " left-collapsed"}`}>
+        {leftOpen && (
+          <AddDeptPanel
+            nodes={nodes}
+            setNodes={setNodes}
+            setEdges={setEdges}
+            onCollapse={() => setLeftOpen(false)}
+          />
+        )}
         <div className="canvas-wrap">
+          {!leftOpen && (
+            <button className="expand-left" onClick={() => setLeftOpen(true)} title="部署パネルを開く">
+              ▶ 部署パネル
+            </button>
+          )}
           <OrgCanvas
             nodes={displayNodes}
             edges={edges}

@@ -7,10 +7,11 @@ interface Props {
   nodes: Node<DeptData>[];
   setNodes: React.Dispatch<React.SetStateAction<Node<DeptData>[]>>;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  onCollapse: () => void;
 }
 
 // 左パネル: 部署の追加・削除と、接続の追加。
-export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
+export default function AddDeptPanel({ nodes, setNodes, setEdges, onCollapse }: Props) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [strength, setStrength] = useState("");
@@ -61,6 +62,7 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
 
   return (
     <div className="panel left">
+      <button className="collapse-left" onClick={onCollapse} title="サイドバーを閉じる">◀ 閉じる</button>
       <h2>部署を追加</h2>
       <div className="field"><label>部署名</label>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="例: デザイン部" /></div>

@@ -41,6 +41,36 @@ body {
   grid-template-columns: 280px 1fr;
   min-height: 0;
 }
+.layout.left-collapsed { grid-template-columns: 1fr; }
+
+/* サイドバー開閉ボタン */
+.collapse-left {
+  width: 100%;
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.collapse-left:hover { color: var(--ink); border-color: var(--accent); }
+.expand-left {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+  background: rgba(28, 39, 53, 0.95);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.expand-left:hover { border-color: var(--accent); }
 
 /* パネル共通 */
 .panel {
