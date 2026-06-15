@@ -1,64 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIOrgSim — もし組織をこう変えたら？</title>
-  <meta name="description" content="「もし○○部を増やしたら？」を入れると、各部署キャラがAIの寸劇で組織の未来をシミュレートする。" />
-  <meta name="theme-color" content="#1f2933" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="app-header">
-    <h1>🏛 AIOrgSim</h1>
-    <p class="tagline">もし組織をこう変えたら？——5つの部署が寸劇で未来を演じます</p>
-  </header>
-
-  <main class="container">
-    <section class="input-card">
-      <label for="hypothesis">組織変更の仮説</label>
-      <textarea id="hypothesis" rows="3"
-        placeholder="例) もし広報部に専属の編集者を1人増やしたら？"></textarea>
-      <div class="examples">
-        <span>例:</span>
-        <button class="chip" type="button">QA部を自動化したら？</button>
-        <button class="chip" type="button">デザイン部を新設したら？</button>
-        <button class="chip" type="button">企画を1日10案→3案に絞ったら？</button>
-      </div>
-      <button id="run" class="run-btn" type="button">寸劇をはじめる</button>
-    </section>
-
-    <section id="status" class="status" hidden></section>
-
-    <section id="result" class="result" hidden>
-      <h2>🎭 寸劇</h2>
-      <div id="scenes" class="scenes"></div>
-
-      <div class="outcome">
-        <div class="outcome-col good">
-          <h3>✅ 良い変化</h3>
-          <ul id="good"></ul>
-        </div>
-        <div class="outcome-col risk">
-          <h3>⚠️ 崩れる箇所</h3>
-          <ul id="risk"></ul>
-        </div>
-      </div>
-
-      <p id="summary" class="summary"></p>
-    </section>
-
-    <section id="history-wrap" class="history-wrap" hidden>
-      <h2>これまで試した仮説</h2>
-      <ul id="history" class="history"></ul>
-    </section>
-  </main>
-
-  <footer class="app-footer">
-    <p>#100Day Challenge / AIファースト開発スタジオの「もしも」を演じる実験室</p>
-  </footer>
-
-  <script src="app.js" defer></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIOrgSim — AI組織のワークフロー設計ツール</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
