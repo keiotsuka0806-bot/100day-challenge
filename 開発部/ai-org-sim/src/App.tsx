@@ -7,7 +7,7 @@ import ResultPanel, { type ChangeSummary } from "./components/ResultPanel";
 import NodeDetail from "./components/NodeDetail";
 import Legend from "./components/Legend";
 import { initialNodes, initialEdges } from "./data/initialOrg";
-import { simulate, mockSimulate } from "./sim/simulate";
+import { simulate } from "./sim/simulate";
 import { recommend, type Recommendation } from "./sim/recommend";
 import { resolveWires } from "./data/deptLibrary";
 import { edgeStyle } from "./edgeDefaults";
@@ -77,7 +77,38 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [snapshot, useApi]);
+  }, [useApi]);
+
+  const runSimulation = useCallback(
+    () => simulateSnapshot(toSnapshot(nodes, edges)),
+    [simulateSnapshot, nodes, edges]
+  );
+
+  // 今の組織から「おすすめ部署」を算出(シミュ済みのときだけ)
+  const recommendations: Recommendation[] = useMemo(
+    () => (result ? recommend(toSnapshot(nodes, edges), result) : []),
+    [result, nodes, edges]
+  );
+
+  // おすすめ部署をワンクリック追加 → 即・再シミュレーション
+  const addRecommended = useCallback((rec: Recommendation) => {
+    const newId = `dept_${rec.template.id}_${Date.now()}`;
+    const existing = new Set(nodes.map((n) => n.id));
+    const wires = resolveWires(rec.template, newId, existing);
+    const newNode: RFNode<DeptData> = {
+      id: newId, type: "dept", position: { x: 470, y: 300 + nodes.length * 8 },
+      data: { label: rec.template.name, role: rec.template.role, strength: rec.template.strength, risk: rec.template.risk },
+    };
+    const newEdges: RFEdge[] = wires.map((w, i) => ({
+      id: `e_${newId}_${i}`, source: w.from, target: w.to,
+      sourceHandle: "out-r", targetHandle: "in-l", label: w.label, ...edgeStyle(w.kind),
+    }));
+    const nextNodes = [...nodes, newNode];
+    const nextEdges = [...edges, ...newEdges];
+    setNodes(nextNodes);
+    setEdges(nextEdges);
+    simulateSnapshot(toSnapshot(nextNodes, nextEdges)); // 追加直後の状態で再シミュ
+  }, [nodes, edges, setNodes, setEdges, simulateSnapshot]);
 
   // 入口/出口 と シミュ後のメーターをノードに反映
   const displayNodes = useMemo(() => {
@@ -104,30 +135,6 @@ export default function App() {
       };
     });
   }, [nodes, edges, result]);
-
-  // クイックアクション: デザイン部を企画↔開発の間に追加
-  const addDesign = useCallback(() => {
-    if (nodes.some((n) => n.data.label === "デザイン部")) return;
-    const id = `dept_design_${Date.now()}`;
-    setNodes((nds) => [...nds, {
-      id, type: "dept", position: { x: 460, y: 260 },
-      data: { label: "デザイン部", role: "見た目と体験を整える", strength: "UI設計", risk: "装飾過多" },
-    }]);
-    setEdges((eds) => [
-      ...eds,
-      { id: `e_des_in_${Date.now()}`, source: "kikaku", target: id, sourceHandle: "out-r", targetHandle: "in-l", label: "デザイン要件", ...edgeStyle("plan") },
-      { id: `e_des_out_${Date.now()}`, source: id, target: "kaihatsu", sourceHandle: "out-r", targetHandle: "in-l", label: "デザイン案", ...edgeStyle("release") },
-    ]);
-  }, [nodes, setNodes, setEdges]);
-
-  // クイックアクション: 改善ループ(運用→企画)を追加
-  const addFeedback = useCallback(() => {
-    if (edges.some((e) => e.source === "unyo" && e.target === "kikaku")) return;
-    setEdges((eds) => [...eds, {
-      id: `e_fb_${Date.now()}`, source: "unyo", target: "kikaku", sourceHandle: "out-b", targetHandle: "in-t",
-      label: "改善データ", ...edgeStyle("feedback"),
-    }]);
-  }, [edges, setEdges]);
 
   const detailNode = detailId ? nodes.find((n) => n.id === detailId) : null;
   const detailMetric = detailId ? result?.nodeMetrics.find((m) => m.id === detailId) : undefined;
@@ -178,9 +185,9 @@ export default function App() {
             <ResultPanel
               result={result}
               change={change}
+              recommendations={recommendations}
               onClose={() => setResult(null)}
-              onAddDesign={addDesign}
-              onAddFeedback={addFeedback}
+              onAddRecommended={addRecommended}
             />
           )}
           {detailNode && (

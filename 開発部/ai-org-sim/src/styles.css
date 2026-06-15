@@ -281,8 +281,29 @@ body {
   border-radius: 7px; padding: 6px 9px; margin-bottom: 5px; font-size: 0.78rem;
 }
 
-.quick-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .btn.small { padding: 7px 9px; font-size: 0.78rem; }
+
+/* おすすめ部署カード */
+.reco {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: var(--panel);
+}
+.reco:last-child { margin-bottom: 0; }
+.reco-target { font-size: 0.78rem; font-weight: 700; color: var(--risk); }
+.reco-reason { font-size: 0.74rem; color: var(--muted); margin: 2px 0 7px; line-height: 1.45; }
+.reco-name { font-size: 0.86rem; font-weight: 700; margin-bottom: 4px; }
+.reco-effects { margin: 0 0 6px; padding-left: 18px; }
+.reco-effects li { font-size: 0.78rem; color: var(--good); margin-bottom: 2px; }
+.reco-effects li:where(:has(em)) { color: var(--risk); }
+.reco-side { font-size: 0.72rem; color: var(--risk); margin-bottom: 5px; }
+.reco-conns { font-size: 0.72rem; color: var(--muted); margin-bottom: 8px; }
+.reco-conns summary { cursor: pointer; }
+.reco-conns ul { margin: 5px 0 0; padding-left: 16px; }
+.reco-conns li { font-size: 0.72rem; }
+.reco .btn.primary.small { width: 100%; margin: 0; }
 
 /* ノード詳細モーダル */
 .detail-backdrop {
