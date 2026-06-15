@@ -22,17 +22,23 @@ body {
 .app { display: flex; flex-direction: column; height: 100%; }
 
 .app-header {
-  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
 .app-header h1 { margin: 0; font-size: 1.15rem; }
-.app-header p { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
+.app-header p { margin: 2px 0 0; color: var(--muted); font-size: 0.78rem; }
+.header-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.sim-btn { width: auto; margin: 0; padding: 10px 18px; white-space: nowrap; }
 
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 280px 1fr 340px;
+  grid-template-columns: 280px 1fr;
   min-height: 0;
 }
 
@@ -97,7 +103,7 @@ body {
 .dept-list .del:hover { color: var(--risk); }
 
 /* キャンバス */
-.canvas-wrap { min-width: 0; background: #0c121b; }
+.canvas-wrap { position: relative; min-width: 0; background: #0c121b; }
 .react-flow__attribution { display: none; }
 
 /* ノード(部署カード) */
@@ -123,12 +129,34 @@ body {
 .react-flow__edge-text { fill: var(--ink); font-size: 11px; }
 .react-flow__edge-textbg { fill: var(--panel); }
 
-/* 結果 */
-.api-toggle { display: flex; gap: 6px; align-items: flex-start; font-size: 0.72rem; color: var(--muted); margin: 8px 0; }
-.empty { color: var(--muted); font-size: 0.82rem; }
+/* ヘッダーのAIトグル */
+.api-toggle { display: flex; gap: 5px; align-items: center; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+/* 結果オーバーレイ(キャンバスの上に浮かぶ) */
+.result-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 340px;
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  background: rgba(22, 31, 43, 0.97);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+  backdrop-filter: blur(4px);
+}
+.result-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.result-head .close {
+  background: none; border: none; color: var(--muted);
+  font-size: 1.3rem; line-height: 1; cursor: pointer;
+}
+.result-head .close:hover { color: var(--ink); }
 .mode-badge {
   display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 999px;
-  border: 1px solid var(--line); margin-bottom: 10px;
+  border: 1px solid var(--line);
 }
 .mode-badge.ai { color: var(--accent); border-color: var(--accent); }
 .mode-badge.mock { color: var(--muted); }

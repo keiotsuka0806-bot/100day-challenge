@@ -3,7 +3,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   addEdge,
   MarkerType,
   type Node,
@@ -55,11 +54,11 @@ export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, 
       onConnect={onConnect}
       nodeTypes={nodeTypes}
       fitView
+      fitViewOptions={{ padding: 0.25 }}
       proOptions={{ hideAttribution: true }}
     >
       <Background gap={20} />
-      <Controls />
-      <MiniMap pannable zoomable />
+      <Controls showInteractive={false} />
     </ReactFlow>
   );
 }

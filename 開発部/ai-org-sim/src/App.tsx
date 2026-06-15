@@ -33,8 +33,7 @@ export default function App() {
     };
     setLoading(true);
     try {
-      const r = await simulate(snapshot, useApi);
-      setResult(r);
+      setResult(await simulate(snapshot, useApi));
     } finally {
       setLoading(false);
     }
@@ -43,8 +42,19 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🧩 AIOrgSim</h1>
-        <p>AI組織のワークフローを組み立て、構造変化の影響をシミュレートする設計ツール</p>
+        <div className="brand">
+          <h1>🧩 AIOrgSim</h1>
+          <p>AI組織のワークフローを組み立て、構造変化の影響をシミュレートする設計ツール</p>
+        </div>
+        <div className="header-actions">
+          <label className="api-toggle" title="ONにすると公開/vercel dev時はOpenAIで分析。未設定なら自動でモック。">
+            <input type="checkbox" checked={useApi} onChange={(e) => setUseApi(e.target.checked)} />
+            AIで分析
+          </label>
+          <button className="btn primary sim-btn" onClick={runSimulation} disabled={loading}>
+            {loading ? "分析中…" : "▶ この組織で1日をシミュレート"}
+          </button>
+        </div>
       </header>
 
       <div className="layout">
@@ -57,14 +67,8 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             setEdges={setEdges}
           />
+          {result && <ResultPanel result={result} onClose={() => setResult(null)} />}
         </div>
-        <ResultPanel
-          result={result}
-          loading={loading}
-          useApi={useApi}
-          setUseApi={setUseApi}
-          onSimulate={runSimulation}
-        />
       </div>
     </div>
   );
