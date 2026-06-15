@@ -4,7 +4,6 @@ import {
   Background,
   Controls,
   addEdge,
-  MarkerType,
   type Node,
   type Edge,
   type Connection,
@@ -13,6 +12,7 @@ import {
 } from "@xyflow/react";
 import DeptNode from "./DeptNode";
 import type { DeptData } from "../types";
+import { edgeVisual } from "../edgeDefaults";
 
 interface Props {
   nodes: Node<DeptData>[];
@@ -31,15 +31,7 @@ export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, 
       const info = window.prompt("この線で流れる情報の名前は?(例: 仕様、不具合報告、改善データ)", "情報");
       if (info === null) return; // キャンセル
       setEdges((eds) =>
-        addEdge(
-          {
-            ...params,
-            label: info || "情報",
-            type: "smoothstep",
-            markerEnd: { type: MarkerType.ArrowClosed },
-          },
-          eds
-        )
+        addEdge({ ...params, label: info || "情報", ...edgeVisual }, eds)
       );
     },
     [setEdges]
@@ -53,6 +45,8 @@ export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, 
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
+      defaultEdgeOptions={edgeVisual}
+      connectionLineStyle={{ strokeWidth: 3, stroke: edgeVisual.style.stroke }}
       fitView
       fitViewOptions={{ padding: 0.25 }}
       proOptions={{ hideAttribution: true }}

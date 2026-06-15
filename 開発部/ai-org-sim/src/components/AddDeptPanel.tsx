@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Node, Edge } from "@xyflow/react";
-import { MarkerType } from "@xyflow/react";
 import type { DeptData } from "../types";
+import { edgeVisual } from "../edgeDefaults";
 
 interface Props {
   nodes: Node<DeptData>[];
@@ -52,8 +52,7 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
         sourceHandle: "out-r",
         targetHandle: "in-l",
         label: info.trim() || "情報",
-        type: "smoothstep",
-        markerEnd: { type: MarkerType.ArrowClosed },
+        ...edgeVisual,
       },
     ]);
     setInfo("");

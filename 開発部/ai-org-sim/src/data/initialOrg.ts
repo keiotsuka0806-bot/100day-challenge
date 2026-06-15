@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
-import { MarkerType } from "@xyflow/react";
 import type { DeptData } from "../types";
+import { edgeVisual } from "../edgeDefaults";
 
 // #100Day Challenge の初期5部署。横の流れを中心に、QAは開発の下、改善ループは下回り。
 export const initialNodes: Node<DeptData>[] = [
@@ -50,8 +50,7 @@ const edge = (
   sourceHandle,
   targetHandle,
   label,
-  type: "smoothstep",
-  markerEnd: { type: MarkerType.ArrowClosed },
+  ...edgeVisual,
 });
 
 // 横=左右 / 縦=上下 / 戻り=下回り、で線が重ならないよう接続点を指定。
