@@ -7,9 +7,12 @@ import ResultPanel, { type ChangeSummary } from "./components/ResultPanel";
 import NodeDetail from "./components/NodeDetail";
 import Legend from "./components/Legend";
 import { initialNodes, initialEdges } from "./data/initialOrg";
-import { simulate } from "./sim/simulate";
+import { simulate, mockSimulate } from "./sim/simulate";
+import { recommend, type Recommendation } from "./sim/recommend";
+import { resolveWires } from "./data/deptLibrary";
 import { edgeStyle } from "./edgeDefaults";
 import type { DeptData, GraphSnapshot, SimResult } from "./types";
+import type { Node as RFNode, Edge as RFEdge } from "@xyflow/react";
 
 const SCORE_LABELS = [
   { key: "speed", label: "速度", goodUp: true },
@@ -33,19 +36,18 @@ export default function App() {
   // 前回シミュレーション時の状態(Before/After用)
   const prev = useRef<{ result: SimResult; snapshot: GraphSnapshot } | null>(null);
 
-  const snapshot = useCallback((): GraphSnapshot => ({
-    departments: nodes.map((n) => ({
+  const toSnapshot = (ns: RFNode<DeptData>[], es: RFEdge[]): GraphSnapshot => ({
+    departments: ns.map((n) => ({
       id: n.id, name: n.data.label, role: n.data.role, strength: n.data.strength, risk: n.data.risk,
     })),
-    flows: edges.map((e) => ({ from: e.source, to: e.target, info: typeof e.label === "string" ? e.label : "情報" })),
-  }), [nodes, edges]);
+    flows: es.map((e) => ({ from: e.source, to: e.target, info: typeof e.label === "string" ? e.label : "情報" })),
+  });
 
-  const runSimulation = useCallback(async () => {
-    const snap = snapshot();
+  // スナップショットを受け取り、シミュレート→Before/After差分→状態更新まで行う共通処理。
+  const simulateSnapshot = useCallback(async (snap: GraphSnapshot) => {
     setLoading(true);
     try {
       const r = await simulate(snap, useApi);
-      // Before/After 差分(前回シミュとの比較)
       if (prev.current) {
         const p = prev.current;
         const prevDepts = new Set(p.snapshot.departments.map((d) => d.name));

@@ -6,6 +6,7 @@ import type {
   DeptState,
   BottleneckLevel,
 } from "../types";
+import { TEMPLATE_BY_NAME } from "../data/deptLibrary";
 
 const TERMINAL_OK = ["広報部"]; // 出口でOK(次に渡さなくても自然)な部署名
 
@@ -50,11 +51,23 @@ export function mockSimulate(g: GraphSnapshot): SimResult {
   }, 0) / 2;
   const hasFeedbackLoop = detectCycle(g);
 
+  // ヘルパー部署(ライブラリ定義)が、つながっている場合に他部署の負荷を下げる効果を集計。
+  const reduction = new Map<string, number>(); // 部署名 → 軽減ポイント
+  g.departments.forEach((d) => {
+    const t = TEMPLATE_BY_NAME.get(d.name);
+    const connected = (inDeg.get(d.id) ?? 0) + (outDeg.get(d.id) ?? 0) > 0;
+    if (t && connected) {
+      for (const [tName, pts] of Object.entries(t.reduces)) {
+        reduction.set(tName, (reduction.get(tName) ?? 0) + pts);
+      }
+    }
+  });
+
   // --- 各部署メーター ---
   const nodeMetrics: NodeMetric[] = g.departments.map((d) => {
     const i = inDeg.get(d.id) ?? 0;
     const o = outDeg.get(d.id) ?? 0;
-    const load = clamp(i * 22 + o * 14);
+    const load = clamp(i * 22 + o * 14 - (reduction.get(d.name) ?? 0));
     const concentrated = i >= 3;
     const isolated = i === 0 && o === 0;
     const deadend = i > 0 && o === 0 && !TERMINAL_OK.includes(d.name);
