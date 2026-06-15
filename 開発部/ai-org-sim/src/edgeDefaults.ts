@@ -17,6 +17,7 @@ export function edgeStyle(kind: FlowKind = "default") {
   const m = FLOW_META[kind];
   return {
     type: "smoothstep" as const,
+    animated: true,
     style: {
       strokeWidth: 3,
       stroke: m.color,

@@ -22,7 +22,9 @@ export default function App() {
     const inDeg = new Map<string, number>();
     const outDeg = new Map<string, number>();
     nodes.forEach((n) => { inDeg.set(n.id, 0); outDeg.set(n.id, 0); });
+    // 「改善ループ(feedback)」は前工程への戻りなので、入口/出口の判定からは除外する。
     edges.forEach((e) => {
+      if ((e.data as { kind?: string } | undefined)?.kind === "feedback") return;
       outDeg.set(e.source, (outDeg.get(e.source) ?? 0) + 1);
       inDeg.set(e.target, (inDeg.get(e.target) ?? 0) + 1);
     });
