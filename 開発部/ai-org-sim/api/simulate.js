@@ -1,9 +1,9 @@
 // AIOrgSim — 組織変更の仮説を入れると、各部署キャラが寸劇でシミュレートする
-// Vercel Serverless Function。ANTHROPIC_API_KEY は環境変数で秘匿（クライアントに出さない）。
+// Vercel Serverless Function。OPENAI_API_KEY は環境変数で秘匿(クライアントに出さない)。
 
-const MODEL = "claude-opus-4-8";
+const MODEL = "gpt-4o"; // コスト最優先なら "gpt-4o-mini" に変えてもよい
 
-// #100Day Challenge の実組織（本社CLAUDE.mdの部署定義より）。寸劇の登場人物。
+// #100Day Challenge の実組織(本社CLAUDE.mdの部署定義より)。寸劇の登場人物。
 const DEPARTMENTS = `
 - 企画部: アイデア生成・仕様書・技術選定。口調=好奇心旺盛で前のめり。気にすること=独自性と「使う理由」。
 - 開発部: 実装・バグ修正・リファクタリング。口調=現実的で手を動かす派。気にすること=実装コストと1日1本のペース。
@@ -25,7 +25,7 @@ ${DEPARTMENTS}
 - 最後に「良い変化」と「崩れる箇所(リスク)」を具体的に挙げ、1行の結論を出す。
 - 寸劇は8〜14発言程度。長すぎない。`;
 
-// 構造化出力スキーマ(json_schema)。additionalProperties:false 必須。
+// 構造化出力スキーマ(OpenAI structured outputs / strict)。全objectで additionalProperties:false かつ全キー required。
 const SCHEMA = {
   type: "object",
   properties: {
@@ -55,9 +55,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    res.status(500).json({ error: "サーバー側でANTHROPIC_API_KEYが未設定です" });
+    res.status(500).json({ error: "サーバー側でOPENAI_API_KEYが未設定です" });
     return;
   }
 
@@ -72,47 +72,46 @@ export default async function handler(req, res) {
   }
 
   try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 4000,
-        output_config: {
-          effort: "low", // 寸劇生成は速さ優先で十分
-          format: { type: "json_schema", schema: SCHEMA },
+        messages: [
+          { role: "system", content: SYSTEM },
+          { role: "user", content: `組織変更の仮説:\n${hypothesis}` },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: { name: "org_sim", strict: true, schema: SCHEMA },
         },
-        system: SYSTEM,
-        messages: [{ role: "user", content: `組織変更の仮説:\n${hypothesis}` }],
       }),
     });
 
     if (!r.ok) {
       const detail = await r.text();
-      console.error("Anthropic API error", r.status, detail);
+      console.error("OpenAI API error", r.status, detail);
       res.status(502).json({ error: "AIの応答に失敗しました。少し待って再試行してください。" });
       return;
     }
 
     const data = await r.json();
+    const msg = data.choices && data.choices[0] && data.choices[0].message;
 
-    if (data.stop_reason === "refusal") {
+    if (msg && msg.refusal) {
       res.status(200).json({ error: "この内容には応答できませんでした。別の言い回しで試してください。" });
       return;
     }
-
-    // 構造化出力: 最初のtextブロックが有効なJSON
-    const textBlock = (data.content || []).find((b) => b.type === "text");
-    if (!textBlock) {
+    if (!msg || !msg.content) {
       res.status(502).json({ error: "AIの応答を解釈できませんでした。再試行してください。" });
       return;
     }
 
-    const result = JSON.parse(textBlock.text);
+    const result = JSON.parse(msg.content);
     res.status(200).json(result);
   } catch (e) {
     console.error(e);
