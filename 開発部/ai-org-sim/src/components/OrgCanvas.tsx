@@ -20,10 +20,11 @@ interface Props {
   onNodesChange: OnNodesChange<Node<DeptData>>;
   onEdgesChange: OnEdgesChange;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  onNodeClick: (id: string) => void;
 }
 
 // 中央の組織図キャンバス。ドラッグ移動・ハンドル同士をつないで接続追加できる。
-export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, setEdges }: Props) {
+export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, setEdges, onNodeClick }: Props) {
   const nodeTypes = useMemo(() => ({ dept: DeptNode }), []);
 
   const onConnect = useCallback(
@@ -44,6 +45,7 @@ export default function OrgCanvas({ nodes, edges, onNodesChange, onEdgesChange, 
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
+      onNodeClick={(_, node) => onNodeClick(node.id)}
       nodeTypes={nodeTypes}
       defaultEdgeOptions={edgeStyle("default")}
       connectionLineStyle={{ strokeWidth: 3, stroke: FLOW_META.default.color }}
