@@ -1,32 +1,39 @@
-# AIOrgSim
+# AIOrgSim — AI組織ワークフロー設計ツール
 
-「もし○○部を増やしたら？」など組織変更の仮説を入れると、#100Day Challenge の5部署(企画/開発/QA/運用/広報)のキャラがAIの寸劇で組織の未来を演じ、「良い変化/崩れる箇所/結論」を返すアプリ。
+AI組織を画面上で組み立て、**部署(ノード)と情報の流れ(矢印)を編集すると、構造変化の影響をシミュレートする**ツール。寸劇生成アプリではなく「組織構造そのものを触れる」体験を狙う。
 
 - 仕様書: `企画部/specs/2026-06-15-ai-org-sim.md`
-- 技術: Vanilla JS フロント + Vercel Serverless Function + OpenAI API(`gpt-4o`)
-- APIキー(`OPENAI_API_KEY`)は Vercel 環境変数で秘匿。クライアントには出さない。「あいだ」と同じ課金済みキーを使う。
+- 技術: **React + Vite + TypeScript + React Flow(@xyflow/react)**。AI分析(任意)は Vercel Function + OpenAI API。
+- シミュレーションは**既定でモック**(グラフ構造から決定的に分析)。APIキー無しでも動く。
+
+## 3カラム構成
+
+- 左: 部署の追加・削除 / 接続の追加
+- 中央: 組織図キャンバス(ドラッグ移動・点と点をつないで接続)
+- 右: シミュレーション実行と結果(全体変化 / 情報フロー / ボトルネック / 各部署の反応 / 改善提案)
 
 ## ローカル開発
 
 ```bash
-cp .env.local.example .env.local   # OPENAI_API_KEY を記入
-vercel dev                          # http://localhost:3000
+npm install
+npm run dev        # http://localhost:3000(モードはモック=キー不要)
+```
+
+## AI分析モード(任意)
+
+右パネルの「AIで分析」をONにすると `/api/simulate`(OpenAI)を呼ぶ。これは `vercel dev` か本番デプロイ時のみ有効で、失敗/未設定なら自動でモックに戻る。
+
+```bash
+cp .env.local.example .env.local   # OPENAI_API_KEY を記入(保管庫 ~/.secrets/keys.env から)
+vercel dev
 ```
 
 ## デプロイ
 
-`server-app-deploy` スキルの手順に従う(Vercel + 環境変数登録)。
-
-```bash
-vercel              # プレビュー
-vercel --prod       # 本番
-```
-
-本番では Vercel の Project Settings > Environment Variables に `OPENAI_API_KEY` を登録すること。
+Vercel(framework=vite を自動検出)。本番では Project Settings > Environment Variables に `OPENAI_API_KEY` を登録。`server-app-deploy` スキル参照。
 
 ## 設計メモ
 
-- SWは **network-first**(記憶庫 2026-06-14 の教訓。cache-firstだとデプロイしても旧コードを掴む)。
-- 出力は OpenAI の構造化出力(json_schema / strict)で `scenes / good_changes / risks / summary` に固定。
-- 当初Claude APIで設計したが、Anthropicの鍵が未用意だったため、課金済みで実績のあるOpenAIに切替(2026-06-15)。
-- アイコン(`icon-192.png` / `icon-512.png`)は未配置。共有可能化の前に用意する。
+- 当初は「組織変更を寸劇で出すアプリ」→ 2026-06-15に「組織図を編集して構造影響をシミュレートするツール」へ方針転換。
+- モックシミュレーションは入次数/出次数・孤立・行き止まり・サイクル(改善ループ)などグラフ構造から所見を導く(`src/sim/simulate.ts`)。
+- ドラッグ&ドロップ等の複雑UIのため Vanilla ではなく React+Vite を採用(社の基準: 複雑な状態管理が要るとき)。
