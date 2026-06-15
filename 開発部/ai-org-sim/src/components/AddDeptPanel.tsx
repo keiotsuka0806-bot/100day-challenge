@@ -49,6 +49,8 @@ export default function AddDeptPanel({ nodes, setNodes, setEdges }: Props) {
         id: `e_${from}_${to}_${Date.now()}`,
         source: from,
         target: to,
+        sourceHandle: "out-r",
+        targetHandle: "in-l",
         label: info.trim() || "情報",
         type: "smoothstep",
         markerEnd: { type: MarkerType.ArrowClosed },
