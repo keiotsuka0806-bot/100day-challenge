@@ -36,6 +36,8 @@
 | WhiskyNote | `whisky-note/` | 稼働中 |
 | MoodForecast | `mood-forecast/` | 開発中 |
 | NaniTaberu | `nani-taberu/` | 開発中 |
+| ReceiptWarikan | `receipt-warikan/` | デプロイ済み（Day17採用） |
+| QRLivePoll | `qr-live-poll/` | デプロイ済み（ストック） |
 
 ## コーディング規約
 
