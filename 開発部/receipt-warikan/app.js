@@ -340,7 +340,9 @@ function resetAll() {
 /* ---------- 配線 ---------- */
 function init() {
   $('addMemberBtn').onclick = addMember;
-  $('memberName').addEventListener('keydown', (e) => { if (e.key === 'Enter') addMember(); });
+  $('memberName').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addMember(); }
+  });
 
   $('captureBtn').onclick = () => $('fileInput').click();
   $('fileInput').addEventListener('change', (e) => handleFile(e.target.files[0]));
@@ -348,7 +350,10 @@ function init() {
   $('sampleBtn').onclick = loadSample;
 
   $('addItemBtn').onclick = () => addItem();
-  $('itemPrice').addEventListener('keydown', (e) => { if (e.key === 'Enter') addItem(); });
+  const onItemEnter = (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addItem(); } };
+  $('itemName').addEventListener('keydown', onItemEnter);
+  $('itemPrice').addEventListener('keydown', onItemEnter);
+  $('itemQty').addEventListener('keydown', onItemEnter);
 
   $('adjustPercent').addEventListener('input', (e) => {
     state.adjustPercent = e.target.value;
