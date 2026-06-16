@@ -25,7 +25,7 @@ function addMember() {
 function removeMember(id) {
   state.members = state.members.filter((m) => m.id !== id);
   state.items.forEach((it) => {
-    it.assignees = it.assignees.filter((a) => a !== id);
+    delete it.shares[id];
   });
   renderMembers();
   renderItems();
@@ -54,7 +54,7 @@ function addItem(name, price, qty) {
   const p = Number(price ?? $('itemPrice').value);
   const q = Math.max(1, Math.round(Number(qty ?? $('itemQty').value) || 1));
   if (!n || !Number.isFinite(p) || p < 0) return;
-  state.items.push({ id: newId(), name: n, unitPrice: p, qty: q, assignees: [] });
+  state.items.push({ id: newId(), name: n, unitPrice: p, qty: q, shares: {} });
   $('itemName').value = '';
   $('itemPrice').value = '';
   $('itemQty').value = '1';
@@ -66,22 +66,38 @@ function changeQty(id, delta) {
   const it = state.items.find((i) => i.id === id);
   if (!it) return;
   it.qty = Math.max(1, it.qty + delta);
+  // 数量を減らしたとき、割り当て個数が数量を超えないよう調整
+  while (assignedCount(it) > it.qty) {
+    const owner = Object.keys(it.shares).find((id) => it.shares[id] > 0);
+    if (!owner) break;
+    it.shares[owner] -= 1;
+    if (it.shares[owner] <= 0) delete it.shares[owner];
+  }
+  renderItems();
+  renderTotals();
+}
+
+const assignedCount = (it) => Object.values(it.shares).reduce((s, n) => s + n, 0);
+
+function addUnit(itemId, memberId) {
+  const it = state.items.find((i) => i.id === itemId);
+  if (!it || assignedCount(it) >= it.qty) return;
+  it.shares[memberId] = (it.shares[memberId] || 0) + 1;
+  renderItems();
+  renderTotals();
+}
+
+function removeUnit(itemId, memberId) {
+  const it = state.items.find((i) => i.id === itemId);
+  if (!it || !it.shares[memberId]) return;
+  it.shares[memberId] -= 1;
+  if (it.shares[memberId] <= 0) delete it.shares[memberId];
   renderItems();
   renderTotals();
 }
 
 function removeItem(id) {
   state.items = state.items.filter((it) => it.id !== id);
-  renderItems();
-  renderTotals();
-}
-
-function toggleAssignee(itemId, memberId) {
-  const it = state.items.find((i) => i.id === itemId);
-  if (!it) return;
-  it.assignees = it.assignees.includes(memberId)
-    ? it.assignees.filter((a) => a !== memberId)
-    : [...it.assignees, memberId];
   renderItems();
   renderTotals();
 }
@@ -134,13 +150,36 @@ function renderItems() {
     row.appendChild(head);
 
     if (state.members.length > 0) {
+      const remaining = it.qty - assignedCount(it);
+      if (it.qty > 1) {
+        const guide = document.createElement('p');
+        guide.className = 'assign-guide';
+        guide.textContent = remaining > 0
+          ? `タップした回数だけ個数を割り当て（残り ${remaining}個 は全員で等分）`
+          : `${it.qty}個すべて割り当て済み`;
+        row.appendChild(guide);
+      }
       const ass = document.createElement('div');
       ass.className = 'assignees';
       state.members.forEach((m) => {
+        const count = it.shares[m.id] || 0;
         const tag = document.createElement('span');
-        tag.className = 'assignee' + (it.assignees.includes(m.id) ? ' on' : '');
-        tag.textContent = m.name;
-        tag.onclick = () => toggleAssignee(it.id, m.id);
+        tag.className = 'assignee' + (count > 0 ? ' on' : '');
+
+        const label = document.createElement('span');
+        label.className = 'assignee-label';
+        label.textContent = it.qty > 1 && count > 0 ? `${m.name} ×${count}` : m.name;
+        label.onclick = () => addUnit(it.id, m.id);
+        tag.appendChild(label);
+
+        if (count > 0 && it.qty > 1) {
+          const minus = document.createElement('button');
+          minus.className = 'assignee-minus';
+          minus.textContent = '−';
+          minus.setAttribute('aria-label', `${m.name} の個数を減らす`);
+          minus.onclick = (e) => { e.stopPropagation(); removeUnit(it.id, m.id); };
+          tag.appendChild(minus);
+        }
         ass.appendChild(tag);
       });
       row.appendChild(ass);
@@ -156,12 +195,23 @@ function computeTotals() {
   if (state.members.length === 0) return { totals, grand: 0 };
 
   state.items.forEach((it) => {
-    const targets = it.assignees.length > 0 ? it.assignees : state.members.map((m) => m.id);
-    const lineTotal = it.unitPrice * it.qty;
-    const share = lineTotal / targets.length;
-    targets.forEach((id) => {
-      if (totals[id] !== undefined) totals[id] += share;
+    const assigned = assignedCount(it);
+    if (assigned === 0) {
+      // 誰も割り当てなければ全員で等分
+      const share = (it.unitPrice * it.qty) / state.members.length;
+      state.members.forEach((m) => (totals[m.id] += share));
+      return;
+    }
+    // 割り当てた個数分はその人が負担
+    Object.keys(it.shares).forEach((id) => {
+      if (totals[id] !== undefined) totals[id] += it.unitPrice * it.shares[id];
     });
+    // 余った個数は全員で等分
+    const leftover = (it.qty - assigned) * it.unitPrice;
+    if (leftover > 0) {
+      const share = leftover / state.members.length;
+      state.members.forEach((m) => (totals[m.id] += share));
+    }
   });
 
   const factor = 1 + (Number(state.adjustPercent) || 0) / 100;

@@ -168,17 +168,31 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
   border: none; background: none; color: var(--danger);
   font-size: 1.1rem; cursor: pointer; padding: 0 .2rem;
 }
+.assign-guide { font-size: .76rem; color: var(--muted); margin: .6rem 0 .3rem; }
 .assignees { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
 .assignee {
+  display: inline-flex;
+  align-items: stretch;
   border: 1px solid var(--line);
   background: #fff;
   border-radius: 999px;
-  padding: .25rem .7rem;
   font-size: .82rem;
-  cursor: pointer;
+  overflow: hidden;
   user-select: none;
 }
+.assignee-label { padding: .3rem .7rem; cursor: pointer; }
 .assignee.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+.assignee-minus {
+  border: none;
+  border-left: 1px solid rgba(255,255,255,.4);
+  background: rgba(0,0,0,.12);
+  color: inherit;
+  padding: 0 .55rem;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.assignee-minus:active { transform: scale(.94); }
 .empty { color: var(--muted); font-size: .85rem; text-align: center; padding: .8rem 0; }
 
 .adjust { margin-top: 1rem; font-size: .9rem; }
