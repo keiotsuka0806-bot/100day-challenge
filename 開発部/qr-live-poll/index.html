@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>QRでその場ライブ投票</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>📊 その場ライブ投票</h1>
+    <p class="tagline" id="tagline">質問を作ってQRを見せるだけ。みんなの答えがその場で集まる。</p>
+  </header>
+
+  <main>
+    <!-- 作成画面 -->
+    <section id="createView" class="view card">
+      <h2>質問をつくる</h2>
+      <label class="field">
+        <span>質問</span>
+        <input id="question" type="text" placeholder="例：今日の二次会、行く？" maxlength="120" />
+      </label>
+      <div class="field">
+        <span>選択肢</span>
+        <div id="options"></div>
+        <button id="addOptionBtn" class="btn btn-ghost small">＋ 選択肢を追加</button>
+      </div>
+      <button id="createBtn" class="btn btn-primary big">この内容で投票を作る</button>
+      <p class="mode-note" id="modeNote"></p>
+    </section>
+
+    <!-- 主催者画面 -->
+    <section id="hostView" class="view card hidden">
+      <h2 id="hostQuestion" class="poll-question"></h2>
+      <div class="qr-wrap">
+        <div id="qrcode"></div>
+        <p class="hint">このQRをスマホで読み取ると投票できます</p>
+        <div class="url-row">
+          <input id="voteUrl" type="text" readonly />
+          <button id="copyBtn" class="btn small">コピー</button>
+        </div>
+      </div>
+      <div id="hostResults" class="results"></div>
+      <p class="total" id="hostTotal"></p>
+      <button id="newPollBtn" class="btn btn-ghost">別の投票を作る</button>
+    </section>
+
+    <!-- 投票画面 -->
+    <section id="voteView" class="view card hidden">
+      <h2 id="voteQuestion" class="poll-question"></h2>
+      <div id="voteOptions" class="vote-options"></div>
+      <div id="voteThanks" class="thanks hidden">
+        <p class="thanks-title">投票ありがとう！🎉</p>
+        <div id="voteResults" class="results"></div>
+        <p class="total" id="voteTotal"></p>
+      </div>
+    </section>
+
+    <section id="notFound" class="view card hidden">
+      <h2>投票が見つかりません</h2>
+      <p class="hint">リンクが正しいか確認してください。デモモードでは、作った端末以外からは見えません（本番リアルタイムは下記READMEのFirebase設定で有効化）。</p>
+      <button id="goCreateBtn" class="btn btn-primary">投票を作る</button>
+    </section>
+  </main>
+
+  <!-- QR生成 -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <!-- Firebase（任意）：firebase-config.js があればリアルタイム同期に昇格 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js" onerror="window.__noFirebaseConfig=true"></script>
+  <script src="app.js"></script>
+</body>
+</html>

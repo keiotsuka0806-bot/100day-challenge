@@ -1,0 +1,298 @@
+const state = {
+  members: [],
+  items: [],
+  adjustPercent: 0,
+  pendingImage: null,
+};
+
+let seq = 0;
+const newId = () => `id_${Date.now()}_${seq++}`;
+const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
+
+const $ = (id) => document.getElementById(id);
+
+/* ---------- メンバー ---------- */
+function addMember() {
+  const name = $('memberName').value.trim();
+  if (!name) return;
+  state.members.push({ id: newId(), name });
+  $('memberName').value = '';
+  renderMembers();
+  renderItems();
+  renderTotals();
+}
+
+function removeMember(id) {
+  state.members = state.members.filter((m) => m.id !== id);
+  state.items.forEach((it) => {
+    it.assignees = it.assignees.filter((a) => a !== id);
+  });
+  renderMembers();
+  renderItems();
+  renderTotals();
+}
+
+function renderMembers() {
+  const box = $('memberList');
+  box.textContent = '';
+  state.members.forEach((m) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = m.name;
+    const x = document.createElement('button');
+    x.textContent = '×';
+    x.setAttribute('aria-label', `${m.name} を削除`);
+    x.onclick = () => removeMember(m.id);
+    chip.appendChild(x);
+    box.appendChild(chip);
+  });
+}
+
+/* ---------- 品目 ---------- */
+function addItem(name, price) {
+  const n = (name ?? $('itemName').value).trim();
+  const p = Number(price ?? $('itemPrice').value);
+  if (!n || !Number.isFinite(p) || p < 0) return;
+  state.items.push({ id: newId(), name: n, price: p, assignees: [] });
+  $('itemName').value = '';
+  $('itemPrice').value = '';
+  renderItems();
+  renderTotals();
+}
+
+function removeItem(id) {
+  state.items = state.items.filter((it) => it.id !== id);
+  renderItems();
+  renderTotals();
+}
+
+function toggleAssignee(itemId, memberId) {
+  const it = state.items.find((i) => i.id === itemId);
+  if (!it) return;
+  it.assignees = it.assignees.includes(memberId)
+    ? it.assignees.filter((a) => a !== memberId)
+    : [...it.assignees, memberId];
+  renderItems();
+  renderTotals();
+}
+
+function renderItems() {
+  const box = $('itemList');
+  box.textContent = '';
+  if (state.items.length === 0) {
+    const e = document.createElement('p');
+    e.className = 'empty';
+    e.textContent = 'まだ品目がありません。レシートを読み取るか手入力で追加してください。';
+    box.appendChild(e);
+    return;
+  }
+  state.items.forEach((it) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+
+    const head = document.createElement('div');
+    head.className = 'item-head';
+    const name = document.createElement('span');
+    name.className = 'item-name';
+    name.textContent = it.name;
+    const price = document.createElement('span');
+    price.className = 'item-price';
+    price.textContent = yen(it.price);
+    const del = document.createElement('button');
+    del.className = 'item-del';
+    del.textContent = '🗑';
+    del.setAttribute('aria-label', '品目を削除');
+    del.onclick = () => removeItem(it.id);
+    head.append(name, price, del);
+    row.appendChild(head);
+
+    if (state.members.length > 0) {
+      const ass = document.createElement('div');
+      ass.className = 'assignees';
+      state.members.forEach((m) => {
+        const tag = document.createElement('span');
+        tag.className = 'assignee' + (it.assignees.includes(m.id) ? ' on' : '');
+        tag.textContent = m.name;
+        tag.onclick = () => toggleAssignee(it.id, m.id);
+        ass.appendChild(tag);
+      });
+      row.appendChild(ass);
+    }
+    box.appendChild(row);
+  });
+}
+
+/* ---------- 計算 ---------- */
+function computeTotals() {
+  const totals = {};
+  state.members.forEach((m) => (totals[m.id] = 0));
+  if (state.members.length === 0) return { totals, grand: 0 };
+
+  state.items.forEach((it) => {
+    const targets = it.assignees.length > 0 ? it.assignees : state.members.map((m) => m.id);
+    const share = it.price / targets.length;
+    targets.forEach((id) => {
+      if (totals[id] !== undefined) totals[id] += share;
+    });
+  });
+
+  const factor = 1 + (Number(state.adjustPercent) || 0) / 100;
+  let grand = 0;
+  Object.keys(totals).forEach((id) => {
+    totals[id] *= factor;
+    grand += totals[id];
+  });
+  return { totals, grand };
+}
+
+function renderTotals() {
+  const { totals, grand } = computeTotals();
+  const box = $('totals');
+  box.textContent = '';
+  if (state.members.length === 0) {
+    const e = document.createElement('p');
+    e.className = 'empty';
+    e.textContent = 'メンバーを追加すると、一人あたりの金額が出ます。';
+    box.appendChild(e);
+  } else {
+    state.members.forEach((m) => {
+      const row = document.createElement('div');
+      row.className = 'total-row';
+      const name = document.createElement('span');
+      name.textContent = m.name;
+      const amt = document.createElement('span');
+      amt.className = 'amount';
+      amt.textContent = yen(totals[m.id] || 0);
+      row.append(name, amt);
+      box.appendChild(row);
+    });
+  }
+  $('grandTotal').textContent = yen(grand);
+}
+
+/* ---------- 画像とAI読み取り ---------- */
+function resizeImage(file, maxSize = 1500) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const r = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * r);
+          height = Math.round(height * r);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  setStatus('画像を準備中…', 'busy');
+  try {
+    state.pendingImage = await resizeImage(file);
+    $('previewImg').src = state.pendingImage;
+    $('preview').classList.remove('hidden');
+    setStatus('');
+  } catch {
+    setStatus('画像を読み込めませんでした。', 'error');
+  }
+}
+
+async function scanReceipt() {
+  if (!state.pendingImage) return;
+  setStatus('AIがレシートを読み取っています…', 'busy');
+  try {
+    const res = await fetch('/api/parse-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: state.pendingImage }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+    if (items.length === 0) throw new Error('品目を読み取れませんでした');
+    items.forEach((it) => addItem(it.name, it.price));
+    setStatus(`${items.length}件の品目を読み取りました。金額を確認してください。`);
+    $('preview').classList.add('hidden');
+    state.pendingImage = null;
+  } catch (err) {
+    setStatus('AI読み取りは未設定か失敗しました。「サンプルで試す」か手入力をお使いください。', 'error');
+  }
+}
+
+function loadSample() {
+  const sample = [
+    { name: '生ビール', price: 600 },
+    { name: 'ハイボール', price: 500 },
+    { name: '唐揚げ', price: 720 },
+    { name: 'シーザーサラダ', price: 680 },
+    { name: '枝豆', price: 380 },
+    { name: '締めのラーメン', price: 850 },
+  ];
+  sample.forEach((it) => addItem(it.name, it.price));
+  setStatus('サンプルの品目を読み込みました。誰が食べたかを割り当ててください。');
+}
+
+function setStatus(msg, kind = '') {
+  const el = $('scanStatus');
+  el.textContent = msg;
+  el.className = 'status' + (kind ? ` ${kind}` : '');
+}
+
+/* ---------- リセット ---------- */
+function resetAll() {
+  if (!confirm('入力をすべて消して最初からやり直しますか？')) return;
+  state.members = [];
+  state.items = [];
+  state.adjustPercent = 0;
+  state.pendingImage = null;
+  $('adjustPercent').value = '0';
+  $('preview').classList.add('hidden');
+  setStatus('');
+  renderMembers();
+  renderItems();
+  renderTotals();
+}
+
+/* ---------- 配線 ---------- */
+function init() {
+  $('addMemberBtn').onclick = addMember;
+  $('memberName').addEventListener('keydown', (e) => { if (e.key === 'Enter') addMember(); });
+
+  $('captureBtn').onclick = () => $('fileInput').click();
+  $('fileInput').addEventListener('change', (e) => handleFile(e.target.files[0]));
+  $('scanBtn').onclick = scanReceipt;
+  $('sampleBtn').onclick = loadSample;
+
+  $('addItemBtn').onclick = () => addItem();
+  $('itemPrice').addEventListener('keydown', (e) => { if (e.key === 'Enter') addItem(); });
+
+  $('adjustPercent').addEventListener('input', (e) => {
+    state.adjustPercent = e.target.value;
+    renderTotals();
+  });
+
+  $('resetBtn').onclick = resetAll;
+
+  renderMembers();
+  renderItems();
+  renderTotals();
+}
+
+init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}

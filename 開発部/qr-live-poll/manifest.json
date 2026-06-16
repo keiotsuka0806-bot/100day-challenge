@@ -1,0 +1,11 @@
+{
+  "name": "QRでその場ライブ投票",
+  "short_name": "ライブ投票",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

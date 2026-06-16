@@ -1,0 +1,134 @@
+:root {
+  --indigo: #4f46e5;
+  --indigo-dark: #4338ca;
+  --bg: #f5f5fb;
+  --card: #ffffff;
+  --ink: #1f2233;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --bar: #6366f1;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--indigo), #7c3aed);
+  color: #fff;
+  padding: 1.5rem 1rem 1.2rem;
+  text-align: center;
+}
+.app-header h1 { margin: 0; font-size: 1.35rem; }
+.tagline { margin: .35rem 0 0; font-size: .85rem; opacity: .92; }
+
+main { max-width: 520px; margin: 0 auto; padding: 1rem; }
+
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 1.3rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.card h2 { margin: 0 0 1rem; font-size: 1.15rem; }
+.poll-question { font-size: 1.25rem; line-height: 1.4; }
+
+.field { display: block; margin-bottom: 1.1rem; }
+.field > span { display: block; font-size: .82rem; color: var(--muted); margin-bottom: .35rem; font-weight: 600; }
+
+input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: .7rem .8rem;
+  font-size: 1rem;
+  background: #fff;
+}
+input:focus { outline: 2px solid var(--indigo); border-color: transparent; }
+
+#options { display: grid; gap: .5rem; margin-bottom: .5rem; }
+.option-row { display: flex; gap: .5rem; align-items: center; }
+.option-row input { flex: 1; }
+.option-row button {
+  border: none; background: none; color: #ef4444;
+  font-size: 1.2rem; cursor: pointer; flex: none; padding: 0 .3rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: .7rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #e5e7eb;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform .05s, filter .15s;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--indigo); color: #fff; }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost { background: transparent; color: var(--indigo); border: 1px solid var(--line); }
+.btn.small { padding: .45rem .8rem; font-size: .85rem; }
+.btn.big { width: 100%; padding: .9rem; font-size: 1.05rem; margin-top: .3rem; }
+
+.mode-note { font-size: .78rem; color: var(--muted); margin: .9rem 0 0; text-align: center; }
+
+/* 主催者 QR */
+.qr-wrap { text-align: center; margin: 1rem 0 1.5rem; }
+#qrcode { display: inline-flex; padding: .8rem; background: #fff; border-radius: 14px; border: 1px solid var(--line); }
+#qrcode canvas, #qrcode img { display: block; }
+.hint { font-size: .8rem; color: var(--muted); }
+.url-row { display: flex; gap: .5rem; margin-top: .8rem; }
+.url-row input { font-size: .82rem; color: var(--muted); }
+
+/* 結果バー */
+.results { display: grid; gap: .7rem; margin: 1rem 0; }
+.result {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: .6rem .8rem;
+  position: relative;
+  overflow: hidden;
+}
+.result .fill {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #eef2ff, #e0e7ff);
+  width: 0%;
+  transition: width .4s ease;
+  z-index: 0;
+}
+.result .label, .result .count { position: relative; z-index: 1; }
+.result-head { display: flex; justify-content: space-between; align-items: baseline; }
+.result .label { font-weight: 600; }
+.result .count { font-size: .85rem; color: var(--indigo-dark); font-weight: 700; }
+.result .pct { font-size: .78rem; color: var(--muted); margin-left: .3rem; }
+.total { text-align: center; color: var(--muted); font-size: .85rem; }
+
+/* 投票ボタン */
+.vote-options { display: grid; gap: .7rem; margin: 1.2rem 0; }
+.vote-btn {
+  width: 100%;
+  text-align: left;
+  border: 2px solid var(--line);
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, transform .05s;
+}
+.vote-btn:hover { border-color: var(--indigo); }
+.vote-btn:active { transform: scale(.98); }
+
+.thanks { text-align: center; }
+.thanks-title { font-size: 1.2rem; font-weight: 700; margin: .5rem 0 1rem; }
+
+.hidden { display: none !important; }
