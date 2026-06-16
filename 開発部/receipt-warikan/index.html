@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>レシート割り勘カメラ</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🧾 レシート割り勘カメラ</h1>
+    <p class="tagline">レシートを撮るだけ。食べた分だけ払う。</p>
+  </header>
+
+  <main>
+    <!-- 1. メンバー -->
+    <section class="card">
+      <h2><span class="step">1</span> メンバー</h2>
+      <div class="member-input">
+        <input id="memberName" type="text" placeholder="名前を入力" maxlength="20" />
+        <button id="addMemberBtn" class="btn">追加</button>
+      </div>
+      <div id="memberList" class="chips"></div>
+    </section>
+
+    <!-- 2. レシート読み取り -->
+    <section class="card">
+      <h2><span class="step">2</span> レシートを読み取る</h2>
+      <input id="fileInput" type="file" accept="image/*" capture="environment" hidden />
+      <div class="receipt-actions">
+        <button id="captureBtn" class="btn btn-primary">📷 レシートを撮る／選ぶ</button>
+        <button id="sampleBtn" class="btn btn-ghost">サンプルで試す</button>
+      </div>
+      <div id="preview" class="preview hidden">
+        <img id="previewImg" alt="レシートのプレビュー" />
+        <button id="scanBtn" class="btn btn-primary">🔍 AIで品目を読み取る</button>
+      </div>
+      <p id="scanStatus" class="status"></p>
+      <div class="manual-add">
+        <input id="itemName" type="text" placeholder="品名（手入力も可）" maxlength="40" />
+        <input id="itemPrice" type="number" inputmode="numeric" placeholder="金額" min="0" />
+        <button id="addItemBtn" class="btn">追加</button>
+      </div>
+    </section>
+
+    <!-- 3. 割り当て -->
+    <section class="card">
+      <h2><span class="step">3</span> 誰が食べた？</h2>
+      <p class="hint">品目をタップした人で割ります。誰も選ばなければ全員で割り勘します。</p>
+      <div id="itemList" class="item-list"></div>
+      <div class="adjust">
+        <label>税・サービス料の割増
+          <span class="adjust-control">
+            <input id="adjustPercent" type="number" inputmode="decimal" value="0" min="0" max="50" step="1" /> %
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- 4. 精算結果 -->
+    <section class="card result-card">
+      <h2><span class="step">4</span> 一人あたり</h2>
+      <div id="totals" class="totals"></div>
+      <div class="grand-total">合計 <span id="grandTotal">¥0</span></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <button id="resetBtn" class="btn btn-ghost">最初からやり直す</button>
+    <p class="note">画像は読み取りの瞬間だけ使い、保存しません。</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
