@@ -95,3 +95,7 @@
 - **Vanilla JS SPA** DOM 要素に `addEventListener` を複数回呼ぶと重複リスナーが積まれる。要素を `cloneNode(true)` して置き換えることで既存リスナーをすべて剥がせる（whisky-note の `setupTagList()` がこのパターン）。
 - **PWA / HEIC** iOS のカメラ写真は HEIC 形式で渡される場合がある。`heic2any` ライブラリで JPEG に変換してから Canvas リサイズ処理に渡すこと。ただし heic2any は CDN 配信のみ（npm ビルドなし環境でも使える）。
 
+## 2026-06-15
+- **自動化 / git hygiene** git hygiene チェックが継続して失敗している（`/tmp/100day-git-hygiene.log`）。原因は ① コピーされたスキルカタログ（`.claude/skills/*/SKILL.md`：job-scout / morning-routine / server-app-deploy / weekly-narrative）がコミット対象に入っている ② `.env.example` / `.env.local.example`（ai-debate-stage・ai-org-sim）がコミットされている。スキルカタログは複製なので追跡対象から外し、env系は `.gitignore` へ。放置すると毎朝フックが鳴り続け、本当の警告に気づけなくなる。
+- **セキュリティ / 公開AI設計** 公開アプリで「AIで分析」を本番ONにする前に、公開APIへ件数・サイズ上限＋簡易レート制限を入れてから鍵を登録する。逆に **鍵を未登録にしておけば機能は休眠してコストゼロ**（AIOrgSimはこの状態で公開済み）。公開とAI課金の有効化を切り離せば、安全に出してから磨ける。
+
