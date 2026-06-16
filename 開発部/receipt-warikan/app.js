@@ -66,22 +66,16 @@ function changeQty(id, delta) {
   const it = state.items.find((i) => i.id === id);
   if (!it) return;
   it.qty = Math.max(1, it.qty + delta);
-  // 数量を減らしたとき、割り当て個数が数量を超えないよう調整
-  while (assignedCount(it) > it.qty) {
-    const owner = Object.keys(it.shares).find((id) => it.shares[id] > 0);
-    if (!owner) break;
-    it.shares[owner] -= 1;
-    if (it.shares[owner] <= 0) delete it.shares[owner];
-  }
   renderItems();
   renderTotals();
 }
 
+// タップ数の合計（割り当ての重み）
 const assignedCount = (it) => Object.values(it.shares).reduce((s, n) => s + n, 0);
 
 function addUnit(itemId, memberId) {
   const it = state.items.find((i) => i.id === itemId);
-  if (!it || assignedCount(it) >= it.qty) return;
+  if (!it) return;
   it.shares[memberId] = (it.shares[memberId] || 0) + 1;
   renderItems();
   renderTotals();
@@ -150,15 +144,18 @@ function renderItems() {
     row.appendChild(head);
 
     if (state.members.length > 0) {
-      const remaining = it.qty - assignedCount(it);
-      if (it.qty > 1) {
-        const guide = document.createElement('p');
-        guide.className = 'assign-guide';
-        guide.textContent = remaining > 0
-          ? `タップした回数だけ個数を割り当て（残り ${remaining}個 は全員で等分）`
-          : `${it.qty}個すべて割り当て済み`;
-        row.appendChild(guide);
+      const guide = document.createElement('p');
+      guide.className = 'assign-guide';
+      const assigned = assignedCount(it);
+      if (assigned === 0) {
+        guide.textContent = '食べた人をタップ（複数人なら山分け）。未選択なら全員で割り勘。';
+      } else if (it.qty > 1) {
+        guide.textContent = `タップした回数の比で分けます（多く食べた人は重ねてタップ＝${assigned}回ぶん）`;
+      } else {
+        guide.textContent = 'タップした人で山分けします。';
       }
+      row.appendChild(guide);
+
       const ass = document.createElement('div');
       ass.className = 'assignees';
       state.members.forEach((m) => {
@@ -168,15 +165,15 @@ function renderItems() {
 
         const label = document.createElement('span');
         label.className = 'assignee-label';
-        label.textContent = it.qty > 1 && count > 0 ? `${m.name} ×${count}` : m.name;
+        label.textContent = count > 1 ? `${m.name} ×${count}` : m.name;
         label.onclick = () => addUnit(it.id, m.id);
         tag.appendChild(label);
 
-        if (count > 0 && it.qty > 1) {
+        if (count > 0) {
           const minus = document.createElement('button');
           minus.className = 'assignee-minus';
           minus.textContent = '−';
-          minus.setAttribute('aria-label', `${m.name} の個数を減らす`);
+          minus.setAttribute('aria-label', `${m.name} の割り当てを減らす`);
           minus.onclick = (e) => { e.stopPropagation(); removeUnit(it.id, m.id); };
           tag.appendChild(minus);
         }
@@ -195,23 +192,19 @@ function computeTotals() {
   if (state.members.length === 0) return { totals, grand: 0 };
 
   state.items.forEach((it) => {
-    const assigned = assignedCount(it);
-    if (assigned === 0) {
+    const lineTotal = it.unitPrice * it.qty;
+    const totalWeight = assignedCount(it);
+    if (totalWeight === 0) {
       // 誰も割り当てなければ全員で等分
-      const share = (it.unitPrice * it.qty) / state.members.length;
+      const share = lineTotal / state.members.length;
       state.members.forEach((m) => (totals[m.id] += share));
       return;
     }
-    // 割り当てた個数分はその人が負担
-    Object.keys(it.shares).forEach((id) => {
-      if (totals[id] !== undefined) totals[id] += it.unitPrice * it.shares[id];
+    // タップ数の比で代金を分ける（1人なら全額、複数人なら山分け、個数差は重ねタップで反映）
+    state.members.forEach((m) => {
+      const w = it.shares[m.id] || 0;
+      if (w > 0) totals[m.id] += lineTotal * (w / totalWeight);
     });
-    // 余った個数は全員で等分
-    const leftover = (it.qty - assigned) * it.unitPrice;
-    if (leftover > 0) {
-      const share = leftover / state.members.length;
-      state.members.forEach((m) => (totals[m.id] += share));
-    }
   });
 
   const factor = 1 + (Number(state.adjustPercent) || 0) / 100;
