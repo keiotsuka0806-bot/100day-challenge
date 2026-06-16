@@ -218,6 +218,7 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
   color: var(--muted);
 }
 .grand-total span { font-weight: 700; color: var(--ink); font-size: 1.15rem; }
+.result-copy { width: 100%; margin-top: 1rem; }
 
 .app-footer { text-align: center; padding: 1.5rem 1rem 0; }
 .app-footer .note { margin-top: .6rem; }

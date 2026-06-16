@@ -1,6 +1,26 @@
+// 簡易レート制限（ウォームインスタンス内のベストエフォート）。
+// 公開OCR APIのコスト暴発を防ぐ最低限の歯止め。1IPあたり60秒で8回まで。
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 8;
+const hits = new Map();
+
+function rateLimited(req) {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.clear(); // メモリ肥大の保険
+  return recent.length > RATE_MAX;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (rateLimited(req)) {
+    return res.status(429).json({ error: '混み合っています。少し待って再度お試しください。' });
   }
 
   const { image } = req.body || {};
