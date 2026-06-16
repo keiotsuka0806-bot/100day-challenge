@@ -175,17 +175,31 @@ function renderResults(container, poll) {
 /* ---------- 主催者画面 ---------- */
 let unsubscribe = null;
 
+function renderQr(url) {
+  const box = $('qrcode');
+  box.textContent = '';
+  if (typeof qrcode !== 'function') {
+    box.textContent = 'QRライブラリを読み込めませんでした';
+    return;
+  }
+  const qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  // URLはQRのモジュール(白黒)として符号化され、テキストとして挿入されないためXSS無し
+  box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 1, scalable: true });
+  const svg = box.querySelector('svg');
+  if (svg) {
+    svg.setAttribute('width', '200');
+    svg.setAttribute('height', '200');
+  }
+}
+
 function openHost(id) {
   if (unsubscribe) unsubscribe();
   const voteUrl = `${location.origin}${location.pathname}#vote=${id}`;
   $('voteUrl').value = voteUrl;
 
-  $('qrcode').textContent = '';
-  const canvas = document.createElement('canvas');
-  $('qrcode').appendChild(canvas);
-  if (window.QRCode && QRCode.toCanvas) {
-    QRCode.toCanvas(canvas, voteUrl, { width: 200, margin: 1 }, () => {});
-  }
+  renderQr(voteUrl);
 
   unsubscribe = backend.subscribe(id, (poll) => {
     if (!poll) { showView('notFound'); return; }

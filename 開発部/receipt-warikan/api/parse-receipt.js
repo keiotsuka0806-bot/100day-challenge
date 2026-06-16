@@ -19,10 +19,11 @@ export default async function handler(req, res) {
   }
 
   const systemPrompt =
-    `あなたはレシート読み取りアシスタントです。画像から「飲食・購入した品目名」と「税抜きの単価または記載金額」を抽出します。
+    `あなたはレシート読み取りアシスタントです。画像から各品目の「品名」「数量」「1個あたりの単価」を抽出します。
 合計・小計・お預り・お釣り・税・サービス料・割引などの行は品目に含めないでください。
-出力は必ず次のJSONのみ：{"items":[{"name":"品名","price":数値}]}
-金額は数値（円、整数）。読み取れない場合は items を空配列にしてください。`;
+レシートに「単価×数量＝金額」が載っている場合は単価をそのまま使う。行に金額だけ載っていて数量が2以上なら、単価＝金額÷数量。数量が不明なら1とする。
+出力は必ず次のJSONのみ：{"items":[{"name":"品名","qty":数量,"price":単価}]}
+qty・price は整数。読み取れない場合は items を空配列にしてください。`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -63,7 +64,11 @@ export default async function handler(req, res) {
 
     const items = (parsed.items || [])
       .filter((it) => it && typeof it.name === 'string')
-      .map((it) => ({ name: it.name.slice(0, 40), price: Math.max(0, Math.round(Number(it.price) || 0)) }))
+      .map((it) => ({
+        name: it.name.slice(0, 40),
+        qty: Math.max(1, Math.round(Number(it.qty) || 1)),
+        price: Math.max(0, Math.round(Number(it.price) || 0)),
+      }))
       .slice(0, 50);
 
     res.status(200).json({ items });

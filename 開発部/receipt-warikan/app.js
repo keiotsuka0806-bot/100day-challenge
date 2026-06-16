@@ -49,13 +49,23 @@ function renderMembers() {
 }
 
 /* ---------- 品目 ---------- */
-function addItem(name, price) {
+function addItem(name, price, qty) {
   const n = (name ?? $('itemName').value).trim();
   const p = Number(price ?? $('itemPrice').value);
+  const q = Math.max(1, Math.round(Number(qty ?? $('itemQty').value) || 1));
   if (!n || !Number.isFinite(p) || p < 0) return;
-  state.items.push({ id: newId(), name: n, price: p, assignees: [] });
+  state.items.push({ id: newId(), name: n, unitPrice: p, qty: q, assignees: [] });
   $('itemName').value = '';
   $('itemPrice').value = '';
+  $('itemQty').value = '1';
+  renderItems();
+  renderTotals();
+}
+
+function changeQty(id, delta) {
+  const it = state.items.find((i) => i.id === id);
+  if (!it) return;
+  it.qty = Math.max(1, it.qty + delta);
   renderItems();
   renderTotals();
 }
@@ -95,15 +105,32 @@ function renderItems() {
     const name = document.createElement('span');
     name.className = 'item-name';
     name.textContent = it.name;
+
+    const stepper = document.createElement('span');
+    stepper.className = 'qty-stepper';
+    const minus = document.createElement('button');
+    minus.textContent = '−';
+    minus.setAttribute('aria-label', '数量を減らす');
+    minus.onclick = () => changeQty(it.id, -1);
+    const qtyLabel = document.createElement('span');
+    qtyLabel.className = 'qty';
+    qtyLabel.textContent = `×${it.qty}`;
+    const plus = document.createElement('button');
+    plus.textContent = '+';
+    plus.setAttribute('aria-label', '数量を増やす');
+    plus.onclick = () => changeQty(it.id, 1);
+    stepper.append(minus, qtyLabel, plus);
+
     const price = document.createElement('span');
     price.className = 'item-price';
-    price.textContent = yen(it.price);
+    price.textContent = yen(it.unitPrice * it.qty);
+
     const del = document.createElement('button');
     del.className = 'item-del';
     del.textContent = '🗑';
     del.setAttribute('aria-label', '品目を削除');
     del.onclick = () => removeItem(it.id);
-    head.append(name, price, del);
+    head.append(name, stepper, price, del);
     row.appendChild(head);
 
     if (state.members.length > 0) {
@@ -130,7 +157,8 @@ function computeTotals() {
 
   state.items.forEach((it) => {
     const targets = it.assignees.length > 0 ? it.assignees : state.members.map((m) => m.id);
-    const share = it.price / targets.length;
+    const lineTotal = it.unitPrice * it.qty;
+    const share = lineTotal / targets.length;
     targets.forEach((id) => {
       if (totals[id] !== undefined) totals[id] += share;
     });
@@ -223,7 +251,7 @@ async function scanReceipt() {
     const data = await res.json();
     const items = Array.isArray(data.items) ? data.items : [];
     if (items.length === 0) throw new Error('品目を読み取れませんでした');
-    items.forEach((it) => addItem(it.name, it.price));
+    items.forEach((it) => addItem(it.name, it.price, it.qty));
     setStatus(`${items.length}件の品目を読み取りました。金額を確認してください。`);
     $('preview').classList.add('hidden');
     state.pendingImage = null;
@@ -234,14 +262,14 @@ async function scanReceipt() {
 
 function loadSample() {
   const sample = [
-    { name: '生ビール', price: 600 },
-    { name: 'ハイボール', price: 500 },
-    { name: '唐揚げ', price: 720 },
-    { name: 'シーザーサラダ', price: 680 },
-    { name: '枝豆', price: 380 },
-    { name: '締めのラーメン', price: 850 },
+    { name: '生ビール', price: 600, qty: 3 },
+    { name: 'ハイボール', price: 500, qty: 1 },
+    { name: '唐揚げ', price: 720, qty: 1 },
+    { name: 'シーザーサラダ', price: 680, qty: 1 },
+    { name: '枝豆', price: 380, qty: 1 },
+    { name: '締めのラーメン', price: 850, qty: 2 },
   ];
-  sample.forEach((it) => addItem(it.name, it.price));
+  sample.forEach((it) => addItem(it.name, it.price, it.qty));
   setStatus('サンプルの品目を読み込みました。誰が食べたかを割り当ててください。');
 }
 

@@ -149,7 +149,21 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
   gap: .5rem;
 }
 .item-name { font-weight: 600; flex: 1; word-break: break-word; }
-.item-price { font-variant-numeric: tabular-nums; }
+.item-price { font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+
+.qty-stepper { display: inline-flex; align-items: center; gap: .1rem; flex: none; }
+.qty-stepper button {
+  width: 1.7rem; height: 1.7rem;
+  border: 1px solid var(--line); background: #fff;
+  border-radius: 8px; font-size: 1rem; line-height: 1;
+  cursor: pointer; color: var(--teal); font-weight: 700;
+}
+.qty-stepper button:active { transform: scale(.94); }
+.qty-stepper .qty {
+  min-width: 2.1rem; text-align: center;
+  font-variant-numeric: tabular-nums; font-size: .9rem; color: var(--muted);
+}
+.manual-add input#itemQty { max-width: 64px; }
 .item-del {
   border: none; background: none; color: var(--danger);
   font-size: 1.1rem; cursor: pointer; padding: 0 .2rem;

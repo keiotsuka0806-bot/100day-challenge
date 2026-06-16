@@ -40,9 +40,11 @@
       <p id="scanStatus" class="status"></p>
       <div class="manual-add">
         <input id="itemName" type="text" placeholder="品名（手入力も可）" maxlength="40" />
-        <input id="itemPrice" type="number" inputmode="numeric" placeholder="金額" min="0" />
+        <input id="itemPrice" type="number" inputmode="numeric" placeholder="単価" min="0" />
+        <input id="itemQty" type="number" inputmode="numeric" placeholder="数" min="1" value="1" />
         <button id="addItemBtn" class="btn">追加</button>
       </div>
+      <p class="hint">「単価」は1個あたりの値段。同じものが複数なら「数」を入れてください（例：生ビール 単価600 × 数3）。</p>
     </section>
 
     <!-- 3. 割り当て -->
