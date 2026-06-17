@@ -1,0 +1,15 @@
+{
+  "name": "ありがとうの貯金箱",
+  "short_name": "ありがとう瓶",
+  "description": "1日1つ、誰かへの「ありがとう」を瓶に入れると、光が少しずつ溜まっていく。落ち込んだ日には、過去のありがとうを引き出せる。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1530",
+  "theme_color": "#1a1530",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

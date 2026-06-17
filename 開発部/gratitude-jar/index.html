@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b18" />
+  <title>ありがとうの貯金箱</title>
+  <meta name="description" content="1日1つ、誰かへの「ありがとう」を瓶に入れると、光が少しずつ溜まっていく。落ち込んだ日には、過去のありがとうを引き出せる。" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app">
+    <header class="top">
+      <h1 class="title">ありがとうの貯金箱</h1>
+      <p class="count" id="countLabel">まだ空っぽ</p>
+    </header>
+
+    <!-- 瓶（Canvas） -->
+    <section class="jar-stage">
+      <canvas id="jar" aria-label="ありがとうの瓶"></canvas>
+      <p class="hint" id="jarHint">瓶をタップすると、過去のありがとうを引き出せます</p>
+    </section>
+
+    <!-- 入れる -->
+    <section class="composer" id="composer">
+      <p class="prompt" id="todayPrompt">今日は、誰に「ありがとう」？</p>
+      <input
+        id="toInput"
+        class="field to"
+        type="text"
+        maxlength="24"
+        placeholder="誰に（例：お母さん、店員さん、自分）"
+        autocomplete="off"
+      />
+      <textarea
+        id="forInput"
+        class="field for"
+        maxlength="120"
+        rows="2"
+        placeholder="何が、ありがとう？"
+      ></textarea>
+      <button id="dropBtn" class="drop-btn">瓶に入れる</button>
+    </section>
+
+    <footer class="tools">
+      <button id="withdrawBtn" class="ghost">そっと1つ引き出す</button>
+      <button id="listBtn" class="ghost">ぜんぶ見る</button>
+      <button id="shareBtn" class="ghost">瓶をシェア</button>
+      <button id="soundToggle" class="ghost" aria-pressed="true">♪ 音 on</button>
+    </footer>
+  </main>
+
+  <!-- 引き出し（1件）モーダル -->
+  <div class="overlay" id="withdrawOverlay" hidden>
+    <div class="card withdraw-card">
+      <p class="card-label">今日、引き出したありがとう</p>
+      <p class="card-to" id="wTo"></p>
+      <p class="card-for" id="wFor"></p>
+      <p class="card-date" id="wDate"></p>
+      <button class="close" data-close>そっと閉じる</button>
+    </div>
+  </div>
+
+  <!-- 一覧モーダル -->
+  <div class="overlay" id="listOverlay" hidden>
+    <div class="card list-card">
+      <div class="list-head">
+        <p class="card-label">ためたありがとう</p>
+        <button class="close-x" data-close aria-label="閉じる">×</button>
+      </div>
+      <ul class="entries" id="entries"></ul>
+    </div>
+  </div>
+
+  <!-- トースト -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

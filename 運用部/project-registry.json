@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-16T10:19:54.758Z",
+  "updatedAt": "2026-06-17T09:49:41.763Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -187,6 +187,20 @@
       "lastHttpStatus": "HTTP 200",
       "lastPublicUrl": "https://receipt-warikan-delta.vercel.app",
       "lastReleaseCheck": "2026-06-16"
+    },
+    "gratitude-jar": {
+      "path": "開発部/gratitude-jar",
+      "url": "https://gratitude-jar-lyart.vercel.app",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "共有可能",
+      "lastCouncil": "2026-06-17",
+      "lastDeploy": "2026-06-17",
+      "councilReport": "デザイン部/reports/2026-06-17-gratitude-jar-genius-council.md",
+      "lastVerifiedAt": "2026-06-17T09:49:41.754Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://gratitude-jar-lyart.vercel.app",
+      "lastReleaseCheck": "2026-06-17"
     }
   }
 }
