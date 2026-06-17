@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PortfolioForge — 作品リストから1枚の作品集を生成</title>
+<meta name="description" content="作ったプロダクトのリストを入れると、タグ絞り込み付きの作品集HTMLを生成。単一ファイルでDLしてどこにでも置ける。">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#13141c">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>PortfolioForge</h1>
+  <p class="tagline">作ったものを並べるだけ。「これまでの作品集」を1枚のHTMLに。</p>
+</header>
+
+<main class="layout">
+  <section class="editor">
+    <div class="editor-head">
+      <h2>作品を追加</h2>
+      <div class="io-btns">
+        <button id="importBtn" class="ghost">JSON取込</button>
+        <button id="exportBtn" class="ghost">JSON書出</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+    </div>
+
+    <form id="addForm" class="add-form">
+      <input id="fName" type="text" placeholder="プロジェクト名 *" required>
+      <input id="fUrl" type="url" placeholder="公開URL（任意）">
+      <input id="fDesc" type="text" placeholder="一言説明（任意）">
+      <div class="row">
+        <input id="fTags" type="text" placeholder="タグ（カンマ区切り 例: AI, ツール）">
+        <input id="fDate" type="date" aria-label="公開日">
+      </div>
+      <button type="submit" class="primary">＋ 追加する</button>
+    </form>
+
+    <ul id="itemList" class="item-list" aria-label="登録した作品"></ul>
+  </section>
+
+  <section class="output">
+    <div class="output-head">
+      <h2>プレビュー</h2>
+      <div class="out-controls">
+        <input id="siteTitle" type="text" value="My Works" aria-label="作品集のタイトル">
+        <button id="downloadBtn" class="primary" disabled>HTMLをダウンロード</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="filterBar"></div>
+    <iframe id="previewFrame" title="作品集プレビュー"></iframe>
+  </section>
+</main>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

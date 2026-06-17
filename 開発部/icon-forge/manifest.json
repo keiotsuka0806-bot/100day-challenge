@@ -1,0 +1,13 @@
+{
+  "name": "IconForge",
+  "short_name": "IconForge",
+  "description": "ロゴ1枚からPWAアイコン一式とmanifest断片を生成",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1424",
+  "theme_color": "#16213e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

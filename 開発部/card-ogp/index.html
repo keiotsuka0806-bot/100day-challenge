@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardOGP — note/SNS用のアイキャッチを30秒で</title>
+<meta name="description" content="タイトルを入れるだけで、note・X・ブログ用の1200×630 OGP画像をブラウザ内で生成・ダウンロード。">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>CardOGP</h1>
+  <p class="tagline">タイトルを入れるだけ。note・X用のアイキャッチ画像を30秒で。</p>
+</header>
+
+<main class="layout">
+  <section class="controls" aria-label="入力">
+    <label class="field">
+      <span>タイトル</span>
+      <textarea id="title" rows="2" maxlength="80" placeholder="例：AIが書いた割り勘アプリは、1000円を3人で割ると999円になった"></textarea>
+    </label>
+
+    <label class="field">
+      <span>サブ / 一言（任意）</span>
+      <input id="subtitle" type="text" maxlength="60" placeholder="例：1円の行方を追いかけた話">
+    </label>
+
+    <label class="field">
+      <span>著者 / 出典（任意）</span>
+      <input id="author" type="text" maxlength="40" placeholder="例：Kei｜#100DayChallenge">
+    </label>
+
+    <div class="field">
+      <span>テンプレート</span>
+      <div class="chip-row" id="templateRow" role="radiogroup" aria-label="テンプレート">
+        <button class="chip is-active" data-template="left" role="radio" aria-checked="true">左寄せ大見出し</button>
+        <button class="chip" data-template="center" role="radio" aria-checked="false">中央</button>
+        <button class="chip" data-template="band" role="radio" aria-checked="false">帯付き</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>配色プリセット</span>
+      <div class="chip-row" id="paletteRow" role="radiogroup" aria-label="配色"></div>
+    </div>
+
+    <div class="field two-col">
+      <label class="sub-field">
+        <span>背景色</span>
+        <input id="bgColor" type="color" value="#1a1a2e">
+      </label>
+      <label class="sub-field">
+        <span>文字色</span>
+        <input id="fgColor" type="color" value="#ffffff">
+      </label>
+      <label class="sub-field">
+        <span>差し色</span>
+        <input id="accentColor" type="color" value="#e94560">
+      </label>
+    </div>
+
+    <button id="downloadBtn" class="primary">PNGをダウンロード</button>
+    <p class="hint">画像はすべてこのブラウザの中で作られます（どこにもアップロードされません）。</p>
+  </section>
+
+  <section class="preview" aria-label="プレビュー">
+    <div class="canvas-wrap">
+      <canvas id="canvas" width="1200" height="630" aria-label="OGP画像プレビュー"></canvas>
+    </div>
+    <p class="size-note">出力サイズ：1200 × 630 px（OGP標準）</p>
+  </section>
+</main>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
