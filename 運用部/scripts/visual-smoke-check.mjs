@@ -35,11 +35,26 @@ async function runPlaywright(url, project) {
     fs.mkdirSync(outDir, { recursive: true });
     const screenshotPath = path.join(outDir, `${project || 'project'}-mobile.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true });
+
+    // 幅320pxでの横はみ出し検査（スマホ崩れの主因＝横スクロールを検出）
+    await page.setViewportSize({ width: 320, height: 640 });
+    const overflow = await page.evaluate(() => {
+      const de = document.documentElement, vw = de.clientWidth;
+      const bad = [];
+      document.querySelectorAll('body *').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.right > vw + 1) {
+          bad.push((el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/)[0] : el.tagName.toLowerCase()));
+        }
+      });
+      return { overflowX: de.scrollWidth - vw, offenders: [...new Set(bad)].slice(0, 6) };
+    });
     await browser.close();
+    const overflowOk = overflow.overflowX <= 8; // 8px超の横はみ出しは崩れとみなす
     return {
-      ok: Boolean(title) && visibleText.trim().length > 20,
+      ok: Boolean(title) && visibleText.trim().length > 20 && overflowOk,
       mode: 'playwright',
-      detail: `title="${title}", screenshot=${screenshotPath}`,
+      detail: `title="${title}", screenshot=${screenshotPath}, mobile320=${overflowOk ? 'OK(はみ出しなし)' : `NG(横はみ出し${overflow.overflowX}px 犯人:${overflow.offenders.join(',')})`}`,
     };
   } catch (error) {
     return { ok: false, mode: 'playwright-unavailable', detail: error.message };

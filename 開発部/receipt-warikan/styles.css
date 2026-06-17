@@ -95,7 +95,9 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
   gap: .5rem;
   margin-top: .3rem;
 }
-.manual-add { margin-top: .9rem; }
+.manual-add { margin-top: .9rem; flex-wrap: wrap; }
+.manual-add input#itemName { flex: 1 1 100%; }
+.manual-add input#itemPrice { flex: 1 1 90px; }
 .manual-add input[type="number"] { max-width: 110px; }
 .member-input .btn, .manual-add .btn { flex: none; }
 
@@ -117,7 +119,10 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
 }
 
 .receipt-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
-.receipt-actions .btn { flex: 1; }
+.receipt-actions .btn { flex: 1 1 100%; white-space: nowrap; }
+@media (min-width: 420px) {
+  .receipt-actions .btn { flex: 1 1 0; }
+}
 
 .preview { margin-top: 1rem; text-align: center; }
 .preview img {
@@ -149,6 +154,10 @@ input:focus { outline: 2px solid var(--teal); border-color: transparent; }
   gap: .5rem;
 }
 .item-name { font-weight: 600; flex: 1; word-break: break-word; }
+@media (max-width: 430px) {
+  .item-head { flex-wrap: wrap; }
+  .item-name { flex: 1 1 100%; }
+}
 .item-price { font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
 
 .qty-stepper { display: inline-flex; align-items: center; gap: .1rem; flex: none; }

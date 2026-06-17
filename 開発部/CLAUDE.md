@@ -47,6 +47,40 @@
 - **コメントなし** — 変数名・関数名で意図を伝える。WHYが非自明な場合のみコメントを書く
 - **セキュリティ** — XSS/SQL injection/OWASP Top 10 に注意。`innerHTML` に生のユーザー入力を渡さない
 
+### モバイル対応（PCで作ってスマホで崩さない・必須）
+
+「PCでは整っているのにスマホでガタガタ」を最初から防ぐ。崩れの主因は **横はみ出し** と **flex行の詰め込みすぎ** の2つ。
+
+**作るときの鉄則**
+- viewportは `width=device-width, initial-scale=1.0`。`maximum-scale=1.0` は付けない（ピンチズーム禁止になり不便）
+- 横並び（`display:flex`）には原則 `flex-wrap: wrap` を付け、狭い画面で折り返す
+- 幅は `max-width` で上限を切るだけにする。`width:NNNpx` / `min-width:NNNpx` で固定しない（特に `width/min-width/max-width` を同じpxで三重ロックしない）
+- 1行に入力欄やボタンを詰め込まない。最重要要素は `flex: 1 1 100%` で独立行にし、広い画面用に `@media (min-width: 420px)` で横並びへ戻す
+- 画像・キャンバス・SVGは `max-width: 100%`。入力欄のフォントは16px以上（iOSのタップ拡大防止）
+- 画面いっぱいの高さは `100vh` でなく `100dvh`（スマホのツールバー変動対応）
+- 3カラム等の固定レイアウトは `@media (max-width: 720px)` で縦積みにする
+- 新規はテンプレ `_templates/vanilla-starter/` を土台にする（崩れ防止の共通CSSが入っている）
+
+**完成前チェック（必須・QA依頼の前に実行）**
+ローカルで配信し、Playwright(MCP)を **幅320px** にして開き、横はみ出しがゼロかを実測する。推測しない。
+
+```js
+// 320pxで横はみ出し(overflowX)が0かを確認。0でなければ犯人要素が出る
+() => {
+  const de = document.documentElement, vw = de.clientWidth;
+  const bad = [];
+  document.querySelectorAll('body *').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.right > vw + 1) bad.push({ sel: el.className || el.tagName, right: Math.round(r.right) });
+  });
+  return { overflowX: de.scrollWidth - vw, offenders: bad.slice(0, 8) };
+}
+```
+
+`overflowX` が0でなければ、`offenders` の要素に `flex-wrap` / `max-width` / 独立行化で対処してから再確認する。モーダル・結果パネル・ゲーム盤面など「操作後に出る要素」も開いた状態で測ること。
+
+クイック静的チェック（ブラウザ不要・目安）: `node 運用部/scripts/check-mobile.mjs <project-dir>`
+
 ### ファイル構成（Vanilla JSプロジェクトの標準）
 ```
 [project-name]/
@@ -92,10 +126,11 @@ db.collection('items').doc(id).delete();
 
 1. `企画部/specs/` から仕様書を確認する
 2. このディレクトリ（`開発部/`）に新しいフォルダを作成
-3. `index.html`, `app.js`, `styles.css` から実装開始
+3. `index.html`, `app.js`, `styles.css` から実装開始（土台は `_templates/vanilla-starter/`）
 4. `firebase.json` と `.firebaserc` を作成
 5. `manifest.json` と `sw.js` を追加
-6. 実装完了したら QA部 に `/code-review` を依頼
+6. **幅320pxでモバイル崩れ確認**（上記「モバイル対応」の完成前チェック。横はみ出し0を実測）
+7. 実装完了したら QA部 に `/code-review` を依頼
 
 ## よく使うCDNリンク（コピー用）
 

@@ -1,4 +1,4 @@
-const CACHE = 'vinroute-v2';
+const CACHE = 'vinroute-v3';
 const FILES = ['./', './index.html', './styles.css', './app.js', './map.js', './quiz.js', './manifest.json'];
 
 self.addEventListener('install', e => {

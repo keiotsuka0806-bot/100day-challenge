@@ -1,16 +1,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ===== モバイル崩れ防止の土台（消さない） =====
+   PCで整っていてもスマホで崩れる事故を最初から防ぐ共通ルール。
+   崩れの主因は「横はみ出し」と「flex行の詰め込みすぎ」。
+   ・横並び(display:flex)は原則 flex-wrap: wrap を付け、狭い画面で折り返す
+   ・固定px幅は max-width で上限を切るだけにし、width/min-width で固定しない
+   ・必ず幅320pxで表示確認する（後述のCLAUDE.mlのチェック手順） */
+html { -webkit-text-size-adjust: 100%; }            /* iOSで文字が勝手に拡大しない */
+img, svg, video, canvas { max-width: 100%; height: auto; }  /* 画像・図がはみ出さない */
+input, button, select, textarea { font: inherit; }
+input, select, textarea { max-width: 100%; font-size: 16px; } /* 16px未満だとiOSでタップ時に拡大される */
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #f5f5f5;
   color: #1a1a1a;
   min-height: 100vh;
+  min-height: 100dvh;   /* スマホのツールバー高さ変動に追従（vhは古い端末向けフォールバック） */
 }
 
 .hidden { display: none !important; }
 
 /* ログイン */
-.screen { min-height: 100vh; }
+.screen { min-height: 100vh; min-height: 100dvh; }
 
 #screen-login {
   display: flex;
@@ -53,7 +65,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  gap: 12px;
+  padding: 0 16px;
   height: 56px;
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -62,9 +75,10 @@ body {
   z-index: 10;
 }
 
-.app-title { font-size: 16px; font-weight: 600; }
+/* タイトルが長くてもボタンを画面外に押し出さず、…で省略する */
+.app-title { font-size: 16px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.header-right { display: flex; align-items: center; gap: 12px; }
+.header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
 .avatar {
   width: 32px;

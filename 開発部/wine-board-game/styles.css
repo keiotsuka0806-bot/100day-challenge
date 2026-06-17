@@ -431,3 +431,27 @@ html, body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
+
+/* ===== スマホ: 3カラム横並び → 縦積み ===== */
+@media (max-width: 720px) {
+  #gameScreen.active {
+    flex-direction: column;
+    height: 100dvh;
+  }
+  /* プレイヤー一覧: 上部の横スクロール帯に */
+  .player-panels {
+    width: 100%; min-width: 0; max-width: none;
+    flex-direction: row; overflow-x: auto; overflow-y: hidden;
+    border-right: none; border-bottom: 1px solid var(--border);
+    gap: 6px; padding: 8px;
+  }
+  .player-panel { min-width: 150px; flex-shrink: 0; }
+  /* マップ: 残りの高さをすべて使う */
+  .map-wrapper { flex: 1; min-height: 180px; }
+  /* 操作パネル: 下部に。高さ上限を設けてスクロール */
+  .action-panel {
+    width: 100%; min-width: 0; max-width: none;
+    border-left: none; border-top: 1px solid var(--border);
+    max-height: 42vh;
+  }
+}

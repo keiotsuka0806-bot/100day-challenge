@@ -1,4 +1,4 @@
-const CACHE = 'warikan-v6';
+const CACHE = 'warikan-v7';
 const ASSETS = ['./', 'index.html', 'app.js', 'styles.css', 'manifest.json'];
 
 self.addEventListener('install', (e) => {
