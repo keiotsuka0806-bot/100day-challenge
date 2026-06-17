@@ -99,3 +99,8 @@
 - **自動化 / git hygiene** git hygiene チェックが継続して失敗している（`/tmp/100day-git-hygiene.log`）。原因は ① コピーされたスキルカタログ（`.claude/skills/*/SKILL.md`：job-scout / morning-routine / server-app-deploy / weekly-narrative）がコミット対象に入っている ② `.env.example` / `.env.local.example`（ai-debate-stage・ai-org-sim）がコミットされている。スキルカタログは複製なので追跡対象から外し、env系は `.gitignore` へ。放置すると毎朝フックが鳴り続け、本当の警告に気づけなくなる。
 - **セキュリティ / 公開AI設計** 公開アプリで「AIで分析」を本番ONにする前に、公開APIへ件数・サイズ上限＋簡易レート制限を入れてから鍵を登録する。逆に **鍵を未登録にしておけば機能は休眠してコストゼロ**（AIOrgSimはこの状態で公開済み）。公開とAI課金の有効化を切り離せば、安全に出してから磨ける。
 
+## 2026-06-16: ReceiptWarikan / QRLivePoll
+- **IME / Enterハンドラ** 入力欄でEnterキーに「項目追加」等を割り当てると、日本語IMEの変換確定Enterを誤検知して未確定の文字で項目が作られる。`if (e.isComposing) return;`（または `e.keyCode === 229` 判定）で変換中を除外する。確定後のEnterだけが発火するようになり、欄も正しくクリアされる。日本語UIの全アプリで踏むので定型対策にする。
+- **金額表示の正確性** 各人の金額を独立に `Math.round` すると合計が総額とズレる（例: 1000円を3人→各333円表示で合計999円）。お金を扱うUIでは許容不可。**最大剰余法**で端数を1円ずつ配分し「各人表示額の合計＝総額表示」を保証する（詳細は reusable-patterns）。
+- **git hygiene 継続NG（未解決の持ち越し）** 6/15に挙げた git hygiene 失敗（スキルカタログ複製のコミット＋`.env*.example` 混入）が 6/16・6/17 も `[xx:xx] git hygiene NG` で鳴り続けている。**追記ではなく対処が必要**: スキルカタログを追跡対象から外し、env系を `.gitignore` へ。フックが毎朝鳴ると本物の警告に気づけなくなる（オオカミ少年化）。
+

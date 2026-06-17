@@ -358,3 +358,21 @@ function showScreen(screenId) {
 **実装例**: `開発部/ai-org-sim/` の詰まり診断→おすすめ部署（7種ライブラリ）→ドライランで効果予測→ワンクリック追加で即再シミュ。
 **注意点**: ① 「適用前の効果予測」があると安心して試せるので学習効果が跳ね上がる。② おすすめは固定ライブラリ（少数の型）で十分。AIに頼らずモックで成立させると鍵不要・コストゼロで動く。③ Before/After差分を必ず可視化して「自分の操作が何を変えたか」を返すこと。
 
+## 端数を1円も失わない金額按分（最大剰余法 / reconcileToYen）
+**使い道**: 割り勘・税込按分・ポイント配分など「総額を複数人/複数項目に整数で分ける」全ての場面。各人を独立に `Math.round` すると合計が総額とズレるのを防ぐ。
+**実装例**: `開発部/receipt-warikan/app.js` の `reconcileToYen()`。
+```js
+// shares: 各人の理論上の取り分（小数可）, total: 配りたい整数総額
+function reconcileToYen(shares, total) {
+  const floored = shares.map(Math.floor);
+  let remainder = total - floored.reduce((a, b) => a + b, 0); // 配り残しの円
+  // 小数部が大きい人から順に1円ずつ配る（最大剰余法）
+  const order = shares
+    .map((s, i) => ({ i, frac: s - Math.floor(s) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < remainder; k++) floored[order[k].i] += 1;
+  return floored; // 合計は必ず total に一致
+}
+```
+**注意点**: ① 「各人の表示額の合計＝総額表示」を必ずテストで担保する（1000円を3人→334/333/333）。② 端数の行き先（誰が多く負担するか）は小数部順で決まるので公平。意図的に幹事へ寄せたいなら order の基準を変える。③ 負の remainder（取りすぎ）はこのコードでは起きない前提（floor配分なので remainder ≥ 0）。
+
