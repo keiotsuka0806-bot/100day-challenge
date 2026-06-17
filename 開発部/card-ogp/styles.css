@@ -128,6 +128,32 @@ input[type="color"] {
 .primary:hover { opacity: 0.9; }
 .hint { margin: 0; font-size: 0.75rem; color: var(--muted); text-align: center; }
 
+.image-drop {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--muted);
+  transition: border-color 0.15s, background 0.15s;
+}
+.image-drop:hover, .image-drop:focus, .image-drop.is-drag {
+  border-color: var(--accent);
+  outline: none;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 0 0;
+  align-self: flex-start;
+}
+.hint.left { text-align: left; }
+
 .preview { display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .canvas-wrap {
   width: 100%;

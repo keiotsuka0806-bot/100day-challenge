@@ -61,6 +61,25 @@
       </label>
     </div>
 
+    <div class="field">
+      <span>挿絵 / 画像（任意）</span>
+      <div id="imageDrop" class="image-drop" tabindex="0" role="button" aria-label="画像をドロップまたは選択">
+        <span id="imageDropLabel">ここに画像をドラッグ、またはクリックして選択</span>
+        <input id="imageInput" type="file" accept="image/*" hidden>
+      </div>
+      <button id="removeImage" class="link-btn" hidden>画像を外す</button>
+      <p class="hint left">手元の画像やフリー素材（unDraw / いらすとや 等）を合成できます。AIで生成はしません（鍵不要）。</p>
+    </div>
+
+    <div class="field" id="imageModeField" hidden>
+      <span>画像の入れ方</span>
+      <div class="chip-row" id="imageModeRow" role="radiogroup" aria-label="画像の入れ方">
+        <button class="chip is-active" data-mode="bottom" role="radio" aria-checked="true">下に置く（バナー風）</button>
+        <button class="chip" data-mode="bg" role="radio" aria-checked="false">背景に敷く</button>
+        <button class="chip" data-mode="side" role="radio" aria-checked="false">右に置く</button>
+      </div>
+    </div>
+
     <button id="downloadBtn" class="primary">PNGをダウンロード</button>
     <p class="hint">画像はすべてこのブラウザの中で作られます（どこにもアップロードされません）。</p>
   </section>
