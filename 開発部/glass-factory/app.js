@@ -178,7 +178,8 @@
   const lobby = $("lobby");
   const museum = $("museum");
   const meeting = $("meeting");
-  const SCREENS = [intro, lobby, stage, museum, meeting];
+  const build = $("build");
+  const SCREENS = [intro, lobby, stage, museum, meeting, build];
 
   function showScreen(el) {
     SCREENS.forEach((s) => s.classList.toggle("hidden", s !== el));
@@ -209,12 +210,19 @@
     renderMeeting();
   }
 
+  function enterBuild() {
+    stop();
+    showScreen(build);
+    buildState = { mission: [], values: [], depts: [], step: 0, name: "" };
+    renderBuild();
+  }
+
   // ---- ロビーの部屋カード ----
   const ROOMS = [
     { no: "①", name: "見学ステージ", tagline: "今日の一日リプレイ", desc: "朝会から本命プロダクトが生まれるまでの一日を、まるごと観戦する。", status: "open", go: enterReplay, c: "var(--c-開発部)" },
     { no: "③", name: "ボツ美術館", tagline: "世に出なかった企画たち", desc: "落とされた企画と、その却下理由を展示する地下展示室。", status: "open", go: enterMuseum, c: "var(--c-記憶庫)" },
     { no: "②", name: "企画会議室", tagline: "10案が3案に絞られるまで", desc: "提出された10案を審査基準にかけ、その場で3案へ絞る。", status: "open", go: enterMeeting, c: "var(--c-企画部)" },
-    { no: "④", name: "会社を建てる", tagline: "あなた自身のAI会社を建てる", desc: "目的とルールを選んで、自分の工場を建てる体験。準備中。", status: "soon", c: "var(--c-社長)" },
+    { no: "④", name: "会社を建てる", tagline: "あなた自身のAI会社を建てる", desc: "目的・掟・部署を選んで、自分の工場を3ステップで建てる。", status: "open", go: enterBuild, c: "var(--c-社長)" },
   ];
 
   const roomsEl = $("rooms");
@@ -367,6 +375,118 @@
       role: "提出された案は、この基準にかけて絞られます。",
       html,
     });
+  }
+
+  // ---- ④ 会社を建てる体験 ----
+  const BLD = window.GLASS_BUILDER;
+  let buildState = { mission: [], values: [], depts: [], step: 0, name: "" };
+
+  function renderBuild() {
+    const total = BLD.steps.length;
+    const dots = $("buildDots");
+    dots.innerHTML = BLD.steps.map((_, i) =>
+      `<span class="bdot ${i < buildState.step ? "done" : ""} ${i === buildState.step ? "now" : ""}"></span>`
+    ).join("") + `<span class="bdot ${buildState.step >= total ? "now" : ""}">🏭</span>`;
+
+    if (buildState.step >= total) { renderReveal(); return; }
+    const st = BLD.steps[buildState.step];
+    const sel = buildState[st.key];
+    const cards = st.options.map((o) => {
+      const on = sel.includes(o.id);
+      return `<button class="pick ${on ? "on" : ""}" data-id="${o.id}">
+        <span class="pick-check">${on ? "✓" : ""}</span>
+        <span class="pick-main"><b>${esc(o.label)}</b><span>${esc(o.note)}</span></span>
+      </button>`;
+    }).join("");
+
+    const need = st.multi
+      ? `${st.min}〜${st.max || st.options.length}つ選ぶ（いま ${sel.length}）`
+      : `1つ選ぶ`;
+    const ok = sel.length >= st.min && (!st.max || sel.length <= st.max);
+
+    $("buildStage").innerHTML = `
+      <div class="bstep">
+        <h2 class="bq">${esc(st.q)}</h2>
+        <p class="bhelp">${esc(st.help)} ・ <span class="bneed">${need}</span></p>
+        <div class="picks">${cards}</div>
+        <div class="bnav">
+          ${buildState.step > 0 ? `<button class="back-btn" id="bPrev">← 戻る</button>` : `<span></span>`}
+          <button class="btn-sift" id="bNext" ${ok ? "" : "disabled"}>
+            ${buildState.step === total - 1 ? "工場を建てる 🏭" : "次へ →"}
+          </button>
+        </div>
+      </div>
+    `;
+
+    $("buildStage").querySelectorAll(".pick").forEach((btn) =>
+      btn.addEventListener("click", () => togglePick(st, btn.dataset.id)));
+    $("bNext").addEventListener("click", () => { if (ok) { buildState.step++; renderBuild(); } });
+    const prev = $("bPrev");
+    if (prev) prev.addEventListener("click", () => { buildState.step--; renderBuild(); });
+  }
+
+  function togglePick(st, id) {
+    const sel = buildState[st.key];
+    const i = sel.indexOf(id);
+    if (st.multi) {
+      if (i >= 0) sel.splice(i, 1);
+      else if (!st.max || sel.length < st.max) sel.push(id);
+    } else {
+      buildState[st.key] = [id];
+    }
+    renderBuild();
+  }
+
+  function labelsOf(key) {
+    const opts = BLD.steps.find((s) => s.key === key).options;
+    return buildState[key].map((id) => opts.find((o) => o.id === id));
+  }
+
+  function renderReveal() {
+    const mission = labelsOf("mission")[0];
+    const values = labelsOf("values");
+    const depts = labelsOf("depts");
+
+    const remarks = [];
+    if (buildState.values.includes("speed")) remarks.push(BLD.remarks.speed);
+    if (buildState.values.includes("safe")) remarks.push(BLD.remarks.safe);
+    if (!buildState.depts.includes("ceo")) remarks.push(BLD.remarks.noCeo);
+    if (!remarks.length) remarks.push(BLD.remarks.good);
+
+    const floors = depts.map((d, i) =>
+      `<div class="floor" style="animation-delay:${i * 90}ms"><span class="floor-no">${depts.length - i}F</span>${esc(d.label)}</div>`
+    ).join("");
+    const valueChips = values.map((v) => `<span class="vchip">${esc(v.label)}</span>`).join("");
+
+    $("buildStage").innerHTML = `
+      <div class="reveal">
+        <p class="reveal-kicker">🏭 あなたの工場が完成しました</p>
+        <input id="coName" class="co-name" maxlength="20" placeholder="工場の名前を入力（任意）" />
+        <div class="blueprint">
+          <h3 class="bp-name" id="bpName"></h3>
+          <div class="bp-mission"><span>目的</span><p id="bpMission"></p></div>
+          <div class="bp-floors">${floors}</div>
+          <div class="bp-values"><span>掟</span><div class="vchips">${valueChips}</div></div>
+        </div>
+        <div class="remarks">${remarks.map((r) => `<p>${esc(r)}</p>`).join("")}</div>
+        <p class="reveal-closing">${esc(BLD.closing)}</p>
+        <div class="bnav center">
+          <button class="back-btn" id="bAgain">⟲ もう一度建てる</button>
+          <button class="btn-sift" id="bToLobby">ロビーへ →</button>
+        </div>
+      </div>
+    `;
+    // XSS安全：ユーザー入力名と目的はtextContentで入れる
+    $("bpMission").textContent = mission ? mission.label : "";
+    const nameEl = $("coName");
+    const nameOut = $("bpName");
+    const DEFAULT_NAME = "あなたのAI工場";
+    const paintName = () => { nameOut.textContent = buildState.name.trim() || DEFAULT_NAME; };
+    nameEl.value = buildState.name;
+    paintName();
+    nameEl.addEventListener("input", () => { buildState.name = nameEl.value; paintName(); });
+    $("bAgain").addEventListener("click", enterBuild);
+    $("bToLobby").addEventListener("click", goLobby);
   }
 
   // ---- イベント配線 ----
