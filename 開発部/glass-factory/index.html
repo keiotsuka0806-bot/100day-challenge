@@ -26,18 +26,19 @@
 
   <!-- 観戦ステージ -->
   <main id="stage" class="screen hidden" aria-live="polite">
-    <header class="stage-head">
-      <div class="head-left">
-        <span class="live-dot"></span>
-        <span class="head-date" id="headDate"></span>
-      </div>
-      <div class="head-right">
-        <span id="counter" class="counter"></span>
-      </div>
-    </header>
-
-    <p class="lanes-hint">部署をタップすると、その部署の全ルールが読めます 👆</p>
-    <div class="lanes" id="lanes"></div>
+    <div class="stage-top">
+      <header class="stage-head">
+        <div class="head-left">
+          <span class="live-dot"></span>
+          <span class="head-date" id="headDate"></span>
+        </div>
+        <div class="head-right">
+          <span id="counter" class="counter"></span>
+        </div>
+      </header>
+      <div class="lanes" id="lanes"></div>
+      <p class="lanes-hint">部署をタップすると、その部署の全ルールが読めます 👆</p>
+    </div>
 
     <div id="feed" class="feed"></div>
 
