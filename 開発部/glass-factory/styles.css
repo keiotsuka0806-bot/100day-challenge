@@ -64,6 +64,105 @@ body{
   border:1px solid var(--line);font-size:14px;padding:12px 22px}
 .btn-secondary:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
 
+/* ===== ロビー（部屋選び） ===== */
+#lobby{position:relative;z-index:1;display:grid;place-items:center;padding:40px 18px 60px}
+.lobby-inner{width:100%;max-width:720px;animation:rise .6s ease both}
+.lobby-head{text-align:center;margin-bottom:30px}
+.lobby-title{font-size:clamp(24px,5.5vw,38px);font-weight:800;line-height:1.2;margin:6px 0 12px}
+.lobby-lead{color:var(--muted);font-size:15px;line-height:1.8}
+.rooms{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+@media (min-width:560px){.rooms{grid-template-columns:1fr 1fr}}
+.room-card{display:flex;align-items:center;gap:14px;text-align:left;width:100%;
+  border:1px solid var(--line);border-left:3px solid var(--c);border-radius:16px;padding:18px 16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));color:var(--ink);
+  cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .25s,border-color .2s;
+  -webkit-tap-highlight-color:transparent}
+.room-card:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:0 16px 40px -20px var(--c)}
+.room-card:active{transform:translateY(-1px) scale(.99)}
+.room-card-no{flex:0 0 auto;font-size:22px;font-weight:800;color:var(--c);
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--c) 16%,transparent)}
+.room-card-body{flex:1 1 auto;min-width:0}
+.room-card-body h2{font-size:17px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.soon-tag{font-size:10px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 7px;letter-spacing:.04em}
+.room-card-tag{font-size:12.5px;color:var(--c);font-weight:700;margin-bottom:6px}
+.room-card-desc{font-size:13px;color:var(--muted);line-height:1.7}
+.room-card-arrow{flex:0 0 auto;font-size:18px;color:var(--c);opacity:.85}
+.room-card.soon{cursor:default;opacity:.6}
+.room-card.soon:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.room-card.soon .room-card-arrow{font-size:15px}
+
+/* 部屋共通ヘッダー（戻るボタン等） */
+.back-btn{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);
+  border-radius:999px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;
+  padding:7px 13px;transition:background .2s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.back-btn:hover{background:rgba(255,255,255,.14)}
+.head-left .back-btn{padding:6px 10px;font-size:15px}
+.room-head{position:sticky;top:0;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  max-width:820px;margin:0 auto;padding:14px 16px;
+  background:linear-gradient(var(--bg) 60%,rgba(7,11,20,.9));backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line)}
+.room-head-mid{display:flex;align-items:center;gap:9px}
+.room-no{font-size:18px;font-weight:800;color:var(--c-記憶庫)}
+.room-name{font-weight:800;font-size:15px}
+.room-head-pad{width:48px}
+
+/* ===== ③ ボツ美術館 ===== */
+#museum{position:relative;z-index:1}
+.museum-body{max-width:820px;margin:0 auto;padding:8px 16px calc(50px + env(safe-area-inset-bottom))}
+.museum-intro{color:var(--muted);font-size:14px;line-height:1.9;text-align:center;
+  max-width:600px;margin:18px auto 26px}
+.museum-foot{color:var(--muted);font-size:13px;line-height:1.8;text-align:center;margin-top:30px;
+  padding-top:20px;border-top:1px solid var(--line);opacity:.85}
+.gallery{display:grid;grid-template-columns:1fr;gap:20px}
+@media (min-width:560px){.gallery{grid-template-columns:1fr 1fr}}
+
+.frame{display:block;width:100%;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);
+  padding:0;border:none;background:none;transition:transform .18s;-webkit-tap-highlight-color:transparent}
+.frame:hover{transform:translateY(-4px)}
+.frame:active{transform:translateY(-1px)}
+.frame-canvas{position:relative;border-radius:6px;padding:24px 20px;min-height:170px;
+  display:flex;flex-direction:column;justify-content:center;
+  border:7px solid #171f33;
+  background:
+    radial-gradient(420px 200px at 50% 0%,hsl(var(--hue) 50% 22% / .55),transparent 70%),
+    linear-gradient(180deg,#0f1830,#0a1020);
+  box-shadow:0 0 0 2px rgba(255,255,255,.05) inset,0 18px 40px -22px #000,
+    0 0 30px -10px hsl(var(--hue) 70% 45% / .35);
+  overflow:hidden}
+.frame-canvas::before{content:"";position:absolute;top:-30%;left:50%;transform:translateX(-50%);
+  width:70%;height:60%;background:radial-gradient(closest-side,rgba(255,255,255,.10),transparent);
+  pointer-events:none}
+.frame-kind{font-size:10.5px;font-weight:800;letter-spacing:.06em;
+  color:hsl(var(--hue) 60% 78%);opacity:.9;margin-bottom:8px;display:block}
+.frame-title{font-size:18px;font-weight:800;line-height:1.4;margin-bottom:10px;
+  color:#eaf0ff;text-shadow:0 2px 12px hsl(var(--hue) 70% 30% / .6)}
+.frame-works{display:flex;flex-wrap:wrap;gap:5px}
+.frame-works span{font-size:10.5px;color:#c5d3f0;border:1px solid rgba(255,255,255,.12);
+  border-radius:5px;padding:2px 7px;background:rgba(255,255,255,.03)}
+.frame-solo{font-size:13px;color:#c5d3f0;line-height:1.7;font-style:italic}
+.plate{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+  margin:11px auto 0;width:max-content;max-width:90%;padding:7px 16px;border-radius:5px;
+  background:linear-gradient(180deg,#caa46a,#9c7c44);color:#241a07;
+  box-shadow:0 4px 14px -6px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.25) inset}
+.plate-cap{font-size:12px;font-weight:800;line-height:1.4}
+.plate-date{font-size:10px;font-weight:700;opacity:.75;font-variant-numeric:tabular-nums}
+
+/* 展示プレート（モーダル内） */
+.ex-works{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.ex-works span{font-size:11px;color:#d6e0f5;border:1px solid var(--line);border-radius:6px;
+  padding:3px 9px;background:rgba(255,255,255,.03)}
+.ex-row{border:1px solid var(--line);border-left:2px solid var(--c,#9b8cff);border-radius:12px;
+  padding:12px 14px;background:rgba(255,255,255,.025)}
+.ex-k{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;color:#9fb4e6;margin-bottom:5px}
+.ex-row p{font-size:13.5px;line-height:1.85;color:#d6e0f5}
+.ex-verdict{border-left-color:#ff7a88;background:rgba(255,122,136,.06)}
+.ex-verdict .ex-k{color:#ff9aa6}
+.ex-verdict p{color:#ffd9de;font-style:italic}
+.ex-lesson{border-left-color:var(--gold);background:rgba(255,212,121,.07)}
+.ex-lesson .ex-k{color:#e9c27a}
+.ex-lesson p{color:#f0dcb0}
+
 /* ===== ステージ ===== */
 #stage{position:relative;z-index:1;display:flex;flex-direction:column;max-width:760px;margin:0 auto;padding:0 16px 150px}
 
