@@ -98,6 +98,19 @@ body{
 .tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:800;letter-spacing:.06em;
   color:var(--gold);border:1px dashed var(--gold-soft);border-radius:6px;padding:3px 9px}
 
+/* 社内ルール（計器パネル風の読み取り表示） */
+.rule{margin-top:13px;border-radius:11px;padding:11px 13px;
+  background:repeating-linear-gradient(135deg,rgba(120,160,255,.05),rgba(120,160,255,.05) 10px,rgba(120,160,255,.02) 10px,rgba(120,160,255,.02) 20px);
+  border:1px solid rgba(120,160,255,.16);border-left:2px solid color-mix(in srgb,var(--c) 70%,#6f8fff)}
+.rule-label{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#9fb4e6;margin-bottom:5px}
+.rule-src{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#7fd0ff;margin-bottom:5px;
+  word-break:break-word}
+.rule-text{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.7;color:#c5d3f0 !important}
+.card.human .rule{background:rgba(255,212,121,.06);border-color:var(--gold-soft);border-left-color:var(--gold)}
+.card.human .rule-label{color:#e9c27a}
+.card.human .rule-src{color:#ffd479}
+.card.human .rule-text{color:#f0dcb0 !important}
+
 /* 社長（人間）の判断 */
 .card.human{border-color:var(--gold-soft);border-left-color:var(--gold);
   background:linear-gradient(180deg,rgba(255,212,121,.10),rgba(255,212,121,.02));

@@ -53,6 +53,13 @@
     card.style.setProperty("--c", `var(--c-${ev.dept})`);
 
     const tag = ev.tag ? `<span class="tag">${ev.tag === "本命" ? "★ 本命" : ev.tag}</span>` : "";
+    const rule = ev.rule
+      ? `<div class="rule">
+           <div class="rule-label">⚙️ このとき効いていた社内ルール</div>
+           <div class="rule-src">${ev.rule.src}</div>
+           <p class="rule-text">${ev.rule.text}</p>
+         </div>`
+      : "";
     card.innerHTML = `
       <div class="card-head">
         <span class="badge">${ev.dept === "社長" ? "社長(あなた)" : ev.dept}</span>
@@ -62,6 +69,7 @@
       <h3>${ev.title}</h3>
       <p>${ev.body}</p>
       ${tag}
+      ${rule}
     `;
     feed.appendChild(card);
     highlightLane(ev.dept);
