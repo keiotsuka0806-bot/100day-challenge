@@ -174,14 +174,115 @@
     }
   }
 
-  // ---- イベント配線 ----
-  $("startBtn").addEventListener("click", () => {
-    intro.classList.add("hidden");
-    stage.classList.remove("hidden");
+  // ---- 画面遷移（イントロ / ロビー / 各部屋） ----
+  const lobby = $("lobby");
+  const museum = $("museum");
+  const SCREENS = [intro, lobby, stage, museum];
+
+  function showScreen(el) {
+    SCREENS.forEach((s) => s.classList.toggle("hidden", s !== el));
+    window.scrollTo(0, 0);
+  }
+
+  function goLobby() {
+    stop();
+    showScreen(lobby);
+  }
+
+  function enterReplay() {
+    showScreen(stage);
     $("headDate").textContent = `${DATA.date} ・ ${DATA.title}`;
-    updateProgress();
+    restart();
     play();
+  }
+
+  function enterMuseum() {
+    stop();
+    showScreen(museum);
+    renderMuseum();
+  }
+
+  // ---- ロビーの部屋カード ----
+  const ROOMS = [
+    { no: "①", name: "見学ステージ", tagline: "今日の一日リプレイ", desc: "朝会から本命プロダクトが生まれるまでの一日を、まるごと観戦する。", status: "open", go: enterReplay, c: "var(--c-開発部)" },
+    { no: "③", name: "ボツ美術館", tagline: "世に出なかった企画たち", desc: "落とされた企画と、その却下理由を展示する地下展示室。", status: "open", go: enterMuseum, c: "var(--c-記憶庫)" },
+    { no: "②", name: "企画会議室", tagline: "10案が3案に絞られるまで", desc: "どんな議論で案が絞られ、却下されるのか。準備中。", status: "soon", c: "var(--c-企画部)" },
+    { no: "④", name: "会社を建てる", tagline: "あなた自身のAI会社を建てる", desc: "目的とルールを選んで、自分の工場を建てる体験。準備中。", status: "soon", c: "var(--c-社長)" },
+  ];
+
+  const roomsEl = $("rooms");
+  ROOMS.forEach((r) => {
+    const card = document.createElement(r.status === "open" ? "button" : "div");
+    card.className = "room-card" + (r.status === "soon" ? " soon" : "");
+    card.style.setProperty("--c", r.c);
+    card.innerHTML = `
+      <span class="room-card-no">${r.no}</span>
+      <div class="room-card-body">
+        <h2>${r.name}${r.status === "soon" ? '<span class="soon-tag">準備中</span>' : ""}</h2>
+        <p class="room-card-tag">${r.tagline}</p>
+        <p class="room-card-desc">${r.desc}</p>
+      </div>
+      <span class="room-card-arrow">${r.status === "open" ? "→" : "🔒"}</span>
+    `;
+    if (r.status === "open") card.addEventListener("click", r.go);
+    roomsEl.appendChild(card);
   });
+
+  // ---- ボツ美術館を描画 ----
+  function renderMuseum() {
+    const M = window.GLASS_MUSEUM;
+    if (museum.dataset.built) return;
+    $("museumIntro").textContent = M.intro;
+    $("museumFoot").textContent = M.foot;
+    const gallery = $("gallery");
+    M.exhibits.forEach((ex) => {
+      const frame = document.createElement("button");
+      frame.className = "frame";
+      frame.style.setProperty("--hue", ex.hue);
+      const works = ex.works
+        ? `<div class="frame-works">${ex.works.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
+        : `<p class="frame-solo">${esc(ex.caption)}</p>`;
+      frame.innerHTML = `
+        <div class="frame-canvas">
+          <span class="frame-kind">${esc(ex.kind)}</span>
+          <h3 class="frame-title">${esc(ex.title)}</h3>
+          ${works}
+        </div>
+        <div class="plate">
+          <span class="plate-cap">${esc(ex.caption)}</span>
+          <span class="plate-date">却下: ${esc(ex.by)} ・ ${esc(ex.date)}</span>
+        </div>
+      `;
+      frame.addEventListener("click", () => openExhibit(ex));
+      gallery.appendChild(frame);
+    });
+    museum.dataset.built = "1";
+  }
+
+  function openExhibit(ex) {
+    const worksHtml = ex.works
+      ? `<div class="ex-works">${ex.works.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
+      : "";
+    const html = `
+      ${worksHtml}
+      <div class="ex-row"><span class="ex-k">これは何だった?</span><p>${esc(ex.what)}</p></div>
+      <div class="ex-row ex-verdict"><span class="ex-k">却下票 ・ ${esc(ex.by)}</span><p>${esc(ex.verdict)}</p></div>
+      <div class="ex-row"><span class="ex-k">なぜ落ちた?</span><p>${esc(ex.reason)}</p></div>
+      <div class="ex-row ex-lesson"><span class="ex-k">💡 この没から得た学び</span><p>${esc(ex.lesson)}</p></div>
+    `;
+    openPanel({
+      color: `hsl(${ex.hue} 70% 70%)`,
+      badge: "🖼 収蔵品 ・ " + ex.kind,
+      title: ex.title,
+      role: ex.caption,
+      html,
+    });
+  }
+
+  // ---- イベント配線 ----
+  $("startBtn").addEventListener("click", goLobby);
+  $("lobbyRulebook").addEventListener("click", openCompany);
+  document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", goLobby));
 
   playBtn.addEventListener("click", togglePlay);
   $("restartBtn").addEventListener("click", () => { restart(); play(); });

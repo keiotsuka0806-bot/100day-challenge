@@ -18,9 +18,22 @@
       <p class="kicker">#100Day Challenge ／ Day 19</p>
       <h1 class="title"><span class="glass">ガラス張り</span>AI工場</h1>
       <p class="lead">AIだけで回る会社が、今日のプロダクトを生むまで。<br />各部署が<b>どんな社内ルール（プロンプト）に従って動いているか</b>まで、まるごと見学できる。</p>
-      <button id="startBtn" class="btn btn-primary">工場見学をする 🔍</button>
+      <button id="startBtn" class="btn btn-primary">工場に入る 🚪</button>
       <button id="rulebookBtn" class="btn btn-secondary">📖 工場のルールブックを見る</button>
       <p class="hint" id="introHint"></p>
+    </div>
+  </section>
+
+  <!-- ロビー（廊下・部屋選び） -->
+  <section id="lobby" class="screen hidden">
+    <div class="lobby-inner">
+      <header class="lobby-head">
+        <p class="kicker">ガラス張りAI工場 ・ 館内案内</p>
+        <h1 class="lobby-title">どの部屋を見学しますか?</h1>
+        <p class="lobby-lead">この工場は、AIだけで回る会社です。各部屋で、会社の“中身”を覗けます。</p>
+      </header>
+      <div id="rooms" class="rooms"></div>
+      <button id="lobbyRulebook" class="btn btn-secondary">📖 工場のルールブックを見る</button>
     </div>
   </section>
 
@@ -29,6 +42,7 @@
     <div class="stage-top">
       <header class="stage-head">
         <div class="head-left">
+          <button class="back-btn" data-back title="ロビーへ戻る">←</button>
           <span class="live-dot"></span>
           <span class="head-date" id="headDate"></span>
         </div>
@@ -53,7 +67,24 @@
     </footer>
   </main>
 
-  <!-- ルールパネル（部署 / 会社ルールブック 共用） -->
+  <!-- ③ 地下展示室 ・ ボツ美術館 -->
+  <main id="museum" class="screen hidden">
+    <header class="room-head">
+      <button class="back-btn" data-back title="ロビーへ戻る">← ロビー</button>
+      <div class="room-head-mid">
+        <span class="room-no">③</span>
+        <span class="room-name">ボツ美術館</span>
+      </div>
+      <span class="room-head-pad"></span>
+    </header>
+    <div class="museum-body">
+      <p class="museum-intro" id="museumIntro"></p>
+      <div id="gallery" class="gallery"></div>
+      <p class="museum-foot" id="museumFoot"></p>
+    </div>
+  </main>
+
+  <!-- ルールパネル（部署 / 会社ルールブック / 展示プレート 共用） -->
   <div id="panel" class="panel-overlay hidden" role="dialog" aria-modal="true">
     <div class="panel" id="panelBox">
       <button id="panelClose" class="panel-close" aria-label="閉じる">✕</button>
