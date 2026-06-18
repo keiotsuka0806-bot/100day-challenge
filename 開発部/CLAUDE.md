@@ -38,7 +38,7 @@
 | NaniTaberu | `nani-taberu/` | 開発中 |
 | ReceiptWarikan | `receipt-warikan/` | デプロイ済み（Day17採用） |
 | QRLivePoll | `qr-live-poll/` | デプロイ済み（ストック） |
-| GlassFactory | `glass-factory/` | 開発中（本命・v1「今日の一日」リプレイ実装済み／鍵不要・コストゼロ） |
+| GlassFactory | `glass-factory/` | 開発中（本命・ロビー＋4部屋実装済み：①見学リプレイ／②企画会議室／③ボツ美術館／④会社を建てる体験。鍵不要・コストゼロ・未デプロイ） |
 
 ## コーディング規約
 
