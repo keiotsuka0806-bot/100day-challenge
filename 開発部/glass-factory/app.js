@@ -177,7 +177,8 @@
   // ---- 画面遷移（イントロ / ロビー / 各部屋） ----
   const lobby = $("lobby");
   const museum = $("museum");
-  const SCREENS = [intro, lobby, stage, museum];
+  const meeting = $("meeting");
+  const SCREENS = [intro, lobby, stage, museum, meeting];
 
   function showScreen(el) {
     SCREENS.forEach((s) => s.classList.toggle("hidden", s !== el));
@@ -202,11 +203,17 @@
     renderMuseum();
   }
 
+  function enterMeeting() {
+    stop();
+    showScreen(meeting);
+    renderMeeting();
+  }
+
   // ---- ロビーの部屋カード ----
   const ROOMS = [
     { no: "①", name: "見学ステージ", tagline: "今日の一日リプレイ", desc: "朝会から本命プロダクトが生まれるまでの一日を、まるごと観戦する。", status: "open", go: enterReplay, c: "var(--c-開発部)" },
     { no: "③", name: "ボツ美術館", tagline: "世に出なかった企画たち", desc: "落とされた企画と、その却下理由を展示する地下展示室。", status: "open", go: enterMuseum, c: "var(--c-記憶庫)" },
-    { no: "②", name: "企画会議室", tagline: "10案が3案に絞られるまで", desc: "どんな議論で案が絞られ、却下されるのか。準備中。", status: "soon", c: "var(--c-企画部)" },
+    { no: "②", name: "企画会議室", tagline: "10案が3案に絞られるまで", desc: "提出された10案を審査基準にかけ、その場で3案へ絞る。", status: "open", go: enterMeeting, c: "var(--c-企画部)" },
     { no: "④", name: "会社を建てる", tagline: "あなた自身のAI会社を建てる", desc: "目的とルールを選んで、自分の工場を建てる体験。準備中。", status: "soon", c: "var(--c-社長)" },
   ];
 
@@ -279,7 +286,91 @@
     });
   }
 
+  // ---- ② 企画会議室 ----
+  const MTG = window.GLASS_MEETING;
+  let mtgRound = 0;
+
+  function renderMeeting() {
+    $("meetingIntro").textContent = MTG.intro;
+    $("meetingFoot").textContent = MTG.outro;
+    const tabs = $("roundTabs");
+    if (!tabs.dataset.built) {
+      MTG.rounds.forEach((r, i) => {
+        const b = document.createElement("button");
+        b.className = "round-tab";
+        b.innerHTML = `<b>${r.label}</b><span>${r.theme}</span>`;
+        b.addEventListener("click", () => { mtgRound = i; renderRound(); });
+        tabs.appendChild(b);
+      });
+      tabs.dataset.built = "1";
+    }
+    renderRound();
+  }
+
+  function renderRound() {
+    const r = MTG.rounds[mtgRound];
+    $("roundTabs").querySelectorAll(".round-tab").forEach((t, i) =>
+      t.classList.toggle("active", i === mtgRound));
+
+    const keep = new Set(r.keep);
+    const chips = r.all.map((name) => {
+      const isKeep = keep.has(name);
+      return `<div class="idea ${isKeep ? "is-keep" : "is-drop"}" data-keep="${isKeep}">${esc(name)}</div>`;
+    }).join("");
+
+    $("meetingStage").innerHTML = `
+      <div class="board" data-phase="all">
+        <div class="board-row board-meta">
+          <span class="submit-count">提出 <b>${r.all.length}</b> 案</span>
+          <button class="btn-sift" id="siftBtn">⚙️ 会議にかけて3案に絞る →</button>
+        </div>
+        <div class="ideas" id="ideas">${chips}</div>
+        <div class="sift-result" id="siftResult">
+          <div class="keep-head">✓ 最終3案 <span>${esc(r.keepReason)}</span></div>
+          <div class="drop-note">見送り ${r.all.length - r.keep.length} 案 — ${esc(r.dropNote)}</div>
+          <div class="verdict-card">
+            <span class="verdict-by">👤 社長の最終判定</span>
+            <span class="verdict-stamp">${esc(r.result)}</span>
+            <p>${esc(r.verdict)}</p>
+            <a class="verdict-link" data-go-museum>→ 落選作は「③ ボツ美術館」に収蔵</a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    $("siftBtn").addEventListener("click", siftRound);
+    $("meetingStage").querySelector("[data-go-museum]").addEventListener("click", enterMuseum);
+  }
+
+  function siftRound() {
+    const board = $("meetingStage").querySelector(".board");
+    if (board.dataset.phase === "sifted") return;
+    board.dataset.phase = "sifted";
+    // 落選を先に沈め、残った3案を浮かせる
+    $("ideas").querySelectorAll(".idea").forEach((el, i) => {
+      const keep = el.dataset.keep === "true";
+      setTimeout(() => el.classList.add(keep ? "sift-keep" : "sift-drop"), i * 70);
+    });
+    setTimeout(() => $("siftResult").classList.add("show"), 700);
+    $("siftBtn").disabled = true;
+    $("siftBtn").textContent = "絞り込み完了";
+  }
+
+  function openGates() {
+    const html = MTG.gates.map((g, i) =>
+      `<div class="rule-item"><span class="num">${i + 1}</span><span><b>${esc(g.h)}</b><br>${esc(g.t)}</span></div>`
+    ).join("");
+    openPanel({
+      color: "var(--c-企画部)",
+      badge: "📋 企画部",
+      title: "企画会議の審査基準",
+      role: "提出された案は、この基準にかけて絞られます。",
+      html,
+    });
+  }
+
   // ---- イベント配線 ----
+  $("gatesBtn").addEventListener("click", openGates);
   $("startBtn").addEventListener("click", goLobby);
   $("lobbyRulebook").addEventListener("click", openCompany);
   document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", goLobby));
