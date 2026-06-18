@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI会社のガラス張り工場 — 今日の一日</title>
+  <meta name="description" content="AIだけで回る会社が、今日のプロダクトを生むまでの一日を覗き見できる観戦サイト。" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="stars" aria-hidden="true"></div>
+
+  <!-- イントロ -->
+  <section id="intro" class="screen">
+    <div class="intro-inner">
+      <p class="kicker">#100Day Challenge ／ Day 19</p>
+      <h1 class="title">AI会社の<span class="glass">ガラス張り工場</span></h1>
+      <p class="lead">AIだけで回る会社が、今日のプロダクトを生むまで。<br />企画部・記憶庫・開発部、そして社長の判断を、まるごと覗き見する。</p>
+      <button id="startBtn" class="btn btn-primary">今日の一日を観る ▶</button>
+      <p class="hint" id="introHint"></p>
+    </div>
+  </section>
+
+  <!-- 観戦ステージ -->
+  <main id="stage" class="screen hidden" aria-live="polite">
+    <header class="stage-head">
+      <div class="head-left">
+        <span class="live-dot"></span>
+        <span class="head-date" id="headDate"></span>
+      </div>
+      <div class="head-right">
+        <span id="counter" class="counter"></span>
+      </div>
+    </header>
+
+    <div class="lanes" id="lanes"></div>
+
+    <div id="feed" class="feed"></div>
+
+    <footer class="controls">
+      <div class="track"><div class="track-fill" id="trackFill"></div></div>
+      <div class="control-row">
+        <button id="restartBtn" class="btn btn-ghost" title="最初から">⟲</button>
+        <button id="playBtn" class="btn btn-ghost btn-play" title="再生 / 一時停止">⏸</button>
+        <button id="nextBtn" class="btn btn-ghost" title="次へ">⏭</button>
+        <button id="speedBtn" class="btn btn-ghost" title="速度">×1</button>
+      </div>
+    </footer>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

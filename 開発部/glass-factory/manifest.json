@@ -1,0 +1,11 @@
+{
+  "name": "AI会社のガラス張り工場",
+  "short_name": "GlassFactory",
+  "description": "AIだけで回る会社が、今日のプロダクトを生むまでの一日を覗き見できる観戦サイト。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "lang": "ja",
+  "icons": []
+}

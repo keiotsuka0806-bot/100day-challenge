@@ -1,0 +1,188 @@
+/* GlassFactory v1 — 「今日の一日」リプレイ */
+(function () {
+  "use strict";
+  const DATA = window.GLASS_DATA;
+  const DEPTS = ["運用部", "記憶庫", "企画部", "開発部", "社長"];
+
+  const $ = (id) => document.getElementById(id);
+  const intro = $("intro");
+  const stage = $("stage");
+  const feed = $("feed");
+  const lanesEl = $("lanes");
+  const trackFill = $("trackFill");
+  const counter = $("counter");
+  const playBtn = $("playBtn");
+  const speedBtn = $("speedBtn");
+
+  // 状態
+  let idx = 0;               // 次に出すイベント番号
+  let playing = false;
+  let timer = null;
+  const SPEEDS = [1, 1.5, 2, 0.5];
+  let speedI = 0;
+  const BASE_DELAY = 2600;   // 1イベントあたりの基本間隔(ms)
+
+  // ---- 凡例(レーン)を作る ----
+  DEPTS.forEach((d) => {
+    const el = document.createElement("div");
+    el.className = "lane";
+    el.dataset.dept = d;
+    el.style.setProperty("--c", `var(--c-${d})`);
+    el.innerHTML = `<span class="dot"></span>${d === "社長" ? "社長(あなた)" : d}`;
+    lanesEl.appendChild(el);
+  });
+
+  function highlightLane(dept) {
+    lanesEl.querySelectorAll(".lane").forEach((l) => {
+      l.classList.toggle("active", l.dataset.dept === dept);
+    });
+  }
+
+  function updateProgress() {
+    const total = DATA.events.length;
+    trackFill.style.width = `${(idx / total) * 100}%`;
+    counter.textContent = `${Math.min(idx, total)} / ${total}`;
+  }
+
+  // ---- 1イベントを描画 ----
+  function renderEvent(ev) {
+    const card = document.createElement("article");
+    card.className = "card type-" + ev.type;
+    if (ev.human) card.classList.add("human");
+    if (ev.finale) card.classList.add("finale");
+    card.style.setProperty("--c", `var(--c-${ev.dept})`);
+
+    const tag = ev.tag ? `<span class="tag">${ev.tag === "本命" ? "★ 本命" : ev.tag}</span>` : "";
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="badge">${ev.dept === "社長" ? "社長(あなた)" : ev.dept}</span>
+        <span class="type">${ev.type}</span>
+        <span class="time">${ev.t}</span>
+      </div>
+      <h3>${ev.title}</h3>
+      <p>${ev.body}</p>
+      ${tag}
+    `;
+    feed.appendChild(card);
+    highlightLane(ev.dept);
+
+    // 新しいカードへスクロール
+    requestAnimationFrame(() => {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    if (ev.finale) {
+      burst();
+    }
+  }
+
+  // ---- 1ステップ進める ----
+  function step() {
+    if (idx >= DATA.events.length) {
+      stop();
+      return;
+    }
+    renderEvent(DATA.events[idx]);
+    idx += 1;
+    updateProgress();
+
+    if (idx >= DATA.events.length) {
+      stop(); // 最後まで来たら停止
+    }
+  }
+
+  function scheduleNext() {
+    clearTimeout(timer);
+    if (!playing || idx >= DATA.events.length) return;
+    const delay = BASE_DELAY / SPEEDS[speedI];
+    timer = setTimeout(() => {
+      step();
+      scheduleNext();
+    }, delay);
+  }
+
+  function play() {
+    if (idx >= DATA.events.length) restart();
+    playing = true;
+    playBtn.textContent = "⏸";
+    if (idx === 0) step();      // 最初のカードを即時表示
+    scheduleNext();
+  }
+
+  function stop() {
+    playing = false;
+    playBtn.textContent = idx >= DATA.events.length ? "⟲" : "▶";
+    clearTimeout(timer);
+  }
+
+  function togglePlay() {
+    if (playing) stop();
+    else play();
+  }
+
+  function restart() {
+    clearTimeout(timer);
+    feed.innerHTML = "";
+    idx = 0;
+    updateProgress();
+    highlightLane(null);
+  }
+
+  // ---- フィナーレの光の粒 ----
+  function burst() {
+    const n = 26;
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement("div");
+      const size = 4 + Math.random() * 6;
+      const hue = [210, 260, 45][i % 3];
+      Object.assign(p.style, {
+        position: "fixed",
+        left: "50%",
+        top: "40%",
+        width: size + "px",
+        height: size + "px",
+        borderRadius: "50%",
+        background: `hsl(${hue} 90% 70%)`,
+        boxShadow: `0 0 12px hsl(${hue} 90% 70%)`,
+        pointerEvents: "none",
+        zIndex: 50,
+      });
+      document.body.appendChild(p);
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 220;
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist - 60;
+      p.animate(
+        [
+          { transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(0)`, opacity: 0 },
+        ],
+        { duration: 1100 + Math.random() * 700, easing: "cubic-bezier(.2,.7,.2,1)" }
+      ).onfinish = () => p.remove();
+    }
+  }
+
+  // ---- イベント配線 ----
+  $("startBtn").addEventListener("click", () => {
+    intro.classList.add("hidden");
+    stage.classList.remove("hidden");
+    $("headDate").textContent = `${DATA.date} ・ ${DATA.title}`;
+    updateProgress();
+    play();
+  });
+
+  playBtn.addEventListener("click", togglePlay);
+  $("restartBtn").addEventListener("click", () => { restart(); play(); });
+  $("nextBtn").addEventListener("click", () => {
+    stop();
+    step();
+  });
+  speedBtn.addEventListener("click", () => {
+    speedI = (speedI + 1) % SPEEDS.length;
+    speedBtn.textContent = "×" + SPEEDS[speedI];
+    if (playing) scheduleNext();
+  });
+
+  // イントロのヒント（日付）
+  $("introHint").textContent = `${DATA.subtitle}`;
+})();

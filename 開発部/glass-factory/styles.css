@@ -1,0 +1,145 @@
+:root{
+  --bg:#070b14;
+  --bg2:#0b1222;
+  --ink:#eaf0ff;
+  --muted:#8ea0c4;
+  --line:rgba(150,180,255,.14);
+  --glass:rgba(140,180,255,.08);
+  --gold:#ffd479;
+  --gold-soft:rgba(255,212,121,.16);
+  /* 部署カラー */
+  --c-運用部:#5fd0c8;
+  --c-記憶庫:#9b8cff;
+  --c-企画部:#5aa0ff;
+  --c-開発部:#57e08a;
+  --c-社長:#ffd479;
+  font-synthesis:none;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  background:radial-gradient(1200px 800px at 70% -10%,#142142 0%,var(--bg) 55%) fixed;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+.screen{min-height:100dvh;width:100%}
+.hidden{display:none !important}
+
+/* 星の背景 */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1px 1px at 80% 20%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1px 1px at 50% 70%,rgba(255,255,255,.45),transparent),
+    radial-gradient(1px 1px at 35% 85%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 65% 55%,rgba(255,255,255,.5),transparent);
+  opacity:.6;animation:twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle{from{opacity:.35}to{opacity:.7}}
+
+/* ===== イントロ ===== */
+#intro{display:grid;place-items:center;position:relative;z-index:1;padding:24px}
+.intro-inner{max-width:680px;text-align:center;animation:rise .8s ease both}
+.kicker{color:var(--muted);letter-spacing:.18em;font-size:13px;margin-bottom:18px}
+.title{font-size:clamp(34px,8vw,68px);line-height:1.08;font-weight:800;letter-spacing:.01em}
+.title .glass{
+  background:linear-gradient(120deg,#7fd0ff,#b9a8ff 50%,#ffd479);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(120,170,255,.35));
+}
+.lead{color:var(--muted);font-size:clamp(15px,2.4vw,18px);line-height:1.9;margin:24px 0 34px}
+.hint{color:var(--muted);font-size:13px;margin-top:18px;opacity:.8}
+
+.btn{cursor:pointer;border:none;border-radius:999px;font-weight:700;font-family:inherit;transition:transform .15s,box-shadow .25s,background .2s}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+  background:linear-gradient(120deg,#5aa0ff,#7c6bff);
+  color:#fff;font-size:17px;padding:16px 34px;
+  box-shadow:0 10px 36px rgba(90,140,255,.4);
+}
+.btn-primary:hover{box-shadow:0 14px 48px rgba(90,140,255,.6);transform:translateY(-2px)}
+
+/* ===== ステージ ===== */
+#stage{position:relative;z-index:1;display:flex;flex-direction:column;max-width:760px;margin:0 auto;padding:0 16px 150px}
+.stage-head{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;
+  padding:16px 4px;backdrop-filter:blur(10px);
+  background:linear-gradient(var(--bg),rgba(7,11,20,.4));border-bottom:1px solid var(--line)}
+.head-left{display:flex;align-items:center;gap:10px}
+.live-dot{width:9px;height:9px;border-radius:50%;background:#ff5d6c;box-shadow:0 0 0 0 rgba(255,93,108,.6);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,93,108,.55)}70%{box-shadow:0 0 0 12px rgba(255,93,108,0)}100%{box-shadow:0 0 0 0 rgba(255,93,108,0)}}
+.head-date{font-weight:700;font-size:14px;letter-spacing:.04em}
+.counter{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* 部署レーン（凡例） */
+.lanes{display:flex;flex-wrap:wrap;gap:8px;padding:16px 2px 6px}
+.lane{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;transition:all .3s;background:rgba(255,255,255,.02)}
+.lane .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.lane.active{color:var(--ink);border-color:var(--c);box-shadow:0 0 16px -4px var(--c);background:rgba(255,255,255,.05)}
+
+/* フィード */
+.feed{display:flex;flex-direction:column;gap:14px;padding-top:12px}
+.card{
+  position:relative;border:1px solid var(--line);border-left:3px solid var(--c);
+  border-radius:16px;padding:15px 16px 16px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));
+  box-shadow:0 8px 30px -16px rgba(0,0,0,.7);
+  animation:cardin .5s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes cardin{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.card-head{display:flex;align-items:center;gap:9px;margin-bottom:7px;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:800;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);
+  padding:3px 10px;border-radius:999px;white-space:nowrap}
+.type{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.time{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card h3{font-size:16px;line-height:1.5;margin:2px 0 6px;font-weight:800}
+.card p{color:#cdd8f2;font-size:14px;line-height:1.85}
+.tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:800;letter-spacing:.06em;
+  color:var(--gold);border:1px dashed var(--gold-soft);border-radius:6px;padding:3px 9px}
+
+/* 社長（人間）の判断 */
+.card.human{border-color:var(--gold-soft);border-left-color:var(--gold);
+  background:linear-gradient(180deg,rgba(255,212,121,.10),rgba(255,212,121,.02));
+  box-shadow:0 10px 40px -18px rgba(255,200,90,.5)}
+.card.human::before{content:"👤 人間の判断";position:absolute;top:-9px;right:14px;font-size:10px;font-weight:800;
+  color:#241a07;background:var(--gold);padding:2px 9px;border-radius:999px;letter-spacing:.04em}
+.card.human p{color:#ffe9bd}
+
+/* 却下は赤み、採用は緑み */
+.card.type-却下{border-left-color:#ff7a88}
+.card.type-採用{border-left-color:#57e08a;box-shadow:0 10px 44px -16px rgba(87,224,138,.5)}
+
+/* フィナーレ */
+.card.finale{text-align:center;border:1px solid var(--gold-soft);border-left-width:1px;
+  background:radial-gradient(600px 200px at 50% 0%,rgba(255,212,121,.14),rgba(255,255,255,.02));
+  padding:28px 18px}
+.card.finale .card-head{justify-content:center}
+.card.finale h3{font-size:19px;background:linear-gradient(120deg,#7fd0ff,#ffd479);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.card.finale .time{position:absolute;top:14px;right:16px;margin:0}
+
+/* ===== コントロール ===== */
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:6;
+  padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(rgba(7,11,20,0),rgba(7,11,20,.92) 36%);
+  backdrop-filter:blur(8px)}
+.track{max-width:760px;margin:0 auto 12px;height:4px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.track-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#5aa0ff,#ffd479);transition:width .4s ease}
+.control-row{display:flex;justify-content:center;align-items:center;gap:12px}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);
+  width:48px;height:48px;font-size:18px;display:grid;place-items:center}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn-play{width:60px;height:60px;font-size:22px;background:rgba(90,140,255,.18);border-color:rgba(90,140,255,.4)}
+#speedBtn{width:auto;padding:0 16px;font-size:14px;font-weight:800}
+
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+@media (max-width:430px){
+  .lanes{gap:6px}
+  .lane{padding:4px 9px;font-size:11px}
+  .card p{font-size:13.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important}
+}
