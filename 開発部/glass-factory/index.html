@@ -67,7 +67,7 @@
     </footer>
   </main>
 
-  <!-- ④ 会社を建てる体験 -->
+  <!-- ④ 会社を建てる体験（別棟＝AIOrgSimへの入口） -->
   <main id="build" class="screen hidden">
     <header class="room-head">
       <button class="back-btn" data-back title="ロビーへ戻る">← ロビー</button>
@@ -77,9 +77,20 @@
       </div>
       <span class="room-head-pad"></span>
     </header>
-    <div class="build-body">
-      <div class="build-steps" id="buildDots"></div>
-      <div class="build-stage" id="buildStage"></div>
+    <div class="annex">
+      <p class="annex-kicker">別棟 ・ 建設棟</p>
+      <div class="annex-icon">🏗</div>
+      <h1 class="annex-title">あなた自身のAI会社を建てる</h1>
+      <p class="annex-lead">
+        ここは工場の<b>別棟</b>です。部署をキャンバスに組み立てて
+        <b>「この組織で1日をシミュレート」</b>を押すと、速度・品質・手戻り・属人化リスクまで結果が出ます。
+        本物の設計ツール <b>AIOrgSim</b> に引き継ぎます。
+      </p>
+      <a id="annexOpen" class="btn btn-primary annex-open" href="https://ai-org-sim.vercel.app/" target="_blank" rel="noopener">
+        🏗 建設棟に入る（AIOrgSimを開く）→
+      </a>
+      <p class="annex-note">別タブで開きます ・ AI分析はオフ既定なので<b>コストゼロ</b>で遊べます</p>
+      <p class="annex-why">※ この棟だけ別の作り（React）で建てているため、別タブで開きます。</p>
     </div>
   </main>
 
