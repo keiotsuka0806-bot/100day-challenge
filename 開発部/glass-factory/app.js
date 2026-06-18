@@ -27,8 +27,12 @@
     const el = document.createElement("div");
     el.className = "lane";
     el.dataset.dept = d;
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
     el.style.setProperty("--c", `var(--c-${d})`);
     el.innerHTML = `<span class="dot"></span>${d === "社長" ? "社長(あなた)" : d}`;
+    el.addEventListener("click", () => openDept(d));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDept(d); } });
     lanesEl.appendChild(el);
   });
 
@@ -190,6 +194,68 @@
     speedBtn.textContent = "×" + SPEEDS[speedI];
     if (playing) scheduleNext();
   });
+
+  // ---- ルールパネル ----
+  const RULES = window.GLASS_RULES;
+  const panel = $("panel");
+  const wasPlaying = { v: false };
+
+  function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+
+  function openPanel({ color, badge, title, role, html }) {
+    const box = $("panelBox");
+    box.style.setProperty("--c", color);
+    $("panelBadge").textContent = badge;
+    $("panelTitle").textContent = title;
+    $("panelRole").textContent = role || "";
+    $("panelBody").innerHTML = html;
+    panel.classList.remove("hidden");
+    // 見学中ならパネルを開いている間は一時停止
+    wasPlaying.v = playing;
+    if (playing) stop();
+  }
+
+  function closePanel() {
+    panel.classList.add("hidden");
+    if (wasPlaying.v && idx < DATA.events.length) play();
+  }
+
+  function openDept(dept) {
+    const d = RULES.depts[dept];
+    if (!d) return;
+    const items = d.rules.map((r, i) =>
+      `<div class="rule-item"><span class="num">${i + 1}</span><span>${esc(r)}</span></div>`
+    ).join("");
+    openPanel({
+      color: `var(--c-${dept})`,
+      badge: dept === "社長" ? "社長(あなた) ・ 人間" : dept,
+      title: (dept === "社長" ? "社長(あなた)" : dept) + " の規程",
+      role: d.role,
+      html: items,
+    });
+  }
+
+  function openCompany() {
+    const c = RULES.company;
+    const html = c.sections.map((s) => {
+      const items = s.items.map((it) =>
+        `<div class="rule-item"><span class="num">§</span><span>${esc(it)}</span></div>`
+      ).join("");
+      return `<div class="panel-section"><h3>${esc(s.h)}</h3>${items}</div>`;
+    }).join("");
+    openPanel({
+      color: "#ffd479",
+      badge: "📖 会社全体",
+      title: c.title,
+      role: c.intro,
+      html,
+    });
+  }
+
+  $("rulebookBtn").addEventListener("click", openCompany);
+  $("panelClose").addEventListener("click", closePanel);
+  panel.addEventListener("click", (e) => { if (e.target === panel) closePanel(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.classList.contains("hidden")) closePanel(); });
 
   // イントロのヒント（日付）
   $("introHint").textContent = `${DATA.subtitle}`;

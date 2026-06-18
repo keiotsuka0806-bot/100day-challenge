@@ -19,6 +19,7 @@
       <h1 class="title">AI会社の<span class="glass">ガラス張り工場</span></h1>
       <p class="lead">AIだけで回る会社が、今日のプロダクトを生むまで。<br />各部署が<b>どんな社内ルール（プロンプト）に従って動いているか</b>まで、まるごと見学できる。</p>
       <button id="startBtn" class="btn btn-primary">工場見学をする 🔍</button>
+      <button id="rulebookBtn" class="btn btn-secondary">📖 工場のルールブックを見る</button>
       <p class="hint" id="introHint"></p>
     </div>
   </section>
@@ -35,6 +36,7 @@
       </div>
     </header>
 
+    <p class="lanes-hint">部署をタップすると、その部署の全ルールが読めます 👆</p>
     <div class="lanes" id="lanes"></div>
 
     <div id="feed" class="feed"></div>
@@ -49,6 +51,19 @@
       </div>
     </footer>
   </main>
+
+  <!-- ルールパネル（部署 / 会社ルールブック 共用） -->
+  <div id="panel" class="panel-overlay hidden" role="dialog" aria-modal="true">
+    <div class="panel" id="panelBox">
+      <button id="panelClose" class="panel-close" aria-label="閉じる">✕</button>
+      <div class="panel-head">
+        <span class="panel-badge" id="panelBadge"></span>
+        <h2 id="panelTitle"></h2>
+        <p id="panelRole" class="panel-role"></p>
+      </div>
+      <div id="panelBody" class="panel-body"></div>
+    </div>
+  </div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>
