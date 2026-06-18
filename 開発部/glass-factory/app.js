@@ -30,7 +30,7 @@
     el.setAttribute("role", "button");
     el.tabIndex = 0;
     el.style.setProperty("--c", `var(--c-${d})`);
-    el.innerHTML = `<span class="dot"></span>${d === "社長" ? "社長(あなた)" : d}`;
+    el.innerHTML = `<span class="dot"></span>${d}`;
     el.addEventListener("click", () => openDept(d));
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDept(d); } });
     lanesEl.appendChild(el);
@@ -66,7 +66,7 @@
       : "";
     card.innerHTML = `
       <div class="card-head">
-        <span class="badge">${ev.dept === "社長" ? "社長(あなた)" : ev.dept}</span>
+        <span class="badge">${ev.dept}</span>
         <span class="type">${ev.type}</span>
         <span class="time">${ev.t}</span>
       </div>
@@ -228,8 +228,8 @@
     ).join("");
     openPanel({
       color: `var(--c-${dept})`,
-      badge: dept === "社長" ? "社長(あなた) ・ 人間" : dept,
-      title: (dept === "社長" ? "社長(あなた)" : dept) + " の規程",
+      badge: dept === "社長" ? "社長 ・ 人間" : dept,
+      title: dept + " の規程",
       role: d.role,
       html: items,
     });
