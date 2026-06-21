@@ -17,22 +17,30 @@
   <main>
     <!-- 作成画面 -->
     <section id="createView" class="view card">
-      <h2>質問をつくる</h2>
+      <h2>その場ライブ投票をつくる</h2>
+      <div class="field">
+        <span>何を決めたい？</span>
+        <div id="scenePicker" class="scene-picker"></div>
+      </div>
       <label class="field">
         <span>質問</span>
         <input id="question" type="text" placeholder="例：今日の二次会、行く？" maxlength="120" />
       </label>
       <div class="field">
-        <span>選択肢</span>
-        <div id="options"></div>
-        <button id="addOptionBtn" class="btn btn-ghost small">＋ 選択肢を追加</button>
+        <span>集計のしかた</span>
+        <div id="namedToggle" class="seg">
+          <button type="button" class="seg-btn" data-named="false">🙈 匿名で集計</button>
+          <button type="button" class="seg-btn" data-named="true">🙋 だれが選んだか表示</button>
+        </div>
       </div>
+      <div id="createBody"></div>
       <button id="createBtn" class="btn btn-primary big">この内容で投票を作る</button>
       <p class="mode-note" id="modeNote"></p>
     </section>
 
     <!-- 主催者画面 -->
     <section id="hostView" class="view card hidden">
+      <span id="hostBadge" class="scene-badge"></span>
       <h2 id="hostQuestion" class="poll-question"></h2>
       <div class="qr-wrap">
         <div id="qrcode"></div>
@@ -44,13 +52,25 @@
       </div>
       <div id="hostResults" class="results"></div>
       <p class="total" id="hostTotal"></p>
+      <button id="hostVoteBtn" class="btn btn-primary big">🗳 自分も投票する</button>
       <button id="newPollBtn" class="btn btn-ghost">別の投票を作る</button>
     </section>
 
     <!-- 投票画面 -->
     <section id="voteView" class="view card hidden">
+      <button id="voteBackHost" class="btn btn-ghost small back-btn hidden">← 主催者画面にもどる</button>
       <h2 id="voteQuestion" class="poll-question"></h2>
+      <p id="voteHint" class="vote-hint hidden"></p>
+      <label id="voteNameField" class="field hidden">
+        <span>あなたの名前</span>
+        <input id="voterName" type="text" maxlength="20" placeholder="例：田中" />
+      </label>
       <div id="voteOptions" class="vote-options"></div>
+      <div id="voteAddRow" class="vote-add-row hidden">
+        <input id="voteAddInput" type="text" maxlength="60" placeholder="自分の候補を入力（例：ハイボール）" />
+        <button id="voteAddBtn" type="button" class="btn btn-ghost small">＋ 追加</button>
+      </div>
+      <button id="voteSubmitBtn" class="btn btn-primary big hidden">この内容で投票</button>
       <div id="voteThanks" class="thanks hidden">
         <p class="thanks-title">投票ありがとう！🎉</p>
         <div id="voteResults" class="results"></div>

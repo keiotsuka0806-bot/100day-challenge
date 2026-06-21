@@ -1,4 +1,4 @@
-const CACHE = 'qrpoll-v2';
+const CACHE = 'qrpoll-v12';
 const ASSETS = ['./', 'index.html', 'app.js', 'styles.css', 'manifest.json'];
 
 self.addEventListener('install', (e) => {

@@ -52,6 +52,8 @@ input[type="text"] {
 }
 input:focus { outline: 2px solid var(--indigo); border-color: transparent; }
 
+.quick-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .6rem; }
+
 #options { display: grid; gap: .5rem; margin-bottom: .5rem; }
 .option-row { display: flex; gap: .5rem; align-items: center; }
 .option-row input { flex: 1; }
@@ -131,4 +133,122 @@ input:focus { outline: 2px solid var(--indigo); border-color: transparent; }
 .thanks { text-align: center; }
 .thanks-title { font-size: 1.2rem; font-weight: 700; margin: .5rem 0 1rem; }
 
+/* シーン選択カード */
+.scene-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+.scene-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: .15rem;
+  text-align: left; cursor: pointer;
+  border: 2px solid var(--line); background: #fff; border-radius: 14px;
+  padding: .7rem .8rem; transition: border-color .15s, background .15s, transform .05s;
+}
+.scene-card:active { transform: scale(.99); }
+.scene-card.active { border-color: var(--indigo); background: #eef2ff; }
+.scene-icon { font-size: 1.3rem; }
+.scene-name { font-weight: 700; font-size: .92rem; }
+.scene-desc { font-size: .72rem; color: var(--muted); line-height: 1.35; }
+
+.scene-badge {
+  display: inline-block; font-size: .78rem; font-weight: 700;
+  color: var(--indigo-dark); background: #eef2ff;
+  padding: .2rem .6rem; border-radius: 999px; margin-bottom: .5rem;
+}
+
+/* 日程：候補日 */
+.date-add-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.date-add-row input[type="date"] {
+  flex: 1 1 160px; border: 1px solid var(--line); border-radius: 12px;
+  padding: .6rem .7rem; font-size: 1rem; background: #fff;
+}
+.date-list { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
+.date-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: #eef2ff; color: var(--indigo-dark); font-weight: 700;
+  border-radius: 999px; padding: .35rem .4rem .35rem .8rem; font-size: .9rem;
+}
+.date-chip button {
+  border: none; background: none; color: var(--indigo-dark);
+  font-size: 1rem; cursor: pointer; line-height: 1; padding: 0 .2rem;
+}
+
+.rating-note { font-size: .85rem; color: var(--muted); margin: 0 0 1rem; }
+
+/* 参加者も追加 チェック */
+.check-row {
+  display: flex; gap: .55rem; align-items: flex-start; cursor: pointer;
+  margin-bottom: 1rem; font-size: .88rem; font-weight: 600; line-height: 1.4;
+}
+.check-row input[type="checkbox"] { width: 1.15rem; height: 1.15rem; margin-top: .1rem; flex: none; accent-color: var(--indigo); }
+
+/* 日程の範囲入力 */
+.date-sep { color: var(--muted); font-weight: 700; flex: none; }
+.date-add-row input[type="date"] { flex: 1 1 130px; }
+.date-range-hint { font-size: .76rem; color: var(--muted); margin: .5rem 0 0; }
+.date-filter { margin-top: .55rem; }
+.date-filter .seg-btn { flex: 1 1 0; padding: .45rem .3rem; font-size: .85rem; }
+
+/* 投票画面：自分の候補を追加 */
+.vote-add-row { display: flex; flex-wrap: wrap; gap: .5rem; margin: .2rem 0 1rem; }
+.vote-add-row input {
+  flex: 1 1 160px; border: 1px solid var(--line); border-radius: 12px;
+  padding: .7rem .8rem; font-size: 1rem; background: #fff;
+}
+.vote-add-row .btn { flex: none; }
+
+/* 主催者が自分も投票するとき：もどるボタン */
+.back-btn { display: inline-block; margin-bottom: .6rem; }
+#hostVoteBtn { margin-bottom: .5rem; }
+
+/* 匿名／記名 切り替え */
+.seg { display: flex; flex-wrap: wrap; gap: .5rem; }
+.seg-btn {
+  flex: 1 1 140px; cursor: pointer;
+  border: 2px solid var(--line); background: #fff; color: var(--ink);
+  border-radius: 12px; padding: .6rem .7rem; font-size: .9rem; font-weight: 700;
+  transition: border-color .15s, background .15s;
+}
+.seg-btn.active { border-color: var(--indigo); background: #eef2ff; color: var(--indigo-dark); }
+
+/* だれが選んだか（名前チップ） */
+.name-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .55rem; position: relative; z-index: 1; }
+.name-chip {
+  font-size: .78rem; font-weight: 600; color: var(--ink);
+  background: rgba(255,255,255,.75); border: 1px solid var(--line);
+  border-radius: 999px; padding: .12rem .55rem;
+}
+
+/* 結果：最多ハイライト（日程の◎） */
+.result.best { border-color: var(--indigo); }
+.result.best .fill { background: linear-gradient(90deg, #e0e7ff, #c7d2fe); }
+.best-mark { color: var(--indigo-dark); font-weight: 800; }
+
+/* 星評価の結果 */
+.rating-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem;
+  justify-content: center; margin: .5rem 0 1rem;
+}
+.rating-avg { font-size: 2.2rem; font-weight: 800; color: var(--indigo-dark); }
+.rating-stars { font-size: 1.4rem; color: #f59e0b; letter-spacing: 2px; }
+.rating-people { font-size: .85rem; color: var(--muted); flex-basis: 100%; text-align: center; }
+
+/* 複数選択チップ（投票画面） */
+.vote-hint { font-size: .9rem; color: var(--muted); margin: .2rem 0 1rem; text-align: center; }
+.vote-chip {
+  width: 100%; text-align: left;
+  border: 2px solid var(--line); background: #fff; border-radius: 14px;
+  padding: .9rem 1rem; font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: border-color .15s, background .15s, transform .05s;
+  position: relative;
+}
+.vote-chip:active { transform: scale(.98); }
+.vote-chip.selected { border-color: var(--indigo); background: #eef2ff; }
+.vote-chip.selected::after {
+  content: '✓'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+  color: var(--indigo); font-weight: 800;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
 .hidden { display: none !important; }
+
+@media (max-width: 360px) {
+  .scene-picker { grid-template-columns: 1fr; }
+}
