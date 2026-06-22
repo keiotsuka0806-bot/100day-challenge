@@ -38,7 +38,8 @@
 | NaniTaberu | `nani-taberu/` | 開発中 |
 | ReceiptWarikan | `receipt-warikan/` | デプロイ済み（Day17採用） |
 | QRLivePoll | `qr-live-poll/` | デプロイ済み（ストック） |
-| GlassFactory | `glass-factory/` | 開発中（本命・ロビー＋4部屋実装済み：①見学リプレイ／②企画会議室／③ボツ美術館／④会社を建てる体験。鍵不要・コストゼロ・未デプロイ） |
+| GlassFactory | `glass-factory/` | デプロイ済み（本命・ロビー＋4部屋：①見学リプレイ／②企画会議室／③ボツ美術館／④会社を建てる＝別棟リンクでDay16のAIOrgSimを流用。鍵不要・コストゼロ。https://glass-factory-one.vercel.app/ ・セキュリティ100/100通過） |
+| AI乱入大喜利 | `tsugihagi-sakubun-lab/` | デプロイ済み（6/23公開・https://ai-ranyu-ogiri.vercel.app）。各自スマホで参加(合言葉+QR)→お題にボケ→投票→優勝の大喜利。AIも参戦(Vercel関数+OpenAI、鍵ありで本物/なしでモック)。Firestore共有倉庫ogiriRooms・匿名auth。お題114問 |
 
 ## コーディング規約
 

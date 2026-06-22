@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-20T15:44:24.116Z",
+  "updatedAt": "2026-06-22T15:02:55.083Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -211,6 +211,16 @@
       "lastCouncil": "2026-06-20",
       "lastDeploy": "2026-06-20",
       "councilReport": "デザイン部/reports/2026-06-20-qr-live-poll-genius-council.md"
+    },
+    "tsugihagi-sakubun-lab": {
+      "path": "開発部/tsugihagi-sakubun-lab",
+      "url": "http://localhost:8082",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ後改善中",
+      "lastCouncil": "2026-06-23",
+      "lastDeploy": "2026-06-23",
+      "councilReport": "デザイン部/reports/2026-06-23-tsugihagi-sakubun-lab-genius-council.md"
     }
   }
 }

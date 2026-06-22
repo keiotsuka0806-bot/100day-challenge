@@ -1,0 +1,5 @@
+node_modules
+.git
+.vercel
+firebase-config.example.js
+README.md

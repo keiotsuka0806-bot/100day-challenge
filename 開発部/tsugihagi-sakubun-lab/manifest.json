@@ -1,0 +1,12 @@
+{
+  "name": "AI乱入大喜利",
+  "short_name": "AI大喜利",
+  "description": "合言葉で集まって各自のスマホでお題にボケる。AIもこっそり参戦。投票で一番おもしろい回答を決めるオンライン大喜利。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffe3ee",
+  "theme_color": "#ff5d8f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
