@@ -2,6 +2,9 @@ node_modules/
 .env
 .env.local
 .env.*.local
+# .env テンプレート類も追跡しない(git hygiene 方針: env系はコミットしない)
+**/.env.example
+**/.env.local.example
 .genius-audit-ok
 *.log
 
@@ -18,6 +21,12 @@ node_modules/
 skills-lock.json
 .claude/*
 !.claude/skills/
+# コピーされたスキルカタログ(複製。実体は各環境の .claude/skills/ にある)は追跡しない
+# リポジトリ native スキル(genius-audit/genius-consultant/project-kickoff/retrospective)のみ追跡する
+.claude/skills/job-scout/
+.claude/skills/morning-routine/
+.claude/skills/server-app-deploy/
+.claude/skills/weekly-narrative/
 運用部/logs/
 並行プロジェクト管理ガイド.md
 企画部/IDEA_LOG.md
