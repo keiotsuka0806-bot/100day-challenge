@@ -183,7 +183,10 @@ input:focus { outline: 2px solid var(--indigo); border-color: transparent; }
 .date-sep { color: var(--muted); font-weight: 700; flex: none; }
 .date-add-row input[type="date"] { flex: 1 1 130px; }
 .date-range-hint { font-size: .76rem; color: var(--muted); margin: .5rem 0 0; }
-.date-filter { margin-top: .55rem; }
+.date-add-btn { width: 100%; margin-top: .55rem; }
+.date-clear-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .8rem; }
+.date-count { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.date-filter { margin-top: .2rem; }
 .date-filter .seg-btn { flex: 1 1 0; padding: .45rem .3rem; font-size: .85rem; }
 
 /* 投票画面：自分の候補を追加 */
@@ -207,6 +210,22 @@ input:focus { outline: 2px solid var(--indigo); border-color: transparent; }
   transition: border-color .15s, background .15s;
 }
 .seg-btn.active { border-color: var(--indigo); background: #eef2ff; color: var(--indigo-dark); }
+.mode-hint { font-size: .78rem; color: var(--muted); margin: .5rem 0 0; }
+.my-polls { margin: 0 0 1.3rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.my-polls-title { font-size: .92rem; margin: 0 0 .6rem; }
+.my-poll-item { display: flex; gap: .5rem; align-items: stretch; margin-bottom: .5rem; }
+.my-poll-open {
+  flex: 1 1 auto; min-width: 0; text-align: left; cursor: pointer;
+  border: 2px solid var(--line); background: #fff; color: var(--ink);
+  border-radius: 12px; padding: .6rem .8rem; font-size: .9rem; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.my-poll-open:hover { border-color: var(--indigo); }
+.my-poll-del {
+  flex: 0 0 auto; width: 42px; cursor: pointer; color: var(--muted); font-size: 1.1rem;
+  border: 2px solid var(--line); background: #fff; border-radius: 12px;
+}
+.thanks-actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-top: 1rem; }
 
 /* だれが選んだか（名前チップ） */
 .name-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .55rem; position: relative; z-index: 1; }

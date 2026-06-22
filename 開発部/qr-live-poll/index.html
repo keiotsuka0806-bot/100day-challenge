@@ -17,6 +17,7 @@
   <main>
     <!-- 作成画面 -->
     <section id="createView" class="view card">
+      <div id="myPolls" class="my-polls hidden"></div>
       <h2>その場ライブ投票をつくる</h2>
       <div class="field">
         <span>何を決めたい？</span>
@@ -32,6 +33,14 @@
           <button type="button" class="seg-btn" data-named="false">🙈 匿名で集計</button>
           <button type="button" class="seg-btn" data-named="true">🙋 だれが選んだか表示</button>
         </div>
+      </div>
+      <div class="field">
+        <span>投票のしかた</span>
+        <div id="modeToggle" class="seg">
+          <button type="button" class="seg-btn" data-mode="open">🍻 その場でみんな（1台で何人でも）</button>
+          <button type="button" class="seg-btn" data-mode="strict">🛡 1人1票（SNS公開向け）</button>
+        </div>
+        <p class="mode-hint">SNSなどで広く公開するなら「1人1票」がおすすめ（なりすまし・連投を防ぎます）。</p>
       </div>
       <div id="createBody"></div>
       <button id="createBtn" class="btn btn-primary big">この内容で投票を作る</button>
@@ -75,6 +84,10 @@
         <p class="thanks-title">投票ありがとう！🎉</p>
         <div id="voteResults" class="results"></div>
         <p class="total" id="voteTotal"></p>
+        <div class="thanks-actions">
+          <button id="reVoteBtn" type="button" class="btn btn-ghost small">↻ 投票し直す</button>
+          <button id="addVoteBtn" type="button" class="btn btn-ghost small hidden">＋ もう一人分入れる</button>
+        </div>
       </div>
     </section>
 
@@ -90,6 +103,7 @@
   <!-- Firebase（任意）：firebase-config.js があればリアルタイム同期に昇格 -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="firebase-config.js" onerror="window.__noFirebaseConfig=true"></script>
   <script src="app.js"></script>
 </body>

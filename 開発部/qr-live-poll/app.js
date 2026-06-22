@@ -1,81 +1,145 @@
 /* ============================================================
-   ストレージ抽象化
-   - firebase-config.js で window.QRPOLL_FIREBASE_CONFIG を定義すると
-     Firestore（複数スマホでリアルタイム同期）に昇格。
-   - 未定義なら localStorage デモモード（同一ブラウザのタブ間で同期）。
-   vote(id, indices) は「1回の投票で選んだ複数の選択肢」を受け取り、
-   各選択肢に+1し、回答者数(voters)を+1する（単一選択は indices.length===1）。
+   ストレージ抽象化（改ざん対策版）
+   - qrpolls/{id}             : 投票の定義（質問・選択肢）。作成後は不変。
+   - qrpolls/{id}/options/*   : 参加者が足した選択肢（追加のみ・編集削除不可）。
+   - qrpolls/{id}/votes/{uid} : 1票=1件・匿名IDごと（追加のみ・編集削除不可）。
+   票数は個々の投票を数え上げて集計するため、後から数字を書き換えられない。
+   firebase-config.js が無い場合は localStorage デモモードに退避する。
+   vote(id, optionIds, name) は「選んだ選択肢のID配列」を受け取る。
    ============================================================ */
 
-function applyVote(data, indices, name) {
-  indices.forEach((i) => {
-    if (!data.options[i]) return;
-    data.options[i].votes = (data.options[i].votes || 0) + 1;
-    if (name) {
-      data.options[i].names = data.options[i].names || [];
-      data.options[i].names.push(name);
-    }
-  });
-  data.voters = (data.voters || 0) + 1;
+// 選択肢に安定IDを振る（追加選択肢が増えても並び順・対応がぶれないように）
+function assignIds(options) {
+  return options.map((o, i) => ({ id: o.id || ('o' + i), text: o.text }));
 }
 
-// 参加者が選択肢を追加（重複・上限・空をはじく）。追加したら true。
-function applyAddOption(data, text) {
-  const norm = (text || '').trim();
-  if (!norm) return false;
-  data.options = data.options || [];
-  if (data.options.length >= 40) return false;
-  const dup = data.options.some((o) => (o.text || '').trim().toLowerCase() === norm.toLowerCase());
-  if (dup) return false;
-  data.options.push({ text: norm, votes: 0 });
-  return true;
+// 集計：定義(meta)＋参加者が足した選択肢(addedOptions)＋全投票(votes) から
+// 描画用の poll オブジェクト（options=[{id,text,votes,names}], voters）を組み立てる。
+function aggregatePoll(meta, addedOptions, votes) {
+  if (!meta) return null;
+  const opts = [];
+  // 旧フォーマット（選択肢にIDが無い）を開いても潰れないよう、無ければ添字でIDを振る
+  (meta.options || []).forEach((o, i) => opts.push({ id: o.id || ('o' + i), text: o.text, votes: 0, names: [] }));
+  addedOptions
+    .slice()
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+    .forEach((o) => opts.push({ id: o.id, text: o.text, votes: 0, names: [] }));
+  const byId = {};
+  opts.forEach((o) => { byId[o.id] = o; });
+  let voters = 0;
+  votes.forEach((v) => {
+    voters += 1;
+    (v.choices || []).forEach((cid) => {
+      const o = byId[cid];
+      if (o) { o.votes += 1; if (v.name) o.names.push(v.name); }
+    });
+  });
+  return {
+    id: meta.id, type: meta.type, question: meta.question,
+    named: meta.named, allowAdd: meta.allowAdd,
+    voteMode: meta.voteMode || 'strict',
+    options: opts, voters,
+  };
 }
 
 function makeFirestoreBackend(config) {
   firebase.initializeApp(config);
   const db = firebase.firestore();
+  // モバイル回線・プロキシ・一部ブラウザでリアルタイム通信(WebChannel)が詰まると
+  // 投票が届かない／結果が更新されないため、自動でロングポーリングに切り替える
+  try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch {}
   const col = db.collection('qrpolls');
+
+  // 匿名ログイン（裏で自動・ユーザー操作なし）。uid を1回だけ確立する。
+  // この uid を「1人1票」と「投票の作成者(ownerUid)」の身元として使う。
+  let uidPromise = null;
+  const ensureUid = () => {
+    const auth = firebase.auth();
+    if (auth.currentUser) return Promise.resolve(auth.currentUser.uid);
+    if (!uidPromise) {
+      uidPromise = new Promise((resolve, reject) => {
+        const unsub = auth.onAuthStateChanged((u) => { if (u) { unsub(); resolve(u.uid); } });
+        // サインインが一時的に失敗しても、次回呼び出しでやり直せるようにする
+        auth.signInAnonymously().catch((e) => { unsub(); uidPromise = null; reject(e); });
+      });
+    }
+    return uidPromise;
+  };
+  ensureUid().catch(() => {});
+
   return {
     mode: 'firebase',
+    ready: ensureUid,
     async createPoll(poll) {
-      await col.doc(poll.id).set(poll);
+      const uid = await ensureUid();
+      // 作成後は更新不可（ルールで封鎖）。質問・選択肢はここで確定する。
+      await col.doc(poll.id).set({
+        id: poll.id, type: poll.type, question: poll.question,
+        named: !!poll.named, allowAdd: !!poll.allowAdd,
+        voteMode: poll.voteMode === 'open' ? 'open' : 'strict',
+        options: assignIds(poll.options),
+        createdAt: poll.createdAt, ownerUid: uid,
+      });
     },
     subscribe(id, cb) {
-      return col.doc(id).onSnapshot((doc) => cb(doc.exists ? doc.data() : null));
-    },
-    async vote(id, indices, name) {
-      await db.runTransaction(async (tx) => {
-        const ref = col.doc(id);
-        const snap = await tx.get(ref);
-        if (!snap.exists) return;
-        const data = snap.data();
-        applyVote(data, indices, name);
-        tx.update(ref, { options: data.options, voters: data.voters });
+      // 定義・追加選択肢・全投票 の3つを購読し、変化のたびに集計して返す
+      const ref = col.doc(id);
+      let meta = null, added = [], votes = [], haveMeta = false;
+      const emit = () => { if (haveMeta) cb(aggregatePoll(meta, added, votes)); };
+      const u1 = ref.onSnapshot((d) => { meta = d.exists ? d.data() : null; haveMeta = true; emit(); });
+      const u2 = ref.collection('options').onSnapshot((s) => {
+        added = s.docs.map((doc) => ({ id: doc.id, ...doc.data() })); emit();
       });
+      const u3 = ref.collection('votes').onSnapshot((s) => {
+        votes = s.docs.map((doc) => doc.data()); emit();
+      });
+      return () => { u1(); u2(); u3(); };
+    },
+    async vote(id, optionIds, name, opts = {}) {
+      // 1票=1件。by に必ず本人の uid を入れる（ルールでなりすましを防ぐ）。
+      // - replaceId 指定: 自分の票を上書き（投票し直し）
+      // - strict: doc id を uid に固定（1人1票）
+      // - open  : ランダムIDで何件でも（その場で代理入力OK）
+      const uid = await ensureUid();
+      const votes = col.doc(id).collection('votes');
+      const data = { choices: optionIds, name: name || null, by: uid, ts: Date.now() };
+      if (opts.replaceId) { await votes.doc(opts.replaceId).set(data); return opts.replaceId; }
+      if (opts.mode === 'open') { const ref = await votes.add(data); return ref.id; }
+      await votes.doc(uid).set(data);
+      return uid;
     },
     async addOption(id, text) {
-      await db.runTransaction(async (tx) => {
-        const ref = col.doc(id);
-        const snap = await tx.get(ref);
-        if (!snap.exists) return;
-        const data = snap.data();
-        if (applyAddOption(data, text)) tx.update(ref, { options: data.options });
-      });
+      await ensureUid();
+      const norm = (text || '').trim();
+      if (!norm) return;
+      await col.doc(id).collection('options').add({ text: norm, ts: Date.now() });
     },
   };
 }
 
 function makeLocalBackend() {
+  // firebase-config.js が無い時の退避（同一ブラウザのタブ間のみ同期）。
+  // Firestore版と同じく「定義(meta)＋追加選択肢(options)＋個々の票(votes)」で保存し、
+  // 同じ aggregatePoll で集計する。
   const KEY = (id) => `qrpoll_${id}`;
   const channel = 'BroadcastChannel' in window ? new BroadcastChannel('qrpoll') : null;
   const listeners = {};
 
+  let localUid = localStorage.getItem('qrpoll_local_uid');
+  if (!localUid) { localUid = 'local-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('qrpoll_local_uid', localUid); }
+
   const read = (id) => {
     try { return JSON.parse(localStorage.getItem(KEY(id))); } catch { return null; }
   };
+  const agg = (raw) => raw && raw.meta ? aggregatePoll(raw.meta, raw.options || [], Object.values(raw.votes || {})) : null;
+  const write = (id, raw) => {
+    localStorage.setItem(KEY(id), JSON.stringify(raw));
+    if (channel) channel.postMessage({ id });
+    (listeners[id] || []).forEach((cb) => cb(agg(raw)));
+  };
   const notify = (id) => {
-    const poll = read(id);
-    (listeners[id] || []).forEach((cb) => cb(poll));
+    const raw = read(id);
+    (listeners[id] || []).forEach((cb) => cb(agg(raw)));
   };
 
   if (channel) channel.onmessage = (e) => { if (e.data && e.data.id) notify(e.data.id); };
@@ -85,29 +149,45 @@ function makeLocalBackend() {
 
   return {
     mode: 'local',
+    ready: () => Promise.resolve(localUid),
     async createPoll(poll) {
-      localStorage.setItem(KEY(poll.id), JSON.stringify(poll));
+      write(poll.id, {
+        meta: {
+          id: poll.id, type: poll.type, question: poll.question,
+          named: !!poll.named, allowAdd: !!poll.allowAdd,
+          voteMode: poll.voteMode === 'open' ? 'open' : 'strict',
+          options: assignIds(poll.options),
+        },
+        options: [], votes: {},
+      });
     },
     subscribe(id, cb) {
       (listeners[id] = listeners[id] || []).push(cb);
-      cb(read(id));
+      cb(agg(read(id)));
       return () => { listeners[id] = (listeners[id] || []).filter((f) => f !== cb); };
     },
-    async vote(id, indices, name) {
-      const poll = read(id);
-      if (!poll) return;
-      applyVote(poll, indices, name);
-      localStorage.setItem(KEY(id), JSON.stringify(poll));
-      if (channel) channel.postMessage({ id });
-      (listeners[id] || []).forEach((cb) => cb(poll));
+    async vote(id, optionIds, name, opts = {}) {
+      const raw = read(id);
+      if (!raw) return null;
+      raw.votes = raw.votes || {};
+      let docId;
+      if (opts.replaceId) docId = opts.replaceId;
+      else if ((opts.mode || raw.meta.voteMode) === 'open') docId = 'v' + Date.now() + Math.random().toString(36).slice(2, 6);
+      else docId = localUid;
+      raw.votes[docId] = { choices: optionIds, name: name || null, by: localUid, ts: Date.now() };
+      write(id, raw);
+      return docId;
     },
     async addOption(id, text) {
-      const poll = read(id);
-      if (!poll) return;
-      applyAddOption(poll, text);
-      localStorage.setItem(KEY(id), JSON.stringify(poll));
-      if (channel) channel.postMessage({ id });
-      (listeners[id] || []).forEach((cb) => cb(poll));
+      const raw = read(id);
+      if (!raw) return;
+      const norm = (text || '').trim();
+      if (!norm) return;
+      const all = [...(raw.meta.options || []), ...(raw.options || [])];
+      if (all.some((o) => (o.text || '').trim().toLowerCase() === norm.toLowerCase())) return;
+      raw.options = raw.options || [];
+      raw.options.push({ id: 'a' + Date.now(), text: norm, ts: Date.now() });
+      write(id, raw);
     },
   };
 }
@@ -186,6 +266,7 @@ function parseHash() {
    ============================================================ */
 let currentScene = 'binary';
 let currentNamed = false;
+let currentMode = 'open';
 
 const NAME_KEY = 'qrpoll_voter_name';
 
@@ -195,6 +276,57 @@ function renderNamedToggle() {
     const on = (btn.dataset.named === 'true') === currentNamed;
     btn.classList.toggle('active', on);
     btn.onclick = () => { currentNamed = btn.dataset.named === 'true'; renderNamedToggle(); };
+  });
+}
+
+function renderModeToggle() {
+  const box = $('modeToggle');
+  if (!box) return;
+  box.querySelectorAll('.seg-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mode === currentMode);
+    btn.onclick = () => { currentMode = btn.dataset.mode; renderModeToggle(); };
+  });
+}
+
+// この端末で作った投票の控え（URLを控え忘れても主催者画面に戻れるように）
+const CREATED_KEY = 'qrpoll_created';
+const getCreatedPolls = () => { try { return JSON.parse(localStorage.getItem(CREATED_KEY)) || []; } catch { return []; } };
+function addCreatedPoll(poll) {
+  const list = getCreatedPolls().filter((x) => x.id !== poll.id);
+  list.unshift({ id: poll.id, question: poll.question, type: poll.type, createdAt: poll.createdAt });
+  localStorage.setItem(CREATED_KEY, JSON.stringify(list.slice(0, 20)));
+}
+const removeCreatedPoll = (id) =>
+  localStorage.setItem(CREATED_KEY, JSON.stringify(getCreatedPolls().filter((x) => x.id !== id)));
+
+function renderMyPolls() {
+  const box = $('myPolls');
+  if (!box) return;
+  const list = getCreatedPolls();
+  box.textContent = '';
+  if (!list.length) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const title = document.createElement('h3');
+  title.className = 'my-polls-title';
+  title.textContent = '📋 前に作った投票（この端末）';
+  box.appendChild(title);
+  list.forEach((p) => {
+    const item = document.createElement('div');
+    item.className = 'my-poll-item';
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'my-poll-open';
+    const icon = (SCENES[p.type] || SCENES.binary).icon;
+    open.textContent = `${icon} ${p.question || '(無題)'}`;
+    open.onclick = () => { location.hash = `host=${p.id}`; };
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'my-poll-del';
+    del.setAttribute('aria-label', '一覧から消す');
+    del.textContent = '×';
+    del.onclick = () => { removeCreatedPoll(p.id); renderMyPolls(); };
+    item.append(open, del);
+    box.appendChild(item);
   });
 }
 
@@ -245,6 +377,16 @@ function fillOptions(values) {
   values.forEach((v) => addOptionInput(v));
 }
 
+// 候補日の件数表示と「全部クリア」ボタンの出し分けを更新する
+function updateDateControls() {
+  const row = $('dateClearRow');
+  if (!row) return;
+  const n = document.querySelectorAll('#dateList [data-date]').length;
+  row.classList.toggle('hidden', n === 0);
+  const cnt = $('dateCount');
+  if (cnt) cnt.textContent = n ? `候補日 ${n}件` : '';
+}
+
 function addDateChip(iso) {
   if (!iso) return;
   const list = $('dateList');
@@ -259,11 +401,12 @@ function addDateChip(iso) {
   del.type = 'button';
   del.textContent = '×';
   del.setAttribute('aria-label', '候補日を削除');
-  del.onclick = () => chip.remove();
+  del.onclick = () => { chip.remove(); updateDateControls(); };
   chip.append(label, del);
   // 日付順に挿入
   const after = [...list.querySelectorAll('[data-date]')].find((c) => c.dataset.date > iso);
   list.insertBefore(chip, after || null);
+  updateDateControls();
 }
 
 function nextDay(iso) {
@@ -347,23 +490,9 @@ function renderCreateBody() {
     const field = document.createElement('div');
     field.className = 'field';
     const span = document.createElement('span');
-    span.textContent = '候補日（1日でも、連続した範囲でもまとめて追加）';
-    const row = document.createElement('div');
-    row.className = 'date-add-row';
-    const today = new Date();
-    const min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const start = document.createElement('input');
-    start.type = 'date'; start.id = 'dateStart'; start.min = min;
-    const sep = document.createElement('span');
-    sep.className = 'date-sep'; sep.textContent = '〜';
-    const end = document.createElement('input');
-    end.type = 'date'; end.id = 'dateEnd'; end.min = min; end.title = '終了日（任意）';
-    const add = document.createElement('button');
-    add.type = 'button';
-    add.className = 'btn btn-ghost small';
-    add.textContent = '＋ 追加';
-    row.append(start, sep, end, add);
+    span.textContent = '候補日を追加（まとめて選べます）';
 
+    // ① 種類フィルタ（上）：すべて / 平日 / 土日
     const filter = document.createElement('div');
     filter.className = 'seg date-filter';
     [['all', 'すべて'], ['weekday', '平日'], ['weekend', '土日']].forEach(([f, txt], i) => {
@@ -379,19 +508,52 @@ function renderCreateBody() {
       filter.appendChild(b);
     });
 
+    // ② 期間（下）：開始〜終了
+    const today = new Date();
+    const min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const row = document.createElement('div');
+    row.className = 'date-add-row';
+    const start = document.createElement('input');
+    start.type = 'date'; start.id = 'dateStart'; start.min = min;
+    const sep = document.createElement('span');
+    sep.className = 'date-sep'; sep.textContent = '〜';
+    const end = document.createElement('input');
+    end.type = 'date'; end.id = 'dateEnd'; end.min = min; end.title = '終了日（任意）';
+    row.append(start, sep, end);
+
+    // 追加ボタン（目立つように独立行・プライマリ）
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'btn btn-primary date-add-btn';
+    add.textContent = '＋ この期間を候補日に追加';
     add.onclick = () => {
       const f = filter.querySelector('.seg-btn.active').dataset.filter;
       addDateRange(start.value, end.value, f);
       start.value = ''; end.value = '';
+      updateDateControls();
     };
 
     const hint = document.createElement('p');
     hint.className = 'date-range-hint';
-    hint.textContent = '1日だけなら左だけ。範囲は右に終了日を入れ、平日／土日でしぼって追加できます。';
+    hint.textContent = 'まず上で種類（すべて／平日／土日）を選び、下で期間（開始〜終了）を入れて「追加」。1日だけなら開始日だけでOK。';
+
+    // 候補日リスト＋一括クリア
+    const clearRow = document.createElement('div');
+    clearRow.id = 'dateClearRow';
+    clearRow.className = 'date-clear-row hidden';
+    const cnt = document.createElement('span');
+    cnt.id = 'dateCount'; cnt.className = 'date-count';
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'btn btn-ghost small';
+    clearBtn.textContent = '🗑 全部クリア';
+    clearBtn.onclick = () => { $('dateList').textContent = ''; updateDateControls(); };
+    clearRow.append(cnt, clearBtn);
+
     const list = document.createElement('div');
     list.id = 'dateList';
     list.className = 'date-list';
-    field.append(span, row, filter, hint, list);
+    field.append(span, filter, row, add, hint, clearRow, list);
     body.appendChild(field);
   } else if (scene.body === 'rating') {
     const note = document.createElement('p');
@@ -402,8 +564,10 @@ function renderCreateBody() {
 }
 
 function setupCreate() {
+  renderMyPolls();
   renderScenePicker();
   renderNamedToggle();
+  renderModeToggle();
   renderCreateBody();
   $('modeNote').textContent = backend.mode === 'firebase'
     ? 'リアルタイムモード：複数のスマホから同時に投票できます。'
@@ -437,12 +601,25 @@ async function createPoll() {
     question,
     named: currentNamed,
     allowAdd,
-    options: options.map((o) => ({ text: o.text, votes: 0 })),
-    voters: 0,
+    voteMode: currentMode,
+    options: options.map((o) => ({ text: o.text })),
     createdAt: Date.now(),
   };
-  await backend.createPoll(poll);
-  location.hash = `host=${poll.id}`;
+  const btn = $('createBtn');
+  btn.disabled = true;
+  try {
+    // 通信が詰まったまま無反応にならないよう、12秒で打ち切ってエラー扱いにする
+    await Promise.race([
+      backend.createPoll(poll),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000)),
+    ]);
+    addCreatedPoll(poll);
+    location.hash = `host=${poll.id}`;
+  } catch (e) {
+    alert('投票の作成に失敗しました。通信環境を確認して、もう一度お試しください。');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 /* ============================================================
@@ -607,22 +784,44 @@ function openHost(id) {
 let voteBuilt = false;
 let voting = false;
 let currentVotePoll = null;
+let editing = false;     // 「投票し直す／もう一人分」で投票UIに戻っている最中
+let voteIntent = 'new';  // 'new' = 新規・追加 / 'replace' = 自分の票を上書き
 const voteSelected = new Set();
 const pendingAddTexts = new Set();
 
-// 投票を「1回だけ・成功してから確定」する。
-// - voting フラグで連打/二重送信を防ぐ（finding #1）
-// - 楽観的に投票済みフラグを立てて結果画面に切替え、失敗したら取り消して投票UIに戻す（finding #2）
-async function submitVote(id, indices, name) {
+const myVoteKey = (id) => `qrpoll_myvote_${id}`;
+const getMyVote = (id) => { try { return JSON.parse(localStorage.getItem(myVoteKey(id))); } catch { return null; } };
+const saveMyVote = (id, v) => localStorage.setItem(myVoteKey(id), JSON.stringify(v));
+
+// この送信が「新規/追加」か「自分の票の上書き」かで、バックエンドへの渡し方を決める
+function voteOpts(poll) {
+  if (voteIntent === 'replace') {
+    const mv = getMyVote(poll.id);
+    if (mv && mv.docId) return { replaceId: mv.docId };
+  }
+  return { mode: poll.voteMode === 'open' ? 'open' : 'strict' };
+}
+
+// 投票を送る。
+// - voting フラグで連打/二重送信を防ぐ
+// - 12秒で打ち切ってエラー扱い（通信が詰まっても無反応にしない）
+// - 成功したら即「ありがとう」へ切替。数字はリアルタイム更新が満たす（自前で+1せず二重カウントを避ける）
+async function submitVote(id, optionIds, name, opts = {}) {
   if (voting) return;
   voting = true;
-  localStorage.setItem(votedKey(id), JSON.stringify(indices));
   try {
-    await backend.vote(id, indices, name);
-  } catch (e) {
-    localStorage.removeItem(votedKey(id));
+    const docId = await Promise.race([
+      backend.vote(id, optionIds, name, opts),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000)),
+    ]);
+    saveMyVote(id, { docId, choices: optionIds, name: name || null });
+    localStorage.setItem(votedKey(id), '1');
+    editing = false;
     voting = false;
-    alert('投票の送信に失敗しました。通信環境を確認して、もう一度お試しください。');
+    if (currentVotePoll) showVoteResults(id, currentVotePoll);
+  } catch (e) {
+    voting = false;
+    alert('投票を送れませんでした。通信環境を確認して、もう一度お試しください。');
     if (currentVotePoll) { voteBuilt = false; buildVoteUI(id, currentVotePoll); }
   }
 }
@@ -635,6 +834,18 @@ function resolveName(poll) {
   return name;
 }
 
+function wireThanksActions(id, poll) {
+  const reBtn = $('reVoteBtn');
+  const addBtn = $('addVoteBtn');
+  if (reBtn) {
+    reBtn.onclick = () => { editing = true; voteIntent = 'replace'; voteBuilt = false; buildVoteUI(id, currentVotePoll); showView('voteView'); };
+  }
+  if (addBtn) {
+    addBtn.classList.toggle('hidden', poll.voteMode !== 'open');
+    addBtn.onclick = () => { editing = true; voteIntent = 'new'; voteBuilt = false; buildVoteUI(id, currentVotePoll); showView('voteView'); };
+  }
+}
+
 function showVoteResults(id, poll) {
   $('voteOptions').classList.add('hidden');
   $('voteSubmitBtn').classList.add('hidden');
@@ -644,6 +855,7 @@ function showVoteResults(id, poll) {
   $('voteThanks').classList.remove('hidden');
   const total = renderResults($('voteResults'), poll);
   $('voteTotal').textContent = totalLabel(poll, total);
+  wireThanksActions(id, poll);
 }
 
 // 複数選択のチップを描画。スナップショットのたびに呼んでも選択状態は voteSelected で保たれる。
@@ -702,6 +914,9 @@ function buildVoteUI(id, poll) {
       const doAdd = async () => {
         const t = addInput.value.trim();
         if (!t) return;
+        const dup = (currentVotePoll && currentVotePoll.options || [])
+          .some((o) => (o.text || '').trim().toLowerCase() === t.toLowerCase());
+        if (dup) { addInput.value = ''; return; }
         pendingAddTexts.add(t.toLowerCase());
         addInput.value = '';
         await backend.addOption(id, t);
@@ -719,8 +934,12 @@ function buildVoteUI(id, poll) {
       if (voteSelected.size === 0) return;
       const name = resolveName(poll);
       if (name === false) return;
+      const ids = [...voteSelected]
+        .map((i) => currentVotePoll.options[i] && currentVotePoll.options[i].id)
+        .filter(Boolean);
+      if (ids.length === 0) return;
       submit.disabled = true;
-      submitVote(id, [...voteSelected], name);
+      submitVote(id, ids, name, voteOpts(poll));
     };
   } else {
     $('voteSubmitBtn').classList.add('hidden');
@@ -736,7 +955,7 @@ function buildVoteUI(id, poll) {
         const name = resolveName(poll);
         if (name === false) return;
         box.querySelectorAll('.vote-btn').forEach((b) => { b.disabled = true; });
-        submitVote(id, [i], name);
+        submitVote(id, [o.id], name, voteOpts(poll));
       };
       box.appendChild(btn);
     });
@@ -747,6 +966,8 @@ function openVote(id) {
   if (unsubscribe) unsubscribe();
   voteBuilt = false;
   voting = false;
+  editing = false;
+  voteIntent = 'new';
   currentVotePoll = null;
   pendingAddTexts.clear();
 
@@ -763,12 +984,15 @@ function openVote(id) {
     currentVotePoll = poll;
     $('voteQuestion').textContent = poll.question;
     const already = localStorage.getItem(votedKey(id));
-    if (already) {
+    if (editing) {
+      // 「投票し直す／もう一人分」で投票UIに戻っている間は結果画面に奪われない。
+      // 増えた選択肢だけ反映する。
+      if (sceneOf(poll).multi) renderMultiChips(id, poll);
+    } else if (already) {
       showVoteResults(id, poll);
     } else if (!voteBuilt) {
       buildVoteUI(id, poll);
     } else if (sceneOf(poll).multi) {
-      // 参加者が増えた選択肢を反映（選択中の状態は保持）
       renderMultiChips(id, poll);
     }
     showView('voteView');
