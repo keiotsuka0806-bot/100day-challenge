@@ -376,3 +376,20 @@ function reconcileToYen(shares, total) {
 ```
 **注意点**: ① 「各人の表示額の合計＝総額表示」を必ずテストで担保する（1000円を3人→334/333/333）。② 端数の行き先（誰が多く負担するか）は小数部順で決まるので公平。意図的に幹事へ寄せたいなら order の基準を変える。③ 負の remainder（取りすぎ）はこのコードでは起きない前提（floor配分なので remainder ≥ 0）。
 
+## タイムゾーン・時差・DSTを自前計算せず Intl に任せる（WhenToPing）
+**使い道**: 「相手の現在ローカル時刻」「都市間の時差」「サマータイム(DST)」を扱う全アプリ。タイムゾーンDBを抱えず、ライブラリ不要・ブラウザ標準だけで正確に出す。
+**実装例**: `~/dev/when-to-ping/index.html`（100day repo外）。
+```js
+// ある都市の「今この瞬間のローカル時刻」を時間(小数)で得る
+function localFracOf(timeZone) {
+  const p = new Intl.DateTimeFormat('en-US', {
+    timeZone, hour12: false, hour: '2-digit', minute: '2-digit'
+  }).formatToParts(new Date());
+  const h = +p.find(x => x.type === 'hour').value % 24;
+  const m = +p.find(x => x.type === 'minute').value;
+  return h + m / 60; // 例: 14.5 = 14:30
+}
+// 時差は (相手frac − 自分frac) で算出。30/45分ズレ・DSTも Intl が吸収する
+```
+**注意点**: ① タイムゾーンIDは IANA名（`Asia/Tokyo`等）で持つ。`formatToParts` は半時間・15分ズレ都市(India/Nepal)もDST切替も自動で正しい。② 深夜またぎの就寝判定（23時就寝→7時起床のような範囲が0時をまたぐ）は `start>end ? (t>=start||t<end) : (t>=start&&t<end)` で分岐する。③ 曜日表示は `weekday` を ja-JP にしないと英語(Mon)が混ざる（6/21 QAで実際に踏んだ）。④ 端末ロケール差を避けるため数値抽出は `en-US` 固定、表示だけ ja-JP にする。
+
