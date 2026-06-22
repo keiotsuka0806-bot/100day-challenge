@@ -1,5 +1,5 @@
 // つぎはぎ大喜利 Service Worker — network-first（更新が即反映されるように）
-const CACHE = "tsugihagi-v9";
+const CACHE = "tsugihagi-v10";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./prompts.js", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", (e) => {

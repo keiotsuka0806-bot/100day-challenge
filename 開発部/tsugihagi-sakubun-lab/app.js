@@ -62,6 +62,14 @@ const S = {
   lastScreen: null, voteRendered: false, advancing: false,
 };
 
+/* 招待URLは常に公開URLを使う（localhost/プレビューURLをQRに焼かない＝スマホから必ず到達できる） */
+const PUBLIC_BASE = "https://ai-ranyu-ogiri.vercel.app/";
+function inviteUrl() {
+  const isLocal = /^(localhost$|127\.|192\.168\.|10\.|0\.0\.0\.0)/.test(location.hostname);
+  const base = isLocal ? (location.origin + location.pathname) : PUBLIC_BASE;
+  return base.replace(/\/?$/, "/") + "?room=" + S.code;
+}
+
 function roomRef() { return db.collection("ogiriRooms").doc(S.code); }
 function ansCol() { return roomRef().collection("answers"); }
 function voteCol() { return roomRef().collection("votes"); }
@@ -332,7 +340,7 @@ function renderLobby() {
   $("lobbyCode").textContent = S.code;
   // QR
   const qrEl = $("qr");
-  const url = `${location.origin}${location.pathname}?room=${S.code}`;
+  const url = inviteUrl();
   if (qrEl && qrEl.dataset.code !== S.code) {
     try {
       const qr = qrcode(0, "M"); qr.addData(url); qr.make();
@@ -467,7 +475,7 @@ $("copyFinal").addEventListener("click", async () => {
 });
 
 $("copyInvite").addEventListener("click", async () => {
-  const url = `${location.origin}${location.pathname}?room=${S.code}`;
+  const url = inviteUrl();
   const text = `AI乱入大喜利やろう！\n合言葉「${S.code}」\n${url}`;
   try { await navigator.clipboard.writeText(text); msg($("lobbyMsg"), "招待をコピーしました！"); }
   catch { msg($("lobbyMsg"), "コピーできませんでした", false); }
