@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-22T15:02:55.083Z",
+  "updatedAt": "2026-06-24",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -221,6 +221,16 @@
       "lastCouncil": "2026-06-23",
       "lastDeploy": "2026-06-23",
       "councilReport": "デザイン部/reports/2026-06-23-tsugihagi-sakubun-lab-genius-council.md"
+    },
+    "dandori": {
+      "path": "開発部/dandori",
+      "url": "https://dandori-snowy.vercel.app",
+      "type": "tool",
+      "council": "業務ツール/管理アプリ Council",
+      "status": "デプロイ済み",
+      "lastCouncil": "2026-06-23",
+      "lastDeploy": "2026-06-24",
+      "councilReport": "デザイン部/reports/2026-06-23-dandori-genius-council.md"
     }
   }
 }
