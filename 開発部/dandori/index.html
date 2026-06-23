@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>段取り｜ライフイベントの手続きナビ</title>
+  <meta name="description" content="引越し・結婚・出産。質問に答えると、あなたの状況に合った手続きの「いつ・どこで・何を持って」リストが出ます。" />
+  <meta name="theme-color" content="#2f6f5e" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <h1 class="brand">段取り<span class="brand-sub">ライフイベントの手続きナビ</span></h1>
+      <button id="homeBtn" class="ghost-btn" hidden>ホーム</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- 画面0: イベント選択 -->
+    <section id="introScreen" class="screen active">
+      <div class="hero">
+        <p class="hero-kicker">人生の手続き、何から手をつける？</p>
+        <h2 class="hero-title">質問に答えるだけで、<br /><strong>あなた専用のやることリスト</strong>。</h2>
+        <p class="hero-lead">「いつ・どこで・何を持って」まで分かるから、役所の二度手間や出し忘れを防げます。代わりに申請はしません。あなたが動くための段取り表です。</p>
+      </div>
+      <p class="pick-label">どのライフイベントの段取り？</p>
+      <div id="eventCards" class="event-cards"></div>
+      <p class="disclaimer">※ 手続きは自治体や契約内容で細部が異なります。最終確認は各自治体・公式窓口で行ってください。</p>
+    </section>
+
+    <!-- 画面1: 質問 -->
+    <section id="quizScreen" class="screen">
+      <div class="section-head">
+        <h2 id="quizTitle">あなたの状況を教えてください</h2>
+        <p class="muted">当てはまるものを選ぶと、必要な手続きだけに絞り込みます。</p>
+      </div>
+      <form id="quizForm" class="quiz"></form>
+      <div class="quiz-actions">
+        <button id="buildBtn" class="primary-btn">リストを作る</button>
+      </div>
+    </section>
+
+    <!-- 画面2: チェックリスト -->
+    <section id="listScreen" class="screen">
+      <div class="list-head">
+        <p id="listIntro" class="list-intro"></p>
+        <div id="legend" class="legend" aria-hidden="true">
+          <span class="place-badge place-old">引越し前の場所</span>
+          <span class="place-badge place-new">引越し後の場所</span>
+          <span class="place-badge place-either">ネット・電話など</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span id="progressLabel" class="progress-label" aria-live="polite">0 / 0 完了</span>
+            <div class="list-tools">
+              <button id="editBtn" class="ghost-btn">条件を変える</button>
+              <button id="shareBtn" class="ghost-btn">共有</button>
+              <button id="printBtn" class="ghost-btn">印刷</button>
+            </div>
+          </div>
+          <div class="progress-bar"><span id="progressFill" class="progress-fill"></span></div>
+        </div>
+        <label class="hide-done">
+          <input type="checkbox" id="hideDone" /> 完了を隠す
+        </label>
+      </div>
+      <div id="tasks" class="tasks"></div>
+      <p class="disclaimer bottom">※ この一覧は一般的な目安です。期限や持ち物・窓口は自治体／契約により異なります。必ず各自治体・公式窓口でご確認ください。</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>段取り — #100Day Challenge</span>
+  </footer>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
