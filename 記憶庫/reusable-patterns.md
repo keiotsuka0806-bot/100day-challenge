@@ -4,6 +4,22 @@
 
 ---
 
+## QR・招待リンクは本番URLを固定で焼く（inviteUrl / AI乱入大喜利）
+**使い道**: QR・招待リンクでスマホを呼び込む「各自デバイス参加型」アプリ全部。`location.origin` をそのまま焼くと localhost / Vercelプレビューが本番QRに混入し「アクセスできません」になるのを防ぐ。
+**実装例**: `開発部/tsugihagi-sakubun-lab/app.js` の `inviteUrl()`。
+```js
+const PUBLIC_ORIGIN = 'https://ai-ranyu-ogiri.vercel.app'; // 本番公開URL
+function inviteUrl(path = '') {
+  const o = location.origin;
+  // localhost / Vercelプレビュー(*.vercel.app の自動生成名)では本番URLに差し替える
+  const isLocal = /localhost|127\.0\.0\.1/.test(o);
+  const isPreview = /-[a-z0-9]+\.vercel\.app$/.test(o) && o !== PUBLIC_ORIGIN;
+  const base = (isLocal || isPreview) ? PUBLIC_ORIGIN : o;
+  return base + path; // QR・招待リンク・結果コピーはすべてこれを通す
+}
+```
+**注意点**: ① 本番ドメインを取得し直したら `PUBLIC_ORIGIN` を更新する。② QR・招待リンク・「結果をコピー」など**外部に渡るURLは全部 inviteUrl() を経由**させる（1箇所でも生 origin が残ると混入する）。③ QRはくっきり描画＋URLテキスト併記にすると、読めない端末でも手入力で救える（6/22実機指摘の対応）。
+
 <!-- 形式: ## 朝会統合パターン（複数ルーティン→1対話セッション）
 **使い道**: 複数の定期AIタスクをコスト最小で回したいとき
 **実装例**: `.claude/skills/morning-routine/SKILL.md`（記憶庫レトロ・企画生成・組織レポート・Job Scout・note下書きを1セッションに統合）
