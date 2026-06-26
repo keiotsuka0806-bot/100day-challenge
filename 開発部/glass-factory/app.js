@@ -188,6 +188,7 @@
 
   function goLobby() {
     stop();
+    if (typeof dStop === "function") dStop();
     showScreen(lobby);
   }
 
@@ -219,8 +220,8 @@
   const ROOMS = [
     { no: "①", name: "見学ステージ", tagline: "今日の一日リプレイ", desc: "朝会から本命プロダクトが生まれるまでの一日を、まるごと観戦する。", status: "open", go: enterReplay, c: "var(--c-開発部)" },
     { no: "③", name: "ボツ美術館", tagline: "世に出なかった企画たち", desc: "落とされた企画と、その却下理由を展示する地下展示室。", status: "open", go: enterMuseum, c: "var(--c-記憶庫)" },
-    { no: "②", name: "企画会議室", tagline: "10案が3案に絞られるまで", desc: "提出された10案を審査基準にかけ、その場で3案へ絞る。", status: "open", go: enterMeeting, c: "var(--c-企画部)" },
-    { no: "④", name: "会社を建てる", tagline: "あなた自身のAI会社を建てる", desc: "目的・掟・部署を選んで、自分の工場を3ステップで建てる。", status: "open", go: enterBuild, c: "var(--c-社長)" },
+    { no: "②", name: "企画会議室", tagline: "本命が決まるまでの議論", desc: "10案→ボツ→方針転換→本命採用。部署同士の議論を再現する。", status: "open", go: enterMeeting, c: "var(--c-企画部)" },
+    { no: "④", name: "会社を建てる", tagline: "別棟で、自分のAI会社を建てる", desc: "部署を組み立てて1日をシミュレート。設計ツール AIOrgSim に引き継ぐ別棟。", status: "open", go: enterBuild, c: "var(--c-社長)" },
   ];
 
   const roomsEl = $("rooms");
@@ -241,126 +242,165 @@
     roomsEl.appendChild(card);
   });
 
-  // ---- ボツ美術館を描画 ----
+  // ---- ③ ボツ美術館（1案ずつ金額縁・スワイプ移動） ----
+  const MUS = window.GLASS_MUSEUM;
+  let musIdx = 0;
+
+  const groupLabel = (gid) => (MUS.groups.find((g) => g.id === gid) || {}).label || "";
+
   function renderMuseum() {
-    const M = window.GLASS_MUSEUM;
-    if (museum.dataset.built) return;
-    $("museumIntro").textContent = M.intro;
-    $("museumFoot").textContent = M.foot;
-    const gallery = $("gallery");
-    M.exhibits.forEach((ex) => {
-      const frame = document.createElement("button");
-      frame.className = "frame";
-      frame.style.setProperty("--hue", ex.hue);
-      const works = ex.works
-        ? `<div class="frame-works">${ex.works.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
-        : `<p class="frame-solo">${esc(ex.caption)}</p>`;
-      frame.innerHTML = `
-        <div class="frame-canvas">
-          <span class="frame-kind">${esc(ex.kind)}</span>
-          <h3 class="frame-title">${esc(ex.title)}</h3>
-          ${works}
-        </div>
-        <div class="plate">
-          <span class="plate-cap">${esc(ex.caption)}</span>
-          <span class="plate-date">却下: ${esc(ex.by)} ・ ${esc(ex.date)}</span>
-        </div>
-      `;
-      frame.addEventListener("click", () => openExhibit(ex));
-      gallery.appendChild(frame);
-    });
-    museum.dataset.built = "1";
+    if (!museum.dataset.built) {
+      $("museumIntro").textContent = MUS.intro;
+      $("museumFoot").textContent = MUS.foot;
+      const dots = $("exDots");
+      dots.innerHTML = MUS.groups.map((g) => {
+        const first = MUS.exhibits.findIndex((e) => e.g === g.id);
+        return `<button class="grp-jump" data-i="${first}">${esc(g.label.split(" ・ ")[0])}</button>`;
+      }).join("");
+      dots.querySelectorAll(".grp-jump").forEach((d) =>
+        d.addEventListener("click", () => goExhibit(+d.dataset.i)));
+      $("exPrev").addEventListener("click", () => stepExhibit(-1));
+      $("exNext").addEventListener("click", () => stepExhibit(1));
+      wireSwipe($("frameStage"));
+      museum.dataset.built = "1";
+    }
+    musIdx = 0;
+    paintExhibit(0);
   }
 
-  function openExhibit(ex) {
-    const worksHtml = ex.works
-      ? `<div class="ex-works">${ex.works.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
-      : "";
-    const html = `
-      ${worksHtml}
-      <div class="ex-row"><span class="ex-k">これは何だった?</span><p>${esc(ex.what)}</p></div>
-      <div class="ex-row ex-verdict"><span class="ex-k">却下票 ・ ${esc(ex.by)}</span><p>${esc(ex.verdict)}</p></div>
-      <div class="ex-row"><span class="ex-k">なぜ落ちた?</span><p>${esc(ex.reason)}</p></div>
-      <div class="ex-row ex-lesson"><span class="ex-k">💡 この没から得た学び</span><p>${esc(ex.lesson)}</p></div>
+  function stepExhibit(dir) { goExhibit(musIdx + dir, dir); }
+
+  function goExhibit(i, dir) {
+    const n = MUS.exhibits.length;
+    const next = (i + n) % n;
+    const d = dir || (next > musIdx ? 1 : -1);
+    musIdx = next;
+    paintExhibit(d);
+  }
+
+  function paintExhibit(dir) {
+    const ex = MUS.exhibits[musIdx];
+    const kindLine = ex.kind
+      ? esc(ex.kind)
+      : (ex.axis ? `軸：${esc(ex.axis)}` : "") + (ex.en ? `<span class="art-en">${esc(ex.en)}</span>` : "");
+    const estBadge = ex.estimated ? `<span class="art-est">※当時の詳細記録なし／名前からの推定</span>` : "";
+    const finalBadge = ex.finalist ? `<span class="art-final">★ 最終3案</span>` : "";
+    const lesson = ex.lesson
+      ? `<div class="art-sec art-lesson"><span class="art-k">💡 学び</span><p>${esc(ex.lesson)}</p></div>` : "";
+    const stage = $("frameStage");
+    stage.innerHTML = `
+      <p class="art-group">${esc(groupLabel(ex.g))}</p>
+      <figure class="art" style="--hue:${ex.hue}">
+        <div class="art-frame">
+          <div class="art-mat">
+            <span class="art-kind">${kindLine}${finalBadge}</span>
+            <h3 class="art-title">${esc(ex.title)}</h3>
+            ${estBadge}
+            <div class="art-sec"><span class="art-k">どんな企画案?</span><p>${esc(ex.what)}</p></div>
+            <div class="art-sec art-why"><span class="art-k">なぜ没になったか</span><p>${esc(ex.reason)}</p></div>
+            ${lesson}
+          </div>
+        </div>
+        <figcaption class="art-plate">
+          <span class="plate-date">収蔵 No.${musIdx + 1} ／ ${MUS.exhibits.length}</span>
+        </figcaption>
+      </figure>
     `;
-    openPanel({
-      color: `hsl(${ex.hue} 70% 70%)`,
-      badge: "🖼 収蔵品 ・ " + ex.kind,
-      title: ex.title,
-      role: ex.caption,
-      html,
-    });
+    const art = stage.querySelector(".art");
+    art.classList.add(dir < 0 ? "in-left" : "in-right");
+    $("exDots").querySelectorAll(".grp-jump").forEach((d) =>
+      d.classList.toggle("on", MUS.exhibits[+d.dataset.i].g === ex.g));
   }
 
-  // ---- ② 企画会議室 ----
+  function wireSwipe(el) {
+    let x0 = null;
+    el.addEventListener("touchstart", (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    el.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 45) stepExhibit(dx < 0 ? 1 : -1);
+      x0 = null;
+    }, { passive: true });
+  }
+
+  // ---- ② 企画会議室（AI同士の議論を“再現”・自動再生） ----
   const MTG = window.GLASS_MEETING;
-  let mtgRound = 0;
+  const dFeed = $("debateFeed");
+  const dPlayBtn = $("dPlay");
+  let dIdx = 0, dPlaying = false, dTimer = null;
+  const D_DELAY = 2600;
 
   function renderMeeting() {
     $("meetingIntro").textContent = MTG.intro;
-    $("meetingFoot").textContent = MTG.outro;
-    const tabs = $("roundTabs");
-    if (!tabs.dataset.built) {
-      MTG.rounds.forEach((r, i) => {
-        const b = document.createElement("button");
-        b.className = "round-tab";
-        b.innerHTML = `<b>${r.label}</b><span>${r.theme}</span>`;
-        b.addEventListener("click", () => { mtgRound = i; renderRound(); });
-        tabs.appendChild(b);
-      });
-      tabs.dataset.built = "1";
-    }
-    renderRound();
+    $("meetingLabel").textContent = "🎬 " + MTG.label;
+    $("meetingFoot").textContent = "";
+    dRestartDebate();
+    dPlay();
   }
 
-  function renderRound() {
-    const r = MTG.rounds[mtgRound];
-    $("roundTabs").querySelectorAll(".round-tab").forEach((t, i) =>
-      t.classList.toggle("active", i === mtgRound));
-
-    const keep = new Set(r.keep);
-    const chips = r.all.map((name) => {
-      const isKeep = keep.has(name);
-      return `<div class="idea ${isKeep ? "is-keep" : "is-drop"}" data-keep="${isKeep}">${esc(name)}</div>`;
-    }).join("");
-
-    $("meetingStage").innerHTML = `
-      <div class="board" data-phase="all">
-        <div class="board-row board-meta">
-          <span class="submit-count">提出 <b>${r.all.length}</b> 案</span>
-          <button class="btn-sift" id="siftBtn">⚙️ 会議にかけて3案に絞る →</button>
-        </div>
-        <div class="ideas" id="ideas">${chips}</div>
-        <div class="sift-result" id="siftResult">
-          <div class="keep-head">✓ 最終3案 <span>${esc(r.keepReason)}</span></div>
-          <div class="drop-note">見送り ${r.all.length - r.keep.length} 案 — ${esc(r.dropNote)}</div>
-          <div class="verdict-card">
-            <span class="verdict-by">👤 社長の最終判定</span>
-            <span class="verdict-stamp">${esc(r.result)}</span>
-            <p>${esc(r.verdict)}</p>
-            <a class="verdict-link" data-go-museum>→ 落選作は「③ ボツ美術館」に収蔵</a>
-          </div>
-        </div>
+  function renderTurn(t) {
+    const right = !!t.human;
+    const ideas = t.ideas
+      ? `<div class="bubble-ideas">${t.ideas.map((n) => `<span>${esc(n)}</span>`).join("")}</div>`
+      : "";
+    const note = t.note ? `<div class="bubble-note">⚙️ ${esc(t.note)}</div>` : "";
+    const tag = t.tag ? `<span class="bubble-tag">★ ${esc(t.tag)}</span>` : "";
+    const b = document.createElement("div");
+    b.className = "bubble type-" + t.type + (right ? " right" : "") + (t.human ? " human" : "");
+    b.style.setProperty("--c", `var(--c-${t.who})`);
+    const whoLabel = t.role ? `${esc(t.who)} ・ ${esc(t.role)}` : esc(t.who) + (t.human ? " ・ 人間" : "");
+    b.innerHTML = `
+      <div class="bubble-head">
+        <span class="b-who">${whoLabel}</span>
+        <span class="b-type">${esc(t.type)}</span>
       </div>
+      <p class="bubble-text">${esc(t.text)}</p>
+      ${ideas}${tag}${note}
     `;
-
-    $("siftBtn").addEventListener("click", siftRound);
-    $("meetingStage").querySelector("[data-go-museum]").addEventListener("click", enterMuseum);
+    dFeed.appendChild(b);
+    requestAnimationFrame(() => b.scrollIntoView({ behavior: "smooth", block: "end" }));
   }
 
-  function siftRound() {
-    const board = $("meetingStage").querySelector(".board");
-    if (board.dataset.phase === "sifted") return;
-    board.dataset.phase = "sifted";
-    // 落選を先に沈め、残った3案を浮かせる
-    $("ideas").querySelectorAll(".idea").forEach((el, i) => {
-      const keep = el.dataset.keep === "true";
-      setTimeout(() => el.classList.add(keep ? "sift-keep" : "sift-drop"), i * 70);
-    });
-    setTimeout(() => $("siftResult").classList.add("show"), 700);
-    $("siftBtn").disabled = true;
-    $("siftBtn").textContent = "絞り込み完了";
+  function dStep() {
+    if (dIdx >= MTG.debate.length) { dStop(); return; }
+    renderTurn(MTG.debate[dIdx]);
+    dIdx += 1;
+    if (dIdx >= MTG.debate.length) {
+      $("meetingFoot").textContent = MTG.closing;
+      dStop();
+    }
   }
+
+  function dSchedule() {
+    clearTimeout(dTimer);
+    if (!dPlaying || dIdx >= MTG.debate.length) return;
+    dTimer = setTimeout(() => { dStep(); dSchedule(); }, D_DELAY);
+  }
+
+  function dPlay() {
+    if (dIdx >= MTG.debate.length) dRestartDebate();
+    dPlaying = true;
+    dPlayBtn.textContent = "⏸";
+    if (dIdx === 0) dStep();
+    dSchedule();
+  }
+
+  function dStop() {
+    dPlaying = false;
+    dPlayBtn.textContent = dIdx >= MTG.debate.length ? "⟲" : "▶";
+    clearTimeout(dTimer);
+  }
+
+  function dRestartDebate() {
+    clearTimeout(dTimer);
+    dFeed.innerHTML = "";
+    dIdx = 0;
+    $("meetingFoot").textContent = "";
+  }
+
+  dPlayBtn.addEventListener("click", () => { if (dPlaying) dStop(); else dPlay(); });
+  $("dRestart").addEventListener("click", () => { dRestartDebate(); dPlay(); });
+  $("dNext").addEventListener("click", () => { dStop(); dStep(); });
 
   function openGates() {
     const html = MTG.gates.map((g, i) =>
@@ -454,6 +494,11 @@
   $("panelClose").addEventListener("click", closePanel);
   panel.addEventListener("click", (e) => { if (e.target === panel) closePanel(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.classList.contains("hidden")) closePanel(); });
+  document.addEventListener("keydown", (e) => {
+    if (museum.classList.contains("hidden") || !panel.classList.contains("hidden")) return;
+    if (e.key === "ArrowRight") stepExhibit(1);
+    else if (e.key === "ArrowLeft") stepExhibit(-1);
+  });
 
   // イントロのヒント（日付）
   $("introHint").textContent = `${DATA.subtitle}`;

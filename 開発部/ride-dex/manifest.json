@@ -1,0 +1,11 @@
+{
+  "name": "RideDex — 乗り物さがしの宝探し",
+  "short_name": "RideDex",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1730",
+  "theme_color": "#0e1730",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

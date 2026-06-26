@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e1730" />
+  <title>RideDex — 乗り物さがしの宝探し</title>
+  <meta name="description" content="街で見つけた車・バイクをカメラで撮って図鑑にコレクション。世代も確度も出る、現実世界の宝探し。" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">🔎</span> RideDex</div>
+    <div class="stat-chips">
+      <span class="chip" id="chipSpecies">0種</span>
+      <span class="chip" id="chipTotal">0台</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- さがす画面 -->
+    <section id="view-hunt" class="view">
+      <div class="hunt-hero">
+        <p class="hunt-lead">街にひそむ車・バイクを見つけて図鑑にしよう。</p>
+        <p class="hunt-sub">カメラを向けるだけ。世代・確度・レア度が出る現実世界の宝探し。</p>
+        <label class="btn-hunt">
+          <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+          📷 さがす（撮影）
+        </label>
+        <p class="privacy-note">写真は保存しません。図鑑に残るのは“乗り物データ”だけ。</p>
+        <p class="mode-note hidden" id="modeNote"></p>
+      </div>
+    </section>
+
+    <!-- 図鑑画面 -->
+    <section id="view-dex" class="view hidden">
+      <div class="dex-filters" id="dexFilters">
+        <button class="filter-btn active" data-cat="all">すべて</button>
+        <button class="filter-btn" data-cat="car">🚗 四輪</button>
+        <button class="filter-btn" data-cat="bike">🏍️ 二輪</button>
+      </div>
+      <div id="achievements" class="achievements"></div>
+      <div id="dexGrid" class="dex-grid"></div>
+      <p id="dexEmpty" class="dex-empty">まだ図鑑は空っぽ。<br>「さがす」で最初の1台を見つけよう。</p>
+    </section>
+  </main>
+
+  <!-- 下部ナビ -->
+  <nav class="tabbar">
+    <button class="tab active" data-view="hunt">🔎 さがす</button>
+    <button class="tab" data-view="dex">📖 図鑑</button>
+  </nav>
+
+  <!-- 鑑定中オーバーレイ -->
+  <div id="scanOverlay" class="overlay hidden">
+    <div class="scan-box">
+      <div class="scan-line"></div>
+      <div class="scan-emoji">🔍</div>
+    </div>
+    <p>鑑定中…</p>
+  </div>
+
+  <!-- 結果モーダル -->
+  <div id="resultModal" class="modal hidden">
+    <div class="modal-card" id="resultCard"></div>
+  </div>
+
+  <!-- 訂正モーダル -->
+  <div id="correctModal" class="modal hidden">
+    <div class="modal-card" id="correctCard"></div>
+  </div>
+
+  <div id="reveal" class="reveal hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -40,6 +40,7 @@
 | QRLivePoll | `qr-live-poll/` | デプロイ済み（ストック） |
 | GlassFactory | `glass-factory/` | デプロイ済み（本命・ロビー＋4部屋：①見学リプレイ／②企画会議室／③ボツ美術館／④会社を建てる＝別棟リンクでDay16のAIOrgSimを流用。鍵不要・コストゼロ。https://glass-factory-one.vercel.app/ ・セキュリティ100/100通過） |
 | AI乱入大喜利 | `tsugihagi-sakubun-lab/` | デプロイ済み（6/23公開・https://ai-ranyu-ogiri.vercel.app）。各自スマホで参加(合言葉+QR)→お題にボケ→投票→優勝の大喜利。AIも参戦(Vercel関数+OpenAI、鍵ありで本物/なしでモック)。Firestore共有倉庫ogiriRooms・匿名auth。お題114問 |
+| RideDex | `ride-dex/` | 開発中（Day1実装済み・ローカル検証済み／デプロイ前3ゲート前）。街の車・バイクをカメラ→OpenAI Vision鑑定（メーカー/車種/世代+年式レンジ/確度%/レア度/豆知識）→図鑑コレクション。"宝探し"UX。年式は単年でなく世代レンジ／詳しい人が訂正可（端末内）／レア度別演出／実績バッジ。Vanilla JS+PWA、Vercel関数で鍵秘匿+レート制限(60秒10回)+サイズ上限。鍵ありで本物/なしでデモモック。写真は保存せず車種データのみ。現実世界図鑑シリーズの第1弾エンジン |
 
 ## コーディング規約
 
