@@ -75,7 +75,8 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const text = await response.text();
-      return res.status(502).json({ error: text });
+      console.error('OpenAI error:', text); // 詳細はサーバーログのみ
+      return res.status(502).json({ error: '鑑定に失敗しました。少し待って再度お試しください。' });
     }
 
     const data = await response.json();
@@ -132,6 +133,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('identify-vehicle error:', err);
+    res.status(500).json({ error: '鑑定に失敗しました。少し待って再度お試しください。' });
   }
 }
