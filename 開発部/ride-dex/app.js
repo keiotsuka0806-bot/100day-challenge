@@ -271,10 +271,15 @@ async function registerPending() {
   }
 
   if (!saveDex(dex)) {
-    // 容量あふれ: 今回の写真を諦めて再保存（図鑑データ自体は守る）
+    // 容量あふれ: まず今回の写真、ダメなら全写真を落として図鑑データ自体は必ず守る
     if (dex[key].photo) dex[key].photo = null;
-    saveDex(dex);
-    alert('写真の保存容量がいっぱいです。今回の写真は記録できませんでした（図鑑データは保存済み）。');
+    if (!saveDex(dex)) {
+      Object.values(dex).forEach((e) => { e.photo = null; });
+    }
+    const saved = saveDex(dex);
+    alert(saved
+      ? '写真の保存容量がいっぱいです。写真は記録できませんでしたが、図鑑データは保存しました。'
+      : '保存容量がいっぱいで記録できませんでした。図鑑の不要な種を減らしてからお試しください。');
   }
   pending = null;
   $('resultModal').classList.add('hidden');
