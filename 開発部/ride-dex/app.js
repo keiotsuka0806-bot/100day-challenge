@@ -14,7 +14,10 @@ function loadDex() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
   catch { return {}; }
 }
-function saveDex(dex) { localStorage.setItem(STORE_KEY, JSON.stringify(dex)); }
+function saveDex(dex) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(dex)); return true; }
+  catch { return false; } // 容量超過（写真の溜めすぎ）など
+}
 let dex = loadDex();
 
 const speciesKey = (maker, model) =>
@@ -108,10 +111,28 @@ async function identify(dataUrl) {
     return;
   }
   pending = result;
+  pending.photo = dataUrl; // 結果カード表示用（フル）。図鑑にはサムネ化して任意保存
   showResult();
 }
 
 function showScan(on) { $('scanOverlay').classList.toggle('hidden', !on); }
+
+// 図鑑保存用のサムネ（容量を抑えるため小さく）
+function makeThumb(dataUrl, max = 240, quality = 0.6) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
 
 /* ---------- 結果表示 ---------- */
 function showResult() {
@@ -123,7 +144,9 @@ function showResult() {
 
   $('resultCard').innerHTML = `
     ${isNew ? '<div class="new-badge">✨ 初発見！</div>' : '<div class="seen-badge">図鑑にあり</div>'}
-    <div class="result-emoji">${catEmoji(r.category)}</div>
+    ${r.photo
+      ? `<div class="result-photo"><img src="${r.photo}" alt="撮った写真"><span class="result-cat">${catEmoji(r.category)}</span></div>`
+      : `<div class="result-emoji">${catEmoji(r.category)}</div>`}
     <div class="rarity-row rarity-${r.rarity}">
       <span class="rarity-stars">${stars(r.rarity)}</span>
       <span class="rarity-label">${rarityLabel(r.rarity)}</span>
@@ -136,6 +159,7 @@ function showResult() {
       ${r.corrected ? '<span class="corrected">訂正済み</span>' : ''}
     </p>
     ${r.trivia ? `<p class="result-trivia">💡 ${escapeHtml(r.trivia)}</p>` : ''}
+    ${r.photo ? `<label class="keep-photo"><input type="checkbox" id="keepPhoto" checked /> この写真を図鑑にも残す</label>` : ''}
     <div class="result-actions">
       <button class="btn-primary" id="btnRegister">📖 図鑑に登録</button>
       <button class="btn-ghost" id="btnCorrect">✏️ ちがう（訂正）</button>
@@ -159,24 +183,35 @@ function showNotVehicle(message) {
   $('btnClose').addEventListener('click', () => $('resultModal').classList.add('hidden'));
 }
 
-function registerPending() {
+async function registerPending() {
   const r = pending;
   const key = speciesKey(r.maker, r.model);
   const now = Date.now();
+  const keepPhoto = $('keepPhoto') ? $('keepPhoto').checked : false;
+  const thumb = keepPhoto && r.photo ? await makeThumb(r.photo) : null;
+
   if (dex[key]) {
     const e = dex[key];
     e.count += 1;
     e.lastSeen = now;
     if (!e.generation && r.generation) e.generation = r.generation;
     if (!e.yearRange && r.yearRange) e.yearRange = r.yearRange;
+    if (thumb) e.photo = thumb; // 撮り直しでより良い写真に差し替え可
   } else {
     dex[key] = {
       maker: r.maker, model: r.model, category: r.category,
       generation: r.generation, yearRange: r.yearRange, bodyType: r.bodyType,
       rarity: r.rarity, trivia: r.trivia, count: 1, firstSeen: now, lastSeen: now,
+      photo: thumb || null,
     };
   }
-  saveDex(dex);
+
+  if (!saveDex(dex)) {
+    // 容量あふれ: 今回の写真を諦めて再保存（図鑑データ自体は守る）
+    if (dex[key].photo) dex[key].photo = null;
+    saveDex(dex);
+    alert('写真の保存容量がいっぱいです。今回の写真は記録できませんでした（図鑑データは保存済み）。');
+  }
   pending = null;
   $('resultModal').classList.add('hidden');
   updateChips();
@@ -269,8 +304,9 @@ function renderDex() {
       .filter(Boolean).join('｜');
     return `
       <div class="dex-card rarity-${e.rarity}">
-        <div class="dex-card-top">
-          <span class="dex-emoji">${catEmoji(e.category)}</span>
+        <div class="dex-thumb">
+          ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">${catEmoji(e.category)}</span>`}
+          <span class="dex-cat-badge">${catEmoji(e.category)}</span>
           ${e.count > 1 ? `<span class="dex-count">×${e.count}</span>` : ''}
         </div>
         <div class="dex-stars">${stars(e.rarity)}</div>
