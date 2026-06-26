@@ -23,8 +23,9 @@ const SYSTEM_PROMPT = `あなたは車（四輪）とオートバイ（二輪）
 - rarity は「日本の街でその車種を見かける珍しさ」を1〜5で表す（1=ありふれた / 3=たまに見る / 5=激レア・旧車・希少な輸入車など）。
 - trivia は20〜45文字の、思わず人に話したくなる豆知識を1つ。
 - candidates は「もし違ったら」の訂正用に、見た目が近い代替候補を2〜3個（"メーカー 車種名" の文字列）。
+- plates は画像内のナンバープレート（前・後・二輪の1枚など）の位置。各プレートを {x,y,w,h} で表す。x,yは左上角、w,hは幅・高さで、すべて画像全体に対する0〜1の割合。プレートが見えなければ空配列 []。位置は多少大きめ（余白を含む）に囲ってよい。
 出力は必ず次のJSONのみ:
-{"isVehicle":true,"category":"car|bike","maker":"メーカー","model":"車種名","generation":"世代/型式","yearRange":"年式レンジ","bodyType":"ボディタイプ","confidence":0,"rarity":1,"trivia":"豆知識","candidates":["メーカー 車種"]}
+{"isVehicle":true,"category":"car|bike","maker":"メーカー","model":"車種名","generation":"世代/型式","yearRange":"年式レンジ","bodyType":"ボディタイプ","confidence":0,"rarity":1,"trivia":"豆知識","candidates":["メーカー 車種"],"plates":[{"x":0,"y":0,"w":0,"h":0}]}
 画像に車・バイクが写っていない、または主役でない場合は {"isVehicle":false,"message":"短い案内"} を返す。`;
 
 export default async function handler(req, res) {
@@ -97,6 +98,10 @@ export default async function handler(req, res) {
       return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
     };
     const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+    const clamp01 = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0;
+    };
 
     const result = {
       isVehicle: true,
@@ -111,6 +116,17 @@ export default async function handler(req, res) {
       trivia: str(parsed.trivia, 80),
       candidates: Array.isArray(parsed.candidates)
         ? parsed.candidates.filter((c) => typeof c === 'string').map((c) => c.trim().slice(0, 48)).slice(0, 3)
+        : [],
+      plates: Array.isArray(parsed.plates)
+        ? parsed.plates
+            .map((p) => ({
+              x: clamp01(p && p.x),
+              y: clamp01(p && p.y),
+              w: clamp01(p && p.w),
+              h: clamp01(p && p.h),
+            }))
+            .filter((p) => p.w > 0.01 && p.h > 0.01)
+            .slice(0, 4)
         : [],
     };
 
