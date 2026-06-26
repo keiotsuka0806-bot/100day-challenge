@@ -111,8 +111,48 @@ async function identify(dataUrl) {
     return;
   }
   pending = result;
-  pending.photo = dataUrl; // 結果カード表示用（フル）。図鑑にはサムネ化して任意保存
+  pending.photoOriginal = dataUrl;        // ぼかしの再計算用（端末内・サーバーには残らない）
+  pending.plates = result.plates || [];   // ナンバープレート領域（0〜1相対）
+  pending.photo = await applyPlateBlur(dataUrl, pending.plates); // 表示・保存はぼかし済みのみ
   showResult();
+}
+
+// ナンバープレート領域をモザイク化した画像（dataURL）を返す
+function applyPlateBlur(dataUrl, plates) {
+  return new Promise((resolve) => {
+    if (!plates || plates.length === 0) { resolve(dataUrl); return; }
+    const img = new Image();
+    img.onload = () => {
+      const W = img.width, H = img.height;
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const M = 0.025; // 安全マージン（AI座標のズレを吸収するため広めに隠す）
+      plates.forEach((p) => {
+        const x = Math.max(0, (p.x - M)) * W;
+        const y = Math.max(0, (p.y - M)) * H;
+        const w = Math.min(1, p.w + M * 2) * W;
+        const h = Math.min(1, p.h + M * 2) * H;
+        pixelate(ctx, x, y, Math.min(w, W - x), Math.min(h, H - y));
+      });
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+function pixelate(ctx, x, y, w, h, blocks = 7) {
+  if (w <= 1 || h <= 1) return;
+  const sw = Math.max(1, Math.round(w / Math.max(4, w / blocks)));
+  const sh = Math.max(1, Math.round(h / Math.max(4, h / blocks)));
+  const tmp = document.createElement('canvas');
+  tmp.width = sw; tmp.height = sh;
+  tmp.getContext('2d').drawImage(ctx.canvas, x, y, w, h, 0, 0, sw, sh);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tmp, 0, 0, sw, sh, x, y, w, h);
+  ctx.imageSmoothingEnabled = true;
 }
 
 function showScan(on) { $('scanOverlay').classList.toggle('hidden', !on); }
@@ -145,7 +185,8 @@ function showResult() {
   $('resultCard').innerHTML = `
     ${isNew ? '<div class="new-badge">✨ 初発見！</div>' : '<div class="seen-badge">図鑑にあり</div>'}
     ${r.photo
-      ? `<div class="result-photo"><img src="${r.photo}" alt="撮った写真"><span class="result-cat">${catEmoji(r.category)}</span></div>`
+      ? `<div class="result-photo"><img id="resultPhoto" src="${r.photo}" alt="撮った写真" /><span class="result-cat">${catEmoji(r.category)}</span></div>
+         <p class="plate-hint">🔒 ナンバーは自動でぼかし済み。隠れていなければ写真をタップして足せます。</p>`
       : `<div class="result-emoji">${catEmoji(r.category)}</div>`}
     <div class="rarity-row rarity-${r.rarity}">
       <span class="rarity-stars">${stars(r.rarity)}</span>
@@ -169,6 +210,20 @@ function showResult() {
 
   $('btnRegister').addEventListener('click', registerPending);
   $('btnCorrect').addEventListener('click', openCorrect);
+  const photoEl = $('resultPhoto');
+  if (photoEl) photoEl.addEventListener('click', onPhotoTapBlur);
+}
+
+// 写真タップで、その位置にナンバー大のぼかしを手動追加（自動が外したとき用の保険）
+async function onPhotoTapBlur(e) {
+  const img = e.currentTarget;
+  const rect = img.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) / rect.width;
+  const cy = (e.clientY - rect.top) / rect.height;
+  const w = 0.18, h = 0.08; // ナンバープレートらしい横長
+  pending.plates.push({ x: Math.max(0, cx - w / 2), y: Math.max(0, cy - h / 2), w, h });
+  pending.photo = await applyPlateBlur(pending.photoOriginal, pending.plates);
+  img.src = pending.photo;
 }
 
 function showNotVehicle(message) {
