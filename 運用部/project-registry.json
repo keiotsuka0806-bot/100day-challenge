@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-24",
+  "updatedAt": "2026-06-26T09:50:01.131Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -231,6 +231,16 @@
       "lastCouncil": "2026-06-23",
       "lastDeploy": "2026-06-24",
       "councilReport": "デザイン部/reports/2026-06-23-dandori-genius-council.md"
+    },
+    "ride-dex": {
+      "path": "開発部/ride-dex",
+      "url": "http://localhost:8772/",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ後改善中",
+      "lastCouncil": "2026-06-26",
+      "lastDeploy": "2026-06-26",
+      "councilReport": "デザイン部/reports/2026-06-26-ride-dex-genius-council.md"
     }
   }
 }

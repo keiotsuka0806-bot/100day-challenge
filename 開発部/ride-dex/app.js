@@ -78,30 +78,39 @@ let demoMode = false;
 async function identify(dataUrl) {
   showScan(true);
   let result;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20_000); // 20秒で打ち切り（鑑定中で固まらない）
   try {
     const res = await fetch('/api/identify-vehicle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: dataUrl }),
+      signal: ctrl.signal,
     });
     if (res.status === 503) {
+      // 鍵未設定のデモ配信時のみモック（鍵あり本番では発生しない）
       demoMode = true;
       result = mockIdentify();
     } else if (res.status === 429) {
-      showScan(false);
+      showScan(false); clearTimeout(timer);
       alert('少し混み合っています。数秒おいて、もう一度どうぞ。');
       return;
     } else if (!res.ok) {
-      showScan(false);
+      showScan(false); clearTimeout(timer);
       alert('鑑定に失敗しました。電波の良い場所でもう一度お試しください。');
       return;
     } else {
       result = await res.json();
     }
-  } catch {
-    demoMode = true;
-    result = mockIdentify();
+  } catch (err) {
+    // 通信エラー/タイムアウトは「偽の結果」を出さず正直にエラー表示（嘘をつかない）
+    showScan(false); clearTimeout(timer);
+    alert(err.name === 'AbortError'
+      ? '鑑定に時間がかかりすぎました。電波の良い場所でもう一度お試しください。'
+      : '鑑定できませんでした。通信状況を確認して、もう一度お試しください。');
+    return;
   }
+  clearTimeout(timer);
   showScan(false);
   updateModeNote();
 
