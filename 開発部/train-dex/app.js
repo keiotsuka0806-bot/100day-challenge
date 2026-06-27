@@ -435,15 +435,45 @@ const MASTER_SHINKANSEN = [
   { no: 16, series: 'E926形 East i', operator: 'JR東日本', nickname: '検測車', debut: '2001', rarity: 5, matchKeys: ['e926形', 'easti', 'イーストアイ'] },
 ];
 
+// 在来線・私鉄図鑑：全国の有名・人気形式のセレクション（全網羅は不可能なので"有限で締まる"厳選）。
+const MASTER_LOCAL = [
+  { no: 1, series: 'E235系', operator: 'JR東日本', nickname: '山手線／横須賀・総武', debut: '2015', rarity: 1, matchKeys: ['e235系'] },
+  { no: 2, series: 'E233系', operator: 'JR東日本', nickname: '中央線／京浜東北 ほか', debut: '2006', rarity: 1, matchKeys: ['e233系'] },
+  { no: 3, series: '227系', operator: 'JR西日本', nickname: '広島 Red Wing ほか', debut: '2015', rarity: 3, matchKeys: ['227系'] },
+  { no: 4, series: 'E353系', operator: 'JR東日本', nickname: 'あずさ／かいじ', debut: '2017', rarity: 2, matchKeys: ['e353系'] },
+  { no: 5, series: 'E257系', operator: 'JR東日本', nickname: '踊り子 ほか', debut: '2001', rarity: 3, matchKeys: ['e257系'] },
+  { no: 6, series: 'E261系 サフィール踊り子', operator: 'JR東日本', nickname: '観光特急', debut: '2020', rarity: 4, matchKeys: ['e261系', 'サフィール'] },
+  { no: 7, series: '273系', operator: 'JR西日本', nickname: 'やくも', debut: '2024', rarity: 4, matchKeys: ['273系', 'やくも'] },
+  { no: 8, series: '281系', operator: 'JR西日本', nickname: 'はるか（関空特急）', debut: '1994', rarity: 3, matchKeys: ['281系', 'はるか'] },
+  { no: 9, series: '683系・681系', operator: 'JR西日本', nickname: 'サンダーバード', debut: '1995', rarity: 3, matchKeys: ['683系', '681系', 'サンダーバード'] },
+  { no: 10, series: '787系', operator: 'JR九州', nickname: '特急（九州）', debut: '1992', rarity: 3, matchKeys: ['787系'] },
+  { no: 11, series: 'HC85系', operator: 'JR東海', nickname: 'ひだ／南紀', debut: '2022', rarity: 3, matchKeys: ['hc85'] },
+  { no: 12, series: '小田急70000形 GSE', operator: '小田急', nickname: 'ロマンスカー', debut: '2018', rarity: 3, matchKeys: ['70000形', 'gse'] },
+  { no: 13, series: '近鉄80000系 ひのとり', operator: '近鉄', nickname: '名阪特急', debut: '2020', rarity: 3, matchKeys: ['80000系', 'ひのとり'] },
+  { no: 14, series: '近鉄50000系 しまかぜ', operator: '近鉄', nickname: '観光特急', debut: '2013', rarity: 4, matchKeys: ['50000系', 'しまかぜ'] },
+  { no: 15, series: '西武001系 Laview', operator: '西武', nickname: '特急ラビュー', debut: '2019', rarity: 3, matchKeys: ['001系', 'laview', 'ラビュー'] },
+  { no: 16, series: '京成AE形 スカイライナー', operator: '京成', nickname: '空港アクセス特急', debut: '2010', rarity: 3, matchKeys: ['ae形', 'スカイライナー'] },
+  { no: 17, series: '名鉄2000系 ミュースカイ', operator: '名鉄', nickname: '空港特急', debut: '2005', rarity: 4, matchKeys: ['2000系', 'ミュースカイ'] },
+  { no: 18, series: '東武500系 リバティ', operator: '東武', nickname: '特急リバティ', debut: '2017', rarity: 3, matchKeys: ['リバティ', '東武500'] },
+  { no: 19, series: '東武N100系 スペーシアX', operator: '東武', nickname: '新型スペーシア', debut: '2023', rarity: 4, matchKeys: ['n100系', 'スペーシアx'] },
+  { no: 20, series: '京急2100形', operator: '京急', nickname: '快特', debut: '1998', rarity: 3, matchKeys: ['2100形', '2100系'] },
+  { no: 21, series: '阪急電車（マルーン）', operator: '阪急', nickname: '伝統のマルーン塗装', debut: '—', rarity: 2, matchKeys: ['阪急'] },
+  { no: 22, series: '江ノ電', operator: '江ノ島電鉄', nickname: '海沿いの路面区間', debut: '—', rarity: 3, matchKeys: ['江ノ電', '江ノ島'] },
+  { no: 23, series: 'SL（蒸気機関車）', operator: 'JR各社', nickname: 'やまぐち号／D51 ほか', debut: '—', rarity: 5, matchKeys: ['sl', 'd51', 'c57', '蒸気'] },
+  { no: 24, series: 'ななつ星 in 九州', operator: 'JR九州', nickname: '豪華寝台', debut: '2013', rarity: 5, matchKeys: ['ななつ星', 'ななつぼし'] },
+];
+
 // 自分の記録（手入力）をマスターに照合。各記録は「最も具体的に一致した形式」に割り当てる（部分一致の取り違え防止）。
-function caughtMap(masters) {
+// category を渡すと、その種別の記録だけを対象にする（新幹線500系と私鉄500系リバティの取り違えを防ぐ）。
+function caughtMap(masters, category) {
   const map = {};
-  for (const k of Object.keys(dex)) {
+  for (const [k, entry] of Object.entries(dex)) {
+    if (category && entry.category !== category) continue;
     const series = k.split('|')[1] || '';
     let best = null;
     for (const m of masters) {
       for (const mk of m.matchKeys) {
-        if (series.includes(mk) && (!best || mk.length > best.len)) best = { no: m.no, len: mk.length, entry: dex[k] };
+        if (series.includes(mk) && (!best || mk.length > best.len)) best = { no: m.no, len: mk.length, entry };
       }
     }
     if (best && !map[best.no]) map[best.no] = best.entry;
@@ -451,14 +481,13 @@ function caughtMap(masters) {
   return map;
 }
 
-function renderMasterDex() {
-  const masters = MASTER_SHINKANSEN;
-  const caught = caughtMap(masters);
+function renderMasterDex(masters, category, headTitle) {
+  const caught = caughtMap(masters, category);
   const got = Object.keys(caught).length;
   const total = masters.length;
   $('masterHead').classList.remove('hidden');
   $('masterHead').innerHTML = `
-    <div class="master-title">🚄 新幹線図鑑　<b>${got} / ${total}</b> 形式</div>
+    <div class="master-title">${headTitle}　<b>${got} / ${total}</b> 形式</div>
     <div class="master-bar"><div class="master-bar-fill" style="width:${Math.round(got / total * 100)}%"></div></div>
     <p class="master-sub">未取得は「？？？」。レア度を頼りに、まだ見ぬ形式を探しに行こう。</p>`;
   $('dexEmpty').classList.add('hidden');
@@ -501,7 +530,8 @@ $('dexFilters').addEventListener('click', (e) => {
 function renderDex() {
   updateChips();
   renderAchievements();
-  if (dexFilter === 'master-sk') { renderMasterDex(); return; }
+  if (dexFilter === 'master-sk') { renderMasterDex(MASTER_SHINKANSEN, 'shinkansen', '🚄 新幹線図鑑'); return; }
+  if (dexFilter === 'master-local') { renderMasterDex(MASTER_LOCAL, 'local', '📗 在来線・私鉄図鑑'); return; }
   $('masterHead').classList.add('hidden');
   const entries = Object.entries(dex)
     .filter(([, e]) => dexFilter === 'all' || e.category === dexFilter)
