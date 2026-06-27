@@ -20,8 +20,12 @@ function saveDex(dex) {
 }
 let dex = loadDex();
 
-const speciesKey = (maker, model) =>
-  `${maker}|${model}`.toLowerCase().replace(/\s+/g, '');
+// 表記ゆれを吸収して同じ車を別物にしない（全角→半角・記号/中黒/長音/括弧を除去）
+const norm = (s) => (s || '')
+  .normalize('NFKC')
+  .toLowerCase()
+  .replace(/[\s・･\-‐－—ー_/／()（）「」]/g, '');
+const speciesKey = (maker, model) => `${norm(maker)}|${norm(model)}`;
 
 const catEmoji = (c) => (c === 'bike' ? '🏍️' : '🚗');
 const stars = (r) => '★'.repeat(r) + '☆'.repeat(5 - r);

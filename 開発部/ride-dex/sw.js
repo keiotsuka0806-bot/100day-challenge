@@ -1,4 +1,4 @@
-const CACHE = 'ridedex-v6';
+const CACHE = 'ridedex-v7';
 const ASSETS = ['/', '/index.html', '/app.js', '/styles.css', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', (e) => {

@@ -20,8 +20,12 @@ function saveDex(dex) {
 }
 let dex = loadDex();
 
-const speciesKey = (operator, series) =>
-  `${operator}|${series}`.toLowerCase().replace(/\s+/g, '');
+// 表記ゆれを吸収して同じ車両を別物にしない（全角→半角・記号/中黒/長音/括弧を除去）
+const norm = (s) => (s || '')
+  .normalize('NFKC')
+  .toLowerCase()
+  .replace(/[\s・･\-‐－—ー_/／()（）「」]/g, '');
+const speciesKey = (operator, series) => `${norm(operator)}|${norm(series)}`;
 
 const catEmoji = (c) => (c === 'shinkansen' ? '🚄' : c === 'tram' ? '🚋' : '🚃');
 const catLabel = (c) => (c === 'shinkansen' ? '新幹線' : c === 'tram' ? '路面電車' : '在来線・私鉄');
