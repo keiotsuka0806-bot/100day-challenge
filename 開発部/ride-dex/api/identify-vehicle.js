@@ -26,7 +26,7 @@ const SYSTEM_PROMPT = `あなたは車（四輪）とオートバイ（二輪）
 - plates は画像内のナンバープレート（前・後・二輪の1枚など）の位置。各プレートを {x,y,w,h} で表す。x,yは左上角、w,hは幅・高さで、すべて画像全体に対する0〜1の割合。プレートが見えなければ空配列 []。位置は多少大きめ（余白を含む）に囲ってよい。
 出力は必ず次のJSONのみ:
 {"isVehicle":true,"category":"car|bike","maker":"メーカー","model":"車種名","generation":"世代/型式","yearRange":"年式レンジ","bodyType":"ボディタイプ","confidence":0,"rarity":1,"trivia":"豆知識","candidates":["メーカー 車種"],"plates":[{"x":0,"y":0,"w":0,"h":0}]}
-画像に車・バイクが写っていない、または主役でない場合は {"isVehicle":false,"message":"短い案内"} を返す。`;
+画像に車・バイクが写っていない、または主役でない場合は isVehicle を false にし、message に「なぜ鑑定できないか＋どう撮ればよいか」を利用者向けの一文で書く（例文をそのまま返さず、その画像に合わせて書くこと）。`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -88,10 +88,11 @@ export default async function handler(req, res) {
     }
 
     if (parsed.isVehicle === false) {
-      return res.status(200).json({
-        isVehicle: false,
-        message: String(parsed.message || 'これは車・バイクではないみたいです。').slice(0, 60),
-      });
+      const msg = String(parsed.message || '').trim();
+      const friendly = (!msg || msg.length < 6 || msg === '短い案内')
+        ? 'これは車・バイクではないようです。車体が大きく写るように撮ってみてください。'
+        : msg;
+      return res.status(200).json({ isVehicle: false, message: friendly.slice(0, 80) });
     }
 
     const clampInt = (v, min, max, fallback) => {

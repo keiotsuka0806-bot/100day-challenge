@@ -30,7 +30,7 @@ const SYSTEM_PROMPT = `あなたは日本の鉄道車両の鑑定士です。画
 - faces は画像内に写り込んだ人物の顔の位置。各顔を {x,y,w,h} で表す。x,yは左上角、w,hは幅・高さで、すべて画像全体に対する0〜1の割合。人物が写っていなければ空配列 []。位置は多少大きめ（余白を含む）に囲ってよい。
 出力は必ず次のJSONのみ:
 {"isTrain":true,"category":"tram|local|shinkansen","operator":"事業者","series":"形式/系列","kind":"種別","debut":"登場年","confidence":0,"rarity":1,"trivia":"豆知識","candidates":["事業者 形式"],"faces":[{"x":0,"y":0,"w":0,"h":0}]}
-画像に鉄道車両が写っていない、または主役でない場合は {"isTrain":false,"message":"短い案内"} を返す。`;
+画像に鉄道車両が写っていない、または主役でない場合は isTrain を false にし、message に「なぜ鑑定できないか＋どう撮ればよいか」を利用者向けの一文で書く（例文をそのまま返さず、その画像に合わせて書くこと）。`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -92,10 +92,11 @@ export default async function handler(req, res) {
     }
 
     if (parsed.isTrain === false) {
-      return res.status(200).json({
-        isTrain: false,
-        message: String(parsed.message || 'これは鉄道車両ではないみたいです。').slice(0, 60),
-      });
+      const msg = String(parsed.message || '').trim();
+      const friendly = (!msg || msg.length < 6 || msg === '短い案内')
+        ? 'これは鉄道車両ではないようです。車両が大きく写るように撮ってみてください。'
+        : msg;
+      return res.status(200).json({ isTrain: false, message: friendly.slice(0, 80) });
     }
 
     const clampInt = (v, min, max, fallback) => {
