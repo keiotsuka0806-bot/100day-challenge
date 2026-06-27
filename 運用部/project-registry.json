@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-27T13:29:10.530Z",
+  "updatedAt": "2026-06-27T16:03:16.917Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -244,7 +244,7 @@
     },
     "train-dex": {
       "path": "開発部/train-dex",
-      "url": "http://localhost:8781/",
+      "url": "http://localhost:8791/",
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
