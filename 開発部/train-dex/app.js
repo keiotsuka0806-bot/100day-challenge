@@ -16,7 +16,7 @@ function loadDex() {
 }
 function saveDex(dex) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(dex)); return true; }
-  catch { return false; } // 容量超過（写真の溜めすぎ）など
+  catch { return false; }
 }
 let dex = loadDex();
 
@@ -30,9 +30,9 @@ const speciesKey = (operator, series) => `${norm(operator)}|${norm(series)}`;
 const catEmoji = (c) => (c === 'shinkansen' ? '🚄' : c === 'tram' ? '🚋' : '🚃');
 const catLabel = (c) => (c === 'shinkansen' ? '新幹線' : c === 'tram' ? '路面電車' : '在来線・私鉄');
 const stars = (r) => '★'.repeat(r) + '☆'.repeat(5 - r);
-const rarityLabel = (r) => ['', 'ありふれ', 'ふつう', '数が減少', 'レア', '激レア'][r] || '';
+const debutText = (d) => (d ? (/^\d{4}$/.test(d) ? `${d}年デビュー` : d) : '');
 
-let pending = null; // 鑑定中／確認待ちの1両
+let draft = null; // 記録中の1両（撮影写真＋手入力＋任意AI候補）
 
 /* ---------- 画面遷移 ---------- */
 function switchView(name) {
@@ -45,15 +45,15 @@ function switchView(name) {
 document.querySelectorAll('.tab').forEach((t) =>
   t.addEventListener('click', () => switchView(t.dataset.view)));
 
-/* ---------- 撮影 → リサイズ ---------- */
+/* ---------- 撮影 → リサイズ → 記録フォーム ---------- */
 $('fileInput').addEventListener('change', async (e) => {
   const file = e.target.files && e.target.files[0];
   e.target.value = '';
   if (!file) return;
   try {
     const dataUrl = await resizeImage(file);
-    await identify(dataUrl);
-  } catch (err) {
+    openRecordForm(dataUrl);
+  } catch {
     alert('画像を読み込めませんでした。');
   }
 });
@@ -78,60 +78,7 @@ function resizeImage(file, max = 1024, quality = 0.8) {
   });
 }
 
-/* ---------- AI鑑定（鍵なし時はモック） ---------- */
-let demoMode = false;
-async function identify(dataUrl) {
-  showScan(true);
-  let result;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 20_000); // 20秒で打ち切り（鑑定中で固まらない）
-  try {
-    const res = await fetch('/api/identify-train', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: dataUrl }),
-      signal: ctrl.signal,
-    });
-    if (res.status === 503) {
-      // 鍵未設定のデモ配信時のみモック（鍵あり本番では発生しない）
-      demoMode = true;
-      result = mockIdentify();
-    } else if (res.status === 429) {
-      showScan(false); clearTimeout(timer);
-      alert('少し混み合っています。数秒おいて、もう一度どうぞ。');
-      return;
-    } else if (!res.ok) {
-      showScan(false); clearTimeout(timer);
-      alert('鑑定に失敗しました。電波の良い場所でもう一度お試しください。');
-      return;
-    } else {
-      result = await res.json();
-    }
-  } catch (err) {
-    // 通信エラー/タイムアウトは「偽の結果」を出さず正直にエラー表示（嘘をつかない）
-    showScan(false); clearTimeout(timer);
-    alert(err.name === 'AbortError'
-      ? '鑑定に時間がかかりすぎました。電波の良い場所でもう一度お試しください。'
-      : '鑑定できませんでした。通信状況を確認して、もう一度お試しください。');
-    return;
-  }
-  clearTimeout(timer);
-  showScan(false);
-  updateModeNote();
-
-  if (result.isTrain === false) {
-    pending = null;
-    showNotTrain(result.message);
-    return;
-  }
-  pending = result;
-  pending.photoOriginal = dataUrl;        // ぼかしの再計算用（端末内・サーバーには残らない）
-  pending.faces = result.faces || [];     // 写り込んだ人の顔の領域（0〜1相対）
-  pending.photo = await applyFaceBlur(dataUrl, pending.faces); // 表示・保存はぼかし済みのみ
-  showResult();
-}
-
-// 写り込んだ顔の領域をモザイク化した画像（dataURL）を返す
+/* ---------- 顔ぼかし（写り込んだ人の顔） ---------- */
 function applyFaceBlur(dataUrl, faces) {
   return new Promise((resolve) => {
     if (!faces || faces.length === 0) { resolve(dataUrl); return; }
@@ -142,13 +89,13 @@ function applyFaceBlur(dataUrl, faces) {
       c.width = W; c.height = H;
       const ctx = c.getContext('2d');
       ctx.drawImage(img, 0, 0);
-      const M = 0.03; // 安全マージン（AI座標のズレを吸収するため広めに隠す）
+      const M = 0.03;
       faces.forEach((p) => {
         const x = Math.max(0, (p.x - M)) * W;
         const y = Math.max(0, (p.y - M)) * H;
         const w = Math.min(1, p.w + M * 2) * W;
         const h = Math.min(1, p.h + M * 2) * H;
-        pixelate(ctx, x, y, Math.min(w, W - x), Math.min(h, H - y), 5); // 顔は粗めに潰す
+        pixelate(ctx, x, y, Math.min(w, W - x), Math.min(h, H - y), 5);
       });
       resolve(c.toDataURL('image/jpeg', 0.85));
     };
@@ -156,7 +103,6 @@ function applyFaceBlur(dataUrl, faces) {
     img.src = dataUrl;
   });
 }
-
 function pixelate(ctx, x, y, w, h, blocks = 7) {
   if (w <= 1 || h <= 1) return;
   const sw = Math.max(1, Math.round(w / Math.max(4, w / blocks)));
@@ -168,10 +114,6 @@ function pixelate(ctx, x, y, w, h, blocks = 7) {
   ctx.drawImage(tmp, 0, 0, sw, sh, x, y, w, h);
   ctx.imageSmoothingEnabled = true;
 }
-
-function showScan(on) { $('scanOverlay').classList.toggle('hidden', !on); }
-
-// 図鑑保存用のサムネ（容量を抑えるため小さく）
 function makeThumb(dataUrl, max = 240, quality = 0.6) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -187,46 +129,53 @@ function makeThumb(dataUrl, max = 240, quality = 0.6) {
     img.src = dataUrl;
   });
 }
+function showScan(on) { $('scanOverlay').classList.toggle('hidden', !on); }
 
-const debutText = (d) => (d ? (/^\d{4}$/.test(d) ? `${d}年デビュー` : d) : '');
+/* ---------- 記録フォーム（手入力が主役） ---------- */
+async function openRecordForm(dataUrl) {
+  draft = { photo: dataUrl, photoOriginal: dataUrl, faces: [], category: 'local', rarity: 2, trivia: '', aiUsed: false };
+  renderRecordForm();
+}
 
-/* ---------- 結果表示 ---------- */
-function showResult() {
-  const r = pending;
-  const key = speciesKey(r.operator, r.series);
-  const isNew = !dex[key];
-  const sub = [r.kind, debutText(r.debut)].filter(Boolean).join('｜');
-  const name = [r.operator, r.series].filter(Boolean).join(' ');
-
+function renderRecordForm() {
+  const d = draft;
   $('resultCard').innerHTML = `
-    ${isNew ? '<div class="new-badge">✨ 初発見！</div>' : '<div class="seen-badge">図鑑にあり</div>'}
-    ${r.photo
-      ? `<div class="result-photo"><img id="resultPhoto" src="${r.photo}" alt="撮った写真" /><span class="result-cat">${catEmoji(r.category)}</span></div>
-         <p class="plate-hint">⚠️ 顔の自動ぼかしは外れることがあります。隠れていない顔は写真を<b>指でなぞって</b>隠してください。</p>`
-      : `<div class="result-emoji">${catEmoji(r.category)}</div>`}
-    <div class="rarity-row rarity-${r.rarity}">
-      <span class="rarity-stars">${stars(r.rarity)}</span>
-      <span class="rarity-label">${rarityLabel(r.rarity)}</span>
+    ${d.photo
+      ? `<div class="result-photo"><img id="resultPhoto" src="${d.photo}" alt="撮った写真" /></div>
+         <p class="plate-hint">⚠️ 写り込んだ人の顔は、隠したい所を写真で<b>指でなぞって</b>隠してください。</p>`
+      : ''}
+    <h2 class="form-title">自分で記録する</h2>
+    <div class="cat-select" id="catSelect">
+      <button type="button" class="cat-btn" data-cat="shinkansen">🚄 新幹線</button>
+      <button type="button" class="cat-btn" data-cat="local">🚃 在来線・私鉄</button>
+      <button type="button" class="cat-btn" data-cat="tram">🚋 路面電車</button>
     </div>
-    <h2 class="result-name">${escapeHtml(name)}</h2>
-    ${sub ? `<p class="result-gen">${escapeHtml(sub)}</p>` : ''}
-    <p class="result-meta">
-      <span>${escapeHtml(catLabel(r.category))}</span>
-      <span class="conf ${r.confidence < 60 ? 'low' : ''}">確度 ${r.confidence}%${r.confidence < 60 ? '・自信なし' : ''}</span>
-      ${r.corrected ? '<span class="corrected">訂正済み</span>' : ''}
-    </p>
-    ${r.corrected ? '' : '<p class="ai-note">🤖 これはAIの推定で、形式（N700とN700Sなど）を外すこともあります。違っていたら下の「ちがう？直す」で直してください（あなたの訂正が正解になります）。</p>'}
-    ${r.trivia ? `<p class="result-trivia">💡 ${escapeHtml(r.trivia)}</p>` : ''}
-    ${r.photo ? `<label class="keep-photo"><input type="checkbox" id="keepPhoto" checked /> この写真を図鑑にも残す</label>` : ''}
+    <label class="field">事業者<input id="fOperator" placeholder="例: JR東日本 / 京急 / 広島電鉄" /></label>
+    <label class="field">形式・系列<input id="fSeries" placeholder="例: E5系 / 京急2100形 / N700S" /></label>
+    <label class="field">種別<input id="fKind" placeholder="例: 新幹線 / 特急 / 通勤型 / 路面電車" /></label>
+    <label class="field">登場年<input id="fDebut" placeholder="例: 2011 / 2007– / 国鉄時代" /></label>
+    <div class="rarity-select">レア度<span id="rarityStars" class="rarity-stars-pick"></span></div>
+    <button type="button" class="btn-ai" id="btnAiHint">🤖 わからない時：AIに推測してもらう（任意）</button>
+    <p class="ai-hint-note hidden" id="aiHintNote"></p>
+    <label class="keep-photo"><input type="checkbox" id="keepPhoto" checked /> この写真を図鑑にも残す</label>
     <div class="result-actions">
       <button class="btn-primary" id="btnRegister">📖 図鑑に登録</button>
-      <button class="btn-ghost emph" id="btnCorrect">✏️ ちがう？直す</button>
+      <button class="btn-ghost" id="btnCancelRec">やめる</button>
     </div>`;
   $('resultModal').classList.remove('hidden');
-  if (r.rarity >= 4) triggerReveal(r.rarity);
 
-  $('btnRegister').addEventListener('click', registerPending);
-  $('btnCorrect').addEventListener('click', openCorrect);
+  renderCatButtons();
+  renderRarityPick();
+
+  $('catSelect').addEventListener('click', (e) => {
+    const b = e.target.closest('.cat-btn');
+    if (!b) return;
+    draft.category = b.dataset.cat;
+    renderCatButtons();
+  });
+  $('btnAiHint').addEventListener('click', askAiHint);
+  $('btnRegister').addEventListener('click', registerFromForm);
+  $('btnCancelRec').addEventListener('click', () => { draft = null; $('resultModal').classList.add('hidden'); });
   const photoEl = $('resultPhoto');
   if (photoEl) {
     photoEl.addEventListener('pointerdown', onPhotoPointerDown);
@@ -234,8 +183,19 @@ function showResult() {
   }
 }
 
-// 写真を「なぞって」隠す（自動ぼかしは当てにせず、手動を主役に）。
-// ドラッグ＝なぞった範囲、ほぼ動かさなければタップ＝顔大の固定サイズで隠す。
+function renderCatButtons() {
+  document.querySelectorAll('#catSelect .cat-btn').forEach((b) =>
+    b.classList.toggle('active', b.dataset.cat === draft.category));
+}
+function renderRarityPick() {
+  const el = $('rarityStars');
+  el.innerHTML = [1, 2, 3, 4, 5].map((i) =>
+    `<span class="star ${i <= draft.rarity ? 'on' : ''}" data-r="${i}">★</span>`).join('');
+  el.querySelectorAll('.star').forEach((s) =>
+    s.addEventListener('click', () => { draft.rarity = +s.dataset.r; renderRarityPick(); }));
+}
+
+// 写真を「なぞって」隠す（手動）
 let blurStart = null;
 function onPhotoPointerDown(e) {
   const r = e.currentTarget.getBoundingClientRect();
@@ -249,107 +209,110 @@ async function onPhotoPointerUp(e) {
   let x = Math.min(blurStart.x, ex), y = Math.min(blurStart.y, ey);
   let w = Math.abs(ex - blurStart.x), h = Math.abs(ey - blurStart.y);
   blurStart = null;
-  if (w < 0.04 || h < 0.04) { // ほぼタップ＝顔大の固定サイズ
+  if (w < 0.04 || h < 0.04) {
     const fw = 0.12, fh = 0.14;
     x = Math.max(0, ex - fw / 2); y = Math.max(0, ey - fh / 2); w = fw; h = fh;
   }
-  pending.faces.push({ x: Math.max(0, x), y: Math.max(0, y), w, h });
-  pending.photo = await applyFaceBlur(pending.photoOriginal, pending.faces);
-  img.src = pending.photo;
+  draft.faces.push({ x: Math.max(0, x), y: Math.max(0, y), w, h });
+  draft.photo = await applyFaceBlur(draft.photoOriginal, draft.faces);
+  img.src = draft.photo;
 }
 
-function showNotTrain(message) {
-  $('resultCard').innerHTML = `
-    <div class="result-emoji">🤔</div>
-    <h2 class="result-name">見つからなかった</h2>
-    <p class="result-trivia">${escapeHtml(message || 'これは鉄道車両ではないみたいです。')}</p>
-    <div class="result-actions">
-      <button class="btn-primary" id="btnClose">もう一度さがす</button>
-    </div>`;
-  $('resultModal').classList.remove('hidden');
-  $('btnClose').addEventListener('click', () => $('resultModal').classList.add('hidden'));
+/* ---------- AI任意ヒント（押した人だけ／断定しない） ---------- */
+let demoMode = false;
+async function askAiHint() {
+  showScan(true);
+  let r;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20_000);
+  try {
+    const res = await fetch('/api/identify-train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: draft.photoOriginal }),
+      signal: ctrl.signal,
+    });
+    if (res.status === 503) { demoMode = true; r = mockIdentify(); }
+    else if (res.status === 429) { showScan(false); clearTimeout(timer); alert('少し混み合っています。数秒おいて、もう一度どうぞ。'); return; }
+    else if (!res.ok) { showScan(false); clearTimeout(timer); alert('AIの推測に失敗しました。手入力で記録できます。'); return; }
+    else r = await res.json();
+  } catch {
+    showScan(false); clearTimeout(timer);
+    alert('AIの推測に失敗しました。手入力で記録できます。');
+    return;
+  }
+  clearTimeout(timer);
+  showScan(false);
+
+  if (r.isTrain === false) {
+    showHint('🤖 AIは鉄道車両を見つけられませんでした。手入力で記録してください。');
+    return;
+  }
+  // 候補としてフォームに反映（断定しない・ユーザーが確認/修正）
+  if (r.operator) $('fOperator').value = r.operator;
+  if (r.series) $('fSeries').value = r.series;
+  if (r.kind) $('fKind').value = r.kind;
+  if (r.debut) $('fDebut').value = r.debut;
+  if (r.category) { draft.category = r.category; renderCatButtons(); }
+  if (r.rarity) { draft.rarity = r.rarity; renderRarityPick(); }
+  draft.trivia = r.trivia || '';
+  if (Array.isArray(r.faces) && r.faces.length) {
+    draft.faces = draft.faces.concat(r.faces);
+    draft.photo = await applyFaceBlur(draft.photoOriginal, draft.faces);
+    const img = $('resultPhoto'); if (img) img.src = draft.photo;
+  }
+  updateModeNote();
+  showHint(`🤖 AIの推測を入れました（確度${r.confidence ?? '?'}%・<b>外していることがあります</b>）。形式（N700とN700Sなど）は特に間違いやすいので、必ず確認して直してください。`);
+}
+function showHint(html) {
+  const note = $('aiHintNote');
+  note.innerHTML = html;
+  note.classList.remove('hidden');
 }
 
-async function registerPending() {
-  const r = pending;
-  const key = speciesKey(r.operator, r.series);
+/* ---------- 登録 ---------- */
+async function registerFromForm() {
+  const operator = $('fOperator').value.trim().slice(0, 24);
+  const series = $('fSeries').value.trim().slice(0, 40);
+  if (!series) { alert('形式・系列を入力してください（わからない時は「AIに推測」も使えます）。'); return; }
+  const r = {
+    operator, series,
+    kind: $('fKind').value.trim().slice(0, 24),
+    debut: $('fDebut').value.trim().slice(0, 24),
+    category: draft.category, rarity: draft.rarity, trivia: draft.trivia,
+  };
+  const key = speciesKey(operator, series);
+  const isNew = !dex[key];
   const now = Date.now();
   const keepPhoto = $('keepPhoto') ? $('keepPhoto').checked : false;
-  const thumb = keepPhoto && r.photo ? await makeThumb(r.photo) : null;
+  const thumb = keepPhoto && draft.photo ? await makeThumb(draft.photo) : null;
 
   if (dex[key]) {
     const e = dex[key];
-    e.count += 1;
-    e.lastSeen = now;
+    e.count += 1; e.lastSeen = now;
     if (!e.kind && r.kind) e.kind = r.kind;
     if (!e.debut && r.debut) e.debut = r.debut;
-    if (thumb) e.photo = thumb; // 撮り直しでより良い写真に差し替え可
+    if (thumb) e.photo = thumb;
   } else {
     dex[key] = {
-      operator: r.operator, series: r.series, category: r.category,
-      kind: r.kind, debut: r.debut,
+      operator, series, category: r.category, kind: r.kind, debut: r.debut,
       rarity: r.rarity, trivia: r.trivia, count: 1, firstSeen: now, lastSeen: now,
       photo: thumb || null,
     };
   }
-
   if (!saveDex(dex)) {
-    // 容量あふれ: まず今回の写真、ダメなら全写真を落として図鑑データ自体は必ず守る
     if (dex[key].photo) dex[key].photo = null;
-    if (!saveDex(dex)) {
-      Object.values(dex).forEach((e) => { e.photo = null; });
-    }
+    if (!saveDex(dex)) Object.values(dex).forEach((e) => { e.photo = null; });
     const saved = saveDex(dex);
     alert(saved
       ? '写真の保存容量がいっぱいです。写真は記録できませんでしたが、図鑑データは保存しました。'
       : '保存容量がいっぱいで記録できませんでした。図鑑の不要な形式を減らしてからお試しください。');
   }
-  pending = null;
+  draft = null;
   $('resultModal').classList.add('hidden');
   updateChips();
   switchView('dex');
-}
-
-/* ---------- 訂正 ---------- */
-function openCorrect() {
-  const r = pending;
-  const cands = (r.candidates || []).map((c, i) =>
-    `<button class="cand-btn" data-i="${i}">${escapeHtml(c)}</button>`).join('');
-  $('correctCard').innerHTML = `
-    <h2 class="correct-title">✏️ 正しい車両に直す</h2>
-    ${cands ? `<p class="correct-sub">近い候補から選ぶ</p><div class="cand-list">${cands}</div>` : ''}
-    <p class="correct-sub">または自分で入力（詳しい人向け）</p>
-    <label class="field">事業者<input id="fOperator" value="${escapeHtml(r.operator || '')}" placeholder="例: JR東日本 / 京急 / 広島電鉄" /></label>
-    <label class="field">形式・系列<input id="fSeries" value="${escapeHtml(r.series || '')}" placeholder="例: E5系 / 京急2100形" /></label>
-    <label class="field">種別<input id="fKind" value="${escapeHtml(r.kind || '')}" placeholder="例: 新幹線 / 特急 / 通勤型 / 路面電車" /></label>
-    <label class="field">登場年<input id="fDebut" value="${escapeHtml(r.debut || '')}" placeholder="例: 2011 / 2007– / 国鉄時代" /></label>
-    <div class="result-actions">
-      <button class="btn-primary" id="btnSaveCorrect">この内容で確定</button>
-      <button class="btn-ghost" id="btnCancelCorrect">やめる</button>
-    </div>`;
-  $('correctModal').classList.remove('hidden');
-
-  $('correctCard').querySelectorAll('.cand-btn').forEach((b) =>
-    b.addEventListener('click', () => {
-      const c = r.candidates[+b.dataset.i];
-      const sp = c.indexOf(' ');
-      $('fOperator').value = sp > 0 ? c.slice(0, sp) : '';
-      $('fSeries').value = sp > 0 ? c.slice(sp + 1) : c;
-    }));
-  $('btnCancelCorrect').addEventListener('click', () =>
-    $('correctModal').classList.add('hidden'));
-  $('btnSaveCorrect').addEventListener('click', () => {
-    const operator = $('fOperator').value.trim().slice(0, 24);
-    const series = $('fSeries').value.trim().slice(0, 40) || '不明';
-    pending = {
-      ...r, operator, series,
-      kind: $('fKind').value.trim().slice(0, 24),
-      debut: $('fDebut').value.trim().slice(0, 24),
-      confidence: 100, corrected: true,
-    };
-    $('correctModal').classList.add('hidden');
-    showResult();
-  });
+  if (isNew) triggerReveal(r.rarity);
 }
 
 /* ---------- レア演出 ---------- */
@@ -360,10 +323,7 @@ function triggerReveal(rarity) {
   let burst = '';
   for (let i = 0; i < (rarity >= 5 ? 24 : 14); i++) {
     const e = emojis[i % emojis.length];
-    const left = Math.random() * 100;
-    const delay = Math.random() * 0.5;
-    const dur = 1.2 + Math.random() * 0.8;
-    burst += `<span style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s">${e}</span>`;
+    burst += `<span style="left:${Math.random() * 100}%;animation-delay:${Math.random() * 0.5}s;animation-duration:${1.2 + Math.random() * 0.8}s">${e}</span>`;
   }
   el.innerHTML = `<div class="reveal-flash"></div><div class="sparkles">${burst}</div>`;
   el.classList.remove('hidden');
@@ -391,7 +351,7 @@ function renderDex() {
   const grid = $('dexGrid');
   $('dexEmpty').classList.toggle('hidden', Object.keys(dex).length > 0);
 
-  grid.innerHTML = entries.map(([key, e]) => {
+  grid.innerHTML = entries.map(([, e]) => {
     const sub = [e.kind, debutText(e.debut)].filter(Boolean).join('｜');
     return `
       <div class="dex-card rarity-${e.rarity}">
@@ -407,18 +367,14 @@ function renderDex() {
   }).join('');
 }
 
-/* ---------- 実績バッジ ---------- */
 function renderAchievements() {
   const vals = Object.values(dex);
   const species = vals.length;
-  const hasShinkansen = vals.some((e) => e.category === 'shinkansen');
-  const hasTram = vals.some((e) => e.category === 'tram');
-  const hasRare = vals.some((e) => e.rarity >= 4);
   const list = [
     { emoji: '🎯', label: '初ゲット', done: species >= 1 },
-    { emoji: '🚄', label: '新幹線ハンター', done: hasShinkansen },
-    { emoji: '🚋', label: '路面電車ハンター', done: hasTram },
-    { emoji: '💎', label: 'レアハンター', done: hasRare },
+    { emoji: '🚄', label: '新幹線ハンター', done: vals.some((e) => e.category === 'shinkansen') },
+    { emoji: '🚋', label: '路面電車ハンター', done: vals.some((e) => e.category === 'tram') },
+    { emoji: '💎', label: 'レアハンター', done: vals.some((e) => e.rarity >= 4) },
     { emoji: '📚', label: '10形式コレクター', done: species >= 10 },
   ];
   $('achievements').innerHTML = list.map((a) =>
@@ -426,7 +382,6 @@ function renderAchievements() {
   ).join('');
 }
 
-/* ---------- ヘッダー数値 ---------- */
 function updateChips() {
   const vals = Object.values(dex);
   $('chipSpecies').textContent = `${vals.length}形式`;
@@ -436,27 +391,24 @@ function updateChips() {
 function updateModeNote() {
   const note = $('modeNote');
   if (demoMode) {
-    note.textContent = '⚠️ デモモード（AI鍵が未設定のため、ランダムな見本を表示しています）';
+    note.textContent = '⚠️ デモモード（AI鍵が未設定のため、AI推測はランダムな見本です）';
     note.classList.remove('hidden');
   } else {
     note.classList.add('hidden');
   }
 }
 
-/* ---------- モック（鍵なしデモ用） ---------- */
+/* ---------- モック（鍵なしデモ用のAI推測） ---------- */
 const MOCK = [
-  { category: 'shinkansen', operator: 'JR東日本', series: 'E5系「はやぶさ」', kind: '新幹線', debut: '2011', rarity: 1, trivia: '営業最高320km/hを誇る東北新幹線の主力。', candidates: ['JR東日本 E6系', 'JR東日本 H5系'] },
-  { category: 'shinkansen', operator: 'JR東海', series: 'N700S', kind: '新幹線', debut: '2020', rarity: 2, trivia: '"S"はSupreme。床下機器を一新した東海道の最新形式。', candidates: ['JR東海 N700A', 'JR西日本 N700系'] },
-  { category: 'shinkansen', operator: 'JR東海', series: '0系（保存車）', kind: '新幹線', debut: '1964', rarity: 5, trivia: '世界初の高速鉄道車両。今は博物館の主役。', candidates: ['JR西日本 100系', '国鉄 0系'] },
-  { category: 'local', operator: 'JR東日本', series: 'E235系（山手線）', kind: '通勤型', debut: '2015', rarity: 1, trivia: '車内広告をほぼデジタルサイネージ化した通勤型。', candidates: ['JR東日本 E231系', 'JR東日本 E233系'] },
-  { category: 'local', operator: '京急', series: '2100形', kind: '快特用', debut: '1998', rarity: 3, trivia: '発車時の"ドレミファ"音階モーターで一世を風靡。', candidates: ['京急 1000形', '京急 600形'] },
-  { category: 'local', operator: '国鉄', series: '103系', kind: '通勤型', debut: '1963', rarity: 5, trivia: '高度成長期を支えた通勤電車の代名詞。引退進む。', candidates: ['国鉄 101系', 'JR西日本 201系'] },
-  { category: 'tram', operator: '広島電鉄', series: '5100形「グリーンムーバーmax」', kind: '路面電車', debut: '2005', rarity: 3, trivia: '国産初の本格的な超低床路面電車。', candidates: ['広島電鉄 5000形', '富山地鉄 セントラム'] },
-  { category: 'tram', operator: '東京都交通局', series: '都電8900形', kind: '路面電車', debut: '2015', rarity: 2, trivia: '東京に残る数少ない路面電車・荒川線の新型。', candidates: ['東京都交通局 8800形', '都電 7700形'] },
+  { category: 'shinkansen', operator: 'JR東日本', series: 'E5系「はやぶさ」', kind: '新幹線', debut: '2011', rarity: 1, trivia: '営業最高320km/hを誇る東北新幹線の主力。' },
+  { category: 'shinkansen', operator: 'JR東海', series: 'N700S', kind: '新幹線', debut: '2020', rarity: 2, trivia: '"S"はSupreme。東海道新幹線の最新形式。' },
+  { category: 'local', operator: '京急', series: '2100形', kind: '快特用', debut: '1998', rarity: 3, trivia: '発車時の"ドレミファ"音階モーターで有名。' },
+  { category: 'local', operator: '国鉄', series: '103系', kind: '通勤型', debut: '1963', rarity: 5, trivia: '高度成長期を支えた通勤電車の代名詞。' },
+  { category: 'tram', operator: '広島電鉄', series: '5100形「グリーンムーバーmax」', kind: '路面電車', debut: '2005', rarity: 3, trivia: '国産初の本格的な超低床路面電車。' },
 ];
 function mockIdentify() {
   const base = MOCK[Math.floor(Math.random() * MOCK.length)];
-  return { isTrain: true, confidence: 60 + Math.floor(Math.random() * 35), ...base };
+  return { isTrain: true, confidence: 60 + Math.floor(Math.random() * 35), faces: [], ...base };
 }
 
 /* ---------- 起動 ---------- */

@@ -159,6 +159,17 @@ main { padding: 20px 16px; max-width: 720px; margin: 0 auto; }
 .ai-note { color: var(--sub); font-size: 11px; line-height: 1.6; background: rgba(127,160,255,.08); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 12px; }
 .conf.low { color: #ff9d6c; }
 .btn-ghost.emph { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.form-title { font-size: 18px; margin: 4px 0 12px; }
+.cat-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.cat-btn { flex: 1 1 auto; background: var(--card); color: var(--sub); border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px; font-size: 13px; cursor: pointer; }
+.cat-btn.active { background: var(--accent); color: #2a1c00; font-weight: 700; border-color: var(--accent); }
+.rarity-select { display: flex; align-items: center; gap: 10px; color: var(--sub); font-size: 13px; margin: 6px 0 14px; }
+.rarity-stars-pick { display: inline-flex; gap: 4px; }
+.rarity-stars-pick .star { font-size: 24px; color: var(--line); cursor: pointer; line-height: 1; }
+.rarity-stars-pick .star.on { color: var(--accent); }
+.btn-ai { width: 100%; background: rgba(127,160,255,.1); color: var(--ink); border: 1px dashed var(--line); border-radius: 10px; padding: 11px; font-size: 13px; cursor: pointer; margin-bottom: 10px; }
+.ai-hint-note { color: var(--sub); font-size: 11px; line-height: 1.6; background: rgba(127,160,255,.08); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 12px; }
+.ai-hint-note b { color: #ffd24a; }
 .keep-photo { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--sub); font-size: 13px; margin-bottom: 14px; cursor: pointer; }
 .keep-photo input { width: 18px; height: 18px; accent-color: var(--accent); }
 .rarity-row { margin: 6px 0; }
