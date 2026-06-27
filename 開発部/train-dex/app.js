@@ -414,6 +414,79 @@ function triggerReveal(rarity) {
   setTimeout(() => el.classList.add('hidden'), 1800);
 }
 
+/* ---------- 新幹線図鑑（マスターリスト：何が存在するか／何が未取得か） ----------
+   2025年現在の現役新幹線形式（事実確認済み）。matchKeysは手入力の表記ゆれ吸収用（norm済み）。 */
+const MASTER_SHINKANSEN = [
+  { no: 1, series: 'N700S', operator: 'JR東海・西日本', nickname: 'のぞみ／ひかり／こだま', debut: '2020', rarity: 1, matchKeys: ['n700s'] },
+  { no: 2, series: 'N700A', operator: 'JR東海・西日本', nickname: 'のぞみ／ひかり', debut: '2013', rarity: 2, matchKeys: ['n700a'] },
+  { no: 3, series: 'N700系（7000・8000番台）', operator: 'JR西日本・九州', nickname: 'みずほ／さくら', debut: '2011', rarity: 3, matchKeys: ['n700系'] },
+  { no: 4, series: '500系', operator: 'JR西日本', nickname: 'こだま（山陽）', debut: '1997', rarity: 4, matchKeys: ['500系'] },
+  { no: 5, series: '700系', operator: 'JR西日本', nickname: 'ひかりレールスター', debut: '2000', rarity: 4, matchKeys: ['700系', 'レールスター'] },
+  { no: 6, series: '800系', operator: 'JR九州', nickname: 'つばめ', debut: '2004', rarity: 3, matchKeys: ['800系'] },
+  { no: 7, series: 'N700S（西九州・8000番台）', operator: 'JR九州・西日本', nickname: 'かもめ', debut: '2022', rarity: 4, matchKeys: ['かもめ', 'n700s8000'] },
+  { no: 8, series: 'E5系', operator: 'JR東日本', nickname: 'はやぶさ／やまびこ', debut: '2011', rarity: 2, matchKeys: ['e5系'] },
+  { no: 9, series: 'H5系', operator: 'JR北海道', nickname: 'はやぶさ（北海道）', debut: '2016', rarity: 4, matchKeys: ['h5系'] },
+  { no: 10, series: 'E6系', operator: 'JR東日本', nickname: 'こまち', debut: '2013', rarity: 3, matchKeys: ['e6系'] },
+  { no: 11, series: 'E7系・W7系', operator: 'JR東日本・西日本', nickname: 'かがやき／とき', debut: '2014', rarity: 2, matchKeys: ['e7系', 'w7系'] },
+  { no: 12, series: 'E8系', operator: 'JR東日本', nickname: 'つばさ', debut: '2024', rarity: 3, matchKeys: ['e8系'] },
+  { no: 13, series: 'E3系', operator: 'JR東日本', nickname: 'つばさ ほか', debut: '1997', rarity: 4, matchKeys: ['e3系'] },
+  { no: 14, series: 'E2系', operator: 'JR東日本', nickname: 'やまびこ／とき', debut: '1997', rarity: 4, matchKeys: ['e2系'] },
+  { no: 15, series: '923形 ドクターイエロー', operator: 'JR東海・西日本', nickname: '検測車（2027引退予定）', debut: '2005', rarity: 5, matchKeys: ['923形', 'ドクターイエロー', 'ドクター'] },
+  { no: 16, series: 'E926形 East i', operator: 'JR東日本', nickname: '検測車', debut: '2001', rarity: 5, matchKeys: ['e926形', 'easti', 'イーストアイ'] },
+];
+
+// 自分の記録（手入力）をマスターに照合。各記録は「最も具体的に一致した形式」に割り当てる（部分一致の取り違え防止）。
+function caughtMap(masters) {
+  const map = {};
+  for (const k of Object.keys(dex)) {
+    const series = k.split('|')[1] || '';
+    let best = null;
+    for (const m of masters) {
+      for (const mk of m.matchKeys) {
+        if (series.includes(mk) && (!best || mk.length > best.len)) best = { no: m.no, len: mk.length, entry: dex[k] };
+      }
+    }
+    if (best && !map[best.no]) map[best.no] = best.entry;
+  }
+  return map;
+}
+
+function renderMasterDex() {
+  const masters = MASTER_SHINKANSEN;
+  const caught = caughtMap(masters);
+  const got = Object.keys(caught).length;
+  const total = masters.length;
+  $('masterHead').classList.remove('hidden');
+  $('masterHead').innerHTML = `
+    <div class="master-title">🚄 新幹線図鑑　<b>${got} / ${total}</b> 形式</div>
+    <div class="master-bar"><div class="master-bar-fill" style="width:${Math.round(got / total * 100)}%"></div></div>
+    <p class="master-sub">未取得は「？？？」。レア度を頼りに、まだ見ぬ形式を探しに行こう。</p>`;
+  $('dexEmpty').classList.add('hidden');
+
+  $('dexGrid').innerHTML = masters.map((m) => {
+    const e = caught[m.no];
+    if (e) {
+      return `
+        <div class="dex-card rarity-${m.rarity}">
+          <div class="dex-thumb">
+            ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">🚄</span>`}
+            <span class="dex-no">No.${m.no}</span>
+          </div>
+          <div class="dex-stars">${stars(m.rarity)}</div>
+          <div class="dex-name">${escapeHtml(m.series)}</div>
+          <div class="dex-gen">${escapeHtml(m.nickname)}</div>
+        </div>`;
+    }
+    return `
+      <div class="dex-card silhouette">
+        <div class="dex-thumb"><span class="dex-silhouette">？</span><span class="dex-no">No.${m.no}</span></div>
+        <div class="dex-stars dim">${stars(m.rarity)}</div>
+        <div class="dex-name">？？？</div>
+        <div class="dex-gen">未取得</div>
+      </div>`;
+  }).join('');
+}
+
 /* ---------- 図鑑描画 ---------- */
 let dexFilter = 'all';
 $('dexFilters').addEventListener('click', (e) => {
@@ -428,6 +501,8 @@ $('dexFilters').addEventListener('click', (e) => {
 function renderDex() {
   updateChips();
   renderAchievements();
+  if (dexFilter === 'master-sk') { renderMasterDex(); return; }
+  $('masterHead').classList.add('hidden');
   const entries = Object.entries(dex)
     .filter(([, e]) => dexFilter === 'all' || e.category === dexFilter)
     .sort((a, b) => b[1].rarity - a[1].rarity || b[1].lastSeen - a[1].lastSeen);
