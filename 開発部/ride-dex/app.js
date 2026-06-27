@@ -143,7 +143,7 @@ function applyPlateBlur(dataUrl, plates) {
         const y = Math.max(0, (p.y - M)) * H;
         const w = Math.min(1, p.w + M * 2) * W;
         const h = Math.min(1, p.h + M * 2) * H;
-        pixelate(ctx, x, y, Math.min(w, W - x), Math.min(h, H - y));
+        pixelate(ctx, x, y, Math.min(w, W - x), Math.min(h, H - y), 5); // 粗めに潰して確実に隠す
       });
       resolve(c.toDataURL('image/jpeg', 0.85));
     };
@@ -195,7 +195,7 @@ function showResult() {
     ${isNew ? '<div class="new-badge">✨ 初発見！</div>' : '<div class="seen-badge">図鑑にあり</div>'}
     ${r.photo
       ? `<div class="result-photo"><img id="resultPhoto" src="${r.photo}" alt="撮った写真" /><span class="result-cat">${catEmoji(r.category)}</span></div>
-         <p class="plate-hint">🔒 ナンバーは自動でぼかし済み。隠れていなければ写真をタップして足せます。</p>`
+         <p class="plate-hint">⚠️ ナンバーの自動ぼかしは外れることがあります。隠れていない番号は写真を<b>指でなぞって</b>隠してください。</p>`
       : `<div class="result-emoji">${catEmoji(r.category)}</div>`}
     <div class="rarity-row rarity-${r.rarity}">
       <span class="rarity-stars">${stars(r.rarity)}</span>
@@ -205,14 +205,15 @@ function showResult() {
     ${gen ? `<p class="result-gen">${escapeHtml(gen)}</p>` : ''}
     <p class="result-meta">
       ${r.bodyType ? `<span>${escapeHtml(r.bodyType)}</span>` : ''}
-      <span class="conf">確度 ${r.confidence}%</span>
+      <span class="conf ${r.confidence < 60 ? 'low' : ''}">確度 ${r.confidence}%${r.confidence < 60 ? '・自信なし' : ''}</span>
       ${r.corrected ? '<span class="corrected">訂正済み</span>' : ''}
     </p>
+    ${r.corrected ? '' : '<p class="ai-note">🤖 これはAIの推定で、車種を外すこともあります。違っていたら下の「ちがう？直す」で直してください（あなたの訂正が正解になります）。</p>'}
     ${r.trivia ? `<p class="result-trivia">💡 ${escapeHtml(r.trivia)}</p>` : ''}
     ${r.photo ? `<label class="keep-photo"><input type="checkbox" id="keepPhoto" checked /> この写真を図鑑にも残す</label>` : ''}
     <div class="result-actions">
       <button class="btn-primary" id="btnRegister">📖 図鑑に登録</button>
-      <button class="btn-ghost" id="btnCorrect">✏️ ちがう（訂正）</button>
+      <button class="btn-ghost emph" id="btnCorrect">✏️ ちがう？直す</button>
     </div>`;
   $('resultModal').classList.remove('hidden');
   if (r.rarity >= 4) triggerReveal(r.rarity);
@@ -220,17 +221,32 @@ function showResult() {
   $('btnRegister').addEventListener('click', registerPending);
   $('btnCorrect').addEventListener('click', openCorrect);
   const photoEl = $('resultPhoto');
-  if (photoEl) photoEl.addEventListener('click', onPhotoTapBlur);
+  if (photoEl) {
+    photoEl.addEventListener('pointerdown', onPhotoPointerDown);
+    photoEl.addEventListener('pointerup', onPhotoPointerUp);
+  }
 }
 
-// 写真タップで、その位置にナンバー大のぼかしを手動追加（自動が外したとき用の保険）
-async function onPhotoTapBlur(e) {
+// 写真を「なぞって」隠す（自動ぼかしは当てにせず、手動を主役に）。
+// ドラッグ＝なぞった範囲、ほぼ動かさなければタップ＝固定サイズで隠す。
+let blurStart = null;
+function onPhotoPointerDown(e) {
+  const r = e.currentTarget.getBoundingClientRect();
+  blurStart = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+}
+async function onPhotoPointerUp(e) {
+  if (!blurStart) return;
   const img = e.currentTarget;
-  const rect = img.getBoundingClientRect();
-  const cx = (e.clientX - rect.left) / rect.width;
-  const cy = (e.clientY - rect.top) / rect.height;
-  const w = 0.18, h = 0.08; // ナンバープレートらしい横長
-  pending.plates.push({ x: Math.max(0, cx - w / 2), y: Math.max(0, cy - h / 2), w, h });
+  const r = img.getBoundingClientRect();
+  const ex = (e.clientX - r.left) / r.width, ey = (e.clientY - r.top) / r.height;
+  let x = Math.min(blurStart.x, ex), y = Math.min(blurStart.y, ey);
+  let w = Math.abs(ex - blurStart.x), h = Math.abs(ey - blurStart.y);
+  blurStart = null;
+  if (w < 0.04 || h < 0.04) { // ほぼタップ＝ナンバー大の固定サイズ
+    const fw = 0.18, fh = 0.09;
+    x = Math.max(0, ex - fw / 2); y = Math.max(0, ey - fh / 2); w = fw; h = fh;
+  }
+  pending.plates.push({ x: Math.max(0, x), y: Math.max(0, y), w, h });
   pending.photo = await applyPlateBlur(pending.photoOriginal, pending.plates);
   img.src = pending.photo;
 }
