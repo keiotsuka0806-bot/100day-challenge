@@ -27,6 +27,55 @@ const norm = (s) => (s || '')
   .replace(/[\s・･\-‐－—ー_/／()（）「」]/g, '');
 const speciesKey = (operator, series) => `${norm(operator)}|${norm(series)}`;
 
+/* ---------- データフライホイール（端末内・埋め込みのみ保持＝顔写真は貯めない） ----------
+   記録のたびに「画像の特徴ベクトル＋ラベル」を貯め、撮った写真をこれと類似検索して
+   "あなたの図鑑で似ている形式"を無料・オフラインで提示する（LLMより前に）。 */
+const DATASET_KEY = 'traindex_dataset_v1';
+const DATASET_MAX = 300;
+function loadDataset() { try { return JSON.parse(localStorage.getItem(DATASET_KEY)) || []; } catch { return []; } }
+function saveDataset(ds) { try { localStorage.setItem(DATASET_KEY, JSON.stringify(ds)); } catch { /* 容量超過は無視 */ } }
+
+// 画像を16x16 RGBに縮小→平均除去→L2正規化した素朴な埋め込み（依存ゼロ・軽量）。
+// 重いCLIP等は将来差し替え可能なように、この関数だけ取り替えれば済む形にしている。
+function computeEmbedding(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const N = 16;
+      const c = document.createElement('canvas');
+      c.width = N; c.height = N;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, N, N);
+      const d = ctx.getImageData(0, 0, N, N).data;
+      const v = [];
+      for (let i = 0; i < d.length; i += 4) { v.push(d[i], d[i + 1], d[i + 2]); }
+      const mean = v.reduce((s, x) => s + x, 0) / v.length;
+      let nrm = 0;
+      for (let i = 0; i < v.length; i++) { v[i] -= mean; nrm += v[i] * v[i]; }
+      nrm = Math.sqrt(nrm) || 1;
+      for (let i = 0; i < v.length; i++) v[i] = +(v[i] / nrm).toFixed(3);
+      resolve(v);
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+const cosine = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
+
+// 自分の過去ラベルから似ている形式を返す（形式ごとに最良スコアでまとめ、上位を返す）
+function findSimilar(emb, topN = 3, threshold = 0.25) {
+  if (!emb) return [];
+  const best = new Map();
+  for (const e of loadDataset()) {
+    if (!e.emb || e.emb.length !== emb.length) continue;
+    const score = cosine(emb, e.emb);
+    const cur = best.get(e.key);
+    if (!cur || score > cur.score) best.set(e.key, { ...e, score });
+  }
+  return [...best.values()].filter((m) => m.score >= threshold)
+    .sort((a, b) => b.score - a.score).slice(0, topN);
+}
+
 const catEmoji = (c) => (c === 'shinkansen' ? '🚄' : c === 'tram' ? '🚋' : '🚃');
 const catLabel = (c) => (c === 'shinkansen' ? '新幹線' : c === 'tram' ? '路面電車' : '在来線・私鉄');
 const stars = (r) => '★'.repeat(r) + '☆'.repeat(5 - r);
@@ -132,9 +181,35 @@ function makeThumb(dataUrl, max = 240, quality = 0.6) {
 function showScan(on) { $('scanOverlay').classList.toggle('hidden', !on); }
 
 /* ---------- 記録フォーム（手入力が主役） ---------- */
+let simMatches = [];
 async function openRecordForm(dataUrl) {
-  draft = { photo: dataUrl, photoOriginal: dataUrl, faces: [], category: 'local', rarity: 2, trivia: '', aiUsed: false };
+  draft = { photo: dataUrl, photoOriginal: dataUrl, faces: [], category: 'local', rarity: 2, trivia: '', aiUsed: false, emb: null };
+  simMatches = [];
   renderRecordForm();
+  // オンデバイス類似検索（無料・LLMより前）
+  draft.emb = await computeEmbedding(dataUrl);
+  const matches = findSimilar(draft.emb);
+  if (matches.length) renderSuggestions(matches);
+}
+
+function renderSuggestions(matches) {
+  simMatches = matches;
+  const box = $('simBox');
+  if (!box) return;
+  box.innerHTML = `<p class="sim-title">💡 あなたの図鑑で似ている形式（端末内・無料）。同じならタップで入力：</p>` +
+    matches.map((m, i) =>
+      `<button type="button" class="sim-btn" data-i="${i}">${escapeHtml([m.operator, m.series].filter(Boolean).join(' '))}<span class="sim-score">${Math.round(m.score * 100)}%</span></button>`
+    ).join('');
+  box.classList.remove('hidden');
+  box.querySelectorAll('.sim-btn').forEach((b) =>
+    b.addEventListener('click', () => applySuggestion(simMatches[+b.dataset.i])));
+}
+function applySuggestion(m) {
+  $('fOperator').value = m.operator || '';
+  $('fSeries').value = m.series || '';
+  if (m.kind) $('fKind').value = m.kind;
+  if (m.debut) $('fDebut').value = m.debut;
+  if (m.category) { draft.category = m.category; renderCatButtons(); }
 }
 
 function renderRecordForm() {
@@ -145,6 +220,7 @@ function renderRecordForm() {
          <p class="plate-hint">⚠️ 写り込んだ人の顔は、隠したい所を写真で<b>指でなぞって</b>隠してください。</p>`
       : ''}
     <h2 class="form-title">自分で記録する</h2>
+    <div class="sim-box hidden" id="simBox"></div>
     <div class="cat-select" id="catSelect">
       <button type="button" class="cat-btn" data-cat="shinkansen">🚄 新幹線</button>
       <button type="button" class="cat-btn" data-cat="local">🚃 在来線・私鉄</button>
@@ -308,6 +384,14 @@ async function registerFromForm() {
       ? '写真の保存容量がいっぱいです。写真は記録できませんでしたが、図鑑データは保存しました。'
       : '保存容量がいっぱいで記録できませんでした。図鑑の不要な形式を減らしてからお試しください。');
   }
+  // フライホイールの一滴：埋め込み＋ラベルをデータセットへ（顔写真そのものは貯めない）
+  if (draft.emb) {
+    const ds = loadDataset();
+    ds.push({ emb: draft.emb, operator, series, category: r.category, kind: r.kind, debut: r.debut, key, t: now });
+    while (ds.length > DATASET_MAX) ds.shift();
+    saveDataset(ds);
+  }
+
   draft = null;
   $('resultModal').classList.add('hidden');
   updateChips();
