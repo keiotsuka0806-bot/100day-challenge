@@ -1,4 +1,4 @@
-const CACHE = 'traindex-v7';
+const CACHE = 'traindex-v8';
 const ASSETS = ['/', '/index.html', '/app.js', '/styles.css', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', (e) => {

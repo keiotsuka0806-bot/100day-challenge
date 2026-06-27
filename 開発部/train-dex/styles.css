@@ -177,6 +177,7 @@ main { padding: 20px 16px; max-width: 720px; margin: 0 auto; }
 .dex-silhouette { font-size: 40px; color: #2c3c70; }
 .dex-card.silhouette .dex-name { color: #5a6b97; }
 .dex-stars.dim { color: #44588f; }
+.dex-others-head { grid-column: 1 / -1; color: var(--sub); font-size: 12px; text-align: center; margin: 16px 0 2px; border-top: 1px solid var(--line); padding-top: 14px; }
 .cat-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .cat-btn { flex: 1 1 auto; background: var(--card); color: var(--sub); border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px; font-size: 13px; cursor: pointer; }
 .cat-btn.active { background: var(--accent); color: #2a1c00; font-weight: 700; border-color: var(--accent); }

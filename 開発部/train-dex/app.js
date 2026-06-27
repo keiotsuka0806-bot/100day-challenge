@@ -481,6 +481,26 @@ function caughtMap(masters, category) {
   return map;
 }
 
+// 自分の1記録ぶんのカード（マイ記録一覧・図鑑の「その他」で共用）
+function personalCardHtml(e) {
+  const sub = [e.kind, debutText(e.debut)].filter(Boolean).join('｜');
+  return `
+    <div class="dex-card rarity-${e.rarity}">
+      <div class="dex-thumb">
+        ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">${catEmoji(e.category)}</span>`}
+        <span class="dex-cat-badge">${catEmoji(e.category)}</span>
+        ${e.count > 1 ? `<span class="dex-count">×${e.count}</span>` : ''}
+      </div>
+      <div class="dex-stars">${stars(e.rarity)}</div>
+      <div class="dex-name">${escapeHtml(e.operator || '')}<br>${escapeHtml(e.series)}</div>
+      ${sub ? `<div class="dex-gen">${escapeHtml(sub)}</div>` : ''}
+    </div>`;
+}
+function isInMaster(series, masters) {
+  for (const m of masters) for (const mk of m.matchKeys) if (series.includes(mk)) return true;
+  return false;
+}
+
 function renderMasterDex(masters, category, headTitle) {
   const caught = caughtMap(masters, category);
   const got = Object.keys(caught).length;
@@ -492,7 +512,7 @@ function renderMasterDex(masters, category, headTitle) {
     <p class="master-sub">未取得は「？？？」。レア度を頼りに、まだ見ぬ形式を探しに行こう。</p>`;
   $('dexEmpty').classList.add('hidden');
 
-  $('dexGrid').innerHTML = masters.map((m) => {
+  const masterHtml = masters.map((m) => {
     const e = caught[m.no];
     if (e) {
       return `
@@ -514,6 +534,16 @@ function renderMasterDex(masters, category, headTitle) {
         <div class="dex-gen">未取得</div>
       </div>`;
   }).join('');
+
+  // その他：この種別の自分の記録で、図鑑（マスター）に載っていないもの（撮ったものを消さない）
+  const others = Object.entries(dex)
+    .filter(([k, e]) => e.category === category && !isInMaster(k.split('|')[1] || '', masters))
+    .sort((a, b) => b[1].rarity - a[1].rarity || b[1].lastSeen - a[1].lastSeen);
+  const othersHtml = others.length
+    ? `<div class="dex-others-head">— その他あなたの記録（図鑑外） —</div>` + others.map(([, e]) => personalCardHtml(e)).join('')
+    : '';
+
+  $('dexGrid').innerHTML = masterHtml + othersHtml;
 }
 
 /* ---------- 図鑑描画 ---------- */
@@ -529,31 +559,21 @@ $('dexFilters').addEventListener('click', (e) => {
 
 function renderDex() {
   updateChips();
-  renderAchievements();
-  if (dexFilter === 'master-sk') { renderMasterDex(MASTER_SHINKANSEN, 'shinkansen', '🚄 新幹線図鑑'); return; }
-  if (dexFilter === 'master-local') { renderMasterDex(MASTER_LOCAL, 'local', '📗 在来線・私鉄図鑑'); return; }
+  const isMyRecords = dexFilter === 'all';
+  $('achievements').classList.toggle('hidden', !isMyRecords);
+  if (isMyRecords) renderAchievements();
+
+  // 種別を選んだら、その図鑑（マスター＋取得＋未取得シルエット＋その他）を出す
+  if (dexFilter === 'shinkansen') { renderMasterDex(MASTER_SHINKANSEN, 'shinkansen', '🚄 新幹線図鑑'); return; }
+  if (dexFilter === 'local') { renderMasterDex(MASTER_LOCAL, 'local', '📗 在来線・私鉄図鑑'); return; }
+
+  // マイ記録（全部）／路面電車（マスター未整備＝自分の記録一覧）
   $('masterHead').classList.add('hidden');
   const entries = Object.entries(dex)
     .filter(([, e]) => dexFilter === 'all' || e.category === dexFilter)
     .sort((a, b) => b[1].rarity - a[1].rarity || b[1].lastSeen - a[1].lastSeen);
-
-  const grid = $('dexGrid');
-  $('dexEmpty').classList.toggle('hidden', Object.keys(dex).length > 0);
-
-  grid.innerHTML = entries.map(([, e]) => {
-    const sub = [e.kind, debutText(e.debut)].filter(Boolean).join('｜');
-    return `
-      <div class="dex-card rarity-${e.rarity}">
-        <div class="dex-thumb">
-          ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">${catEmoji(e.category)}</span>`}
-          <span class="dex-cat-badge">${catEmoji(e.category)}</span>
-          ${e.count > 1 ? `<span class="dex-count">×${e.count}</span>` : ''}
-        </div>
-        <div class="dex-stars">${stars(e.rarity)}</div>
-        <div class="dex-name">${escapeHtml(e.operator || '')}<br>${escapeHtml(e.series)}</div>
-        ${sub ? `<div class="dex-gen">${escapeHtml(sub)}</div>` : ''}
-      </div>`;
-  }).join('');
+  $('dexEmpty').classList.toggle('hidden', entries.length > 0);
+  $('dexGrid').innerHTML = entries.map(([, e]) => personalCardHtml(e)).join('');
 }
 
 function renderAchievements() {
