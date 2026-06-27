@@ -498,7 +498,7 @@ function renderMasterDex(masters, category, headTitle) {
       return `
         <div class="dex-card rarity-${m.rarity}">
           <div class="dex-thumb">
-            ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">🚄</span>`}
+            ${e.photo ? `<img src="${e.photo}" alt="" loading="lazy" />` : `<span class="dex-emoji">${catEmoji(category)}</span>`}
             <span class="dex-no">No.${m.no}</span>
           </div>
           <div class="dex-stars">${stars(m.rarity)}</div>
