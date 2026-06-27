@@ -196,9 +196,9 @@ function renderSuggestions(matches) {
   simMatches = matches;
   const box = $('simBox');
   if (!box) return;
-  box.innerHTML = `<p class="sim-title">💡 あなたの図鑑で似ている形式（端末内・無料）。同じならタップで入力：</p>` +
+  box.innerHTML = `<p class="sim-title">💡 あなたの図鑑で見た目が似ている形式（端末内・無料の参考）。同じならタップで入力：</p>` +
     matches.map((m, i) =>
-      `<button type="button" class="sim-btn" data-i="${i}">${escapeHtml([m.operator, m.series].filter(Boolean).join(' '))}<span class="sim-score">${Math.round(m.score * 100)}%</span></button>`
+      `<button type="button" class="sim-btn" data-i="${i}">${escapeHtml([m.operator, m.series].filter(Boolean).join(' '))}<span class="sim-score">これかも？</span></button>`
     ).join('');
   box.classList.remove('hidden');
   box.querySelectorAll('.sim-btn').forEach((b) =>
