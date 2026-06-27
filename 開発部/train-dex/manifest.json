@@ -1,0 +1,11 @@
+{
+  "name": "TrainDex — 鉄道さがしの宝探し",
+  "short_name": "TrainDex",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1730",
+  "theme_color": "#0e1730",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
