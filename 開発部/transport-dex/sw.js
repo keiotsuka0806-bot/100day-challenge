@@ -1,4 +1,4 @@
-const CACHE = 'transportdex-v1';
+const CACHE = 'transportdex-v2';
 const ASSETS = ['/', '/index.html', '/app.js', '/genres.js', '/styles.css', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', (e) => {

@@ -56,9 +56,16 @@ function initGenreApp() {
   $('huntLead').textContent = G.huntLead;
   $('huntSub').textContent = G.huntSub;
 
-  // フィルタ：📸マイ記録 ＋ 各カテゴリ
-  $('dexFilters').innerHTML = `<button class="filter-btn active" data-cat="all">📸 マイ記録</button>` +
-    G.categories.map((c) => `<button class="filter-btn" data-cat="${c.id}">${c.emoji} ${escapeHtml(c.label)}</button>`).join('');
+  // フィルタ：図鑑（チャプターのある種別）を前面に、最後にマイ記録。
+  // 図鑑タブを開いたら最初の図鑑（マスター）がいきなり見えるよう、既定を最初のチャプター種別にする。
+  const firstChapterCat = (G.categories.find((c) => chapterFor(c.id)) || {}).id;
+  dexFilter = firstChapterCat || 'all';
+  const catBtns = G.categories.map((c) => {
+    const label = chapterFor(c.id) ? `📕 ${escapeHtml(c.label)}` : `${c.emoji} ${escapeHtml(c.label)}`;
+    return `<button class="filter-btn" data-cat="${c.id}">${label}</button>`;
+  }).join('');
+  $('dexFilters').innerHTML = catBtns + `<button class="filter-btn" data-cat="all">📸 マイ記録</button>`;
+  document.querySelectorAll('.filter-btn').forEach((x) => x.classList.toggle('active', x.dataset.cat === dexFilter));
   $('dexFilters').addEventListener('click', (e) => {
     const b = e.target.closest('.filter-btn'); if (!b) return;
     dexFilter = b.dataset.cat;
