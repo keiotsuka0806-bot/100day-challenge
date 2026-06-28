@@ -1,0 +1,156 @@
+'use strict';
+/* TransportDex のジャンル設定。
+   「顔は特化・中身は統合」：エンジンは1つ、ジャンルごとの違い（ブランド/入力項目/カテゴリ/図鑑マスター/AI）は
+   すべてこの設定データで表す。新ジャンルはここに足すだけ。 */
+
+/* ===== 鉄道（TrainDexの顔） ===== */
+const MASTER_TRAIN_SK = [
+  { no: 1, name: 'N700S', operator: 'JR東海・西日本', nickname: 'のぞみ／ひかり／こだま', debut: '2020', rarity: 1, matchKeys: ['n700s'] },
+  { no: 2, name: 'N700A', operator: 'JR東海・西日本', nickname: 'のぞみ／ひかり', debut: '2013', rarity: 2, matchKeys: ['n700a'] },
+  { no: 3, name: 'N700系（7000・8000番台）', operator: 'JR西日本・九州', nickname: 'みずほ／さくら', debut: '2011', rarity: 3, matchKeys: ['n700系'] },
+  { no: 4, name: '500系', operator: 'JR西日本', nickname: 'こだま（山陽）', debut: '1997', rarity: 4, matchKeys: ['500系'] },
+  { no: 5, name: '700系', operator: 'JR西日本', nickname: 'ひかりレールスター', debut: '2000', rarity: 4, matchKeys: ['700系', 'レールスター'] },
+  { no: 6, name: '800系', operator: 'JR九州', nickname: 'つばめ', debut: '2004', rarity: 3, matchKeys: ['800系'] },
+  { no: 7, name: 'N700S（西九州・8000番台）', operator: 'JR九州・西日本', nickname: 'かもめ', debut: '2022', rarity: 4, matchKeys: ['かもめ', 'n700s8000'] },
+  { no: 8, name: 'E5系', operator: 'JR東日本', nickname: 'はやぶさ／やまびこ', debut: '2011', rarity: 2, matchKeys: ['e5系'] },
+  { no: 9, name: 'H5系', operator: 'JR北海道', nickname: 'はやぶさ（北海道）', debut: '2016', rarity: 4, matchKeys: ['h5系'] },
+  { no: 10, name: 'E6系', operator: 'JR東日本', nickname: 'こまち', debut: '2013', rarity: 3, matchKeys: ['e6系'] },
+  { no: 11, name: 'E7系・W7系', operator: 'JR東日本・西日本', nickname: 'かがやき／とき', debut: '2014', rarity: 2, matchKeys: ['e7系', 'w7系'] },
+  { no: 12, name: 'E8系', operator: 'JR東日本', nickname: 'つばさ', debut: '2024', rarity: 3, matchKeys: ['e8系'] },
+  { no: 13, name: 'E3系', operator: 'JR東日本', nickname: 'つばさ ほか', debut: '1997', rarity: 4, matchKeys: ['e3系'] },
+  { no: 14, name: 'E2系', operator: 'JR東日本', nickname: 'やまびこ／とき', debut: '1997', rarity: 4, matchKeys: ['e2系'] },
+  { no: 15, name: '923形 ドクターイエロー', operator: 'JR東海・西日本', nickname: '検測車（2027引退予定）', debut: '2005', rarity: 5, matchKeys: ['923形', 'ドクターイエロー', 'ドクター'] },
+  { no: 16, name: 'E926形 East i', operator: 'JR東日本', nickname: '検測車', debut: '2001', rarity: 5, matchKeys: ['e926形', 'easti', 'イーストアイ'] },
+];
+const MASTER_TRAIN_LOCAL = [
+  { no: 1, name: 'E235系', operator: 'JR東日本', nickname: '山手線／横須賀・総武', debut: '2015', rarity: 1, matchKeys: ['e235系'] },
+  { no: 2, name: 'E233系', operator: 'JR東日本', nickname: '中央線／京浜東北 ほか', debut: '2006', rarity: 1, matchKeys: ['e233系'] },
+  { no: 3, name: '227系', operator: 'JR西日本', nickname: '広島 Red Wing ほか', debut: '2015', rarity: 3, matchKeys: ['227系'] },
+  { no: 4, name: 'E353系', operator: 'JR東日本', nickname: 'あずさ／かいじ', debut: '2017', rarity: 2, matchKeys: ['e353系'] },
+  { no: 5, name: 'E257系', operator: 'JR東日本', nickname: '踊り子 ほか', debut: '2001', rarity: 3, matchKeys: ['e257系'] },
+  { no: 6, name: 'E261系 サフィール踊り子', operator: 'JR東日本', nickname: '観光特急', debut: '2020', rarity: 4, matchKeys: ['e261系', 'サフィール'] },
+  { no: 7, name: '273系', operator: 'JR西日本', nickname: 'やくも', debut: '2024', rarity: 4, matchKeys: ['273系', 'やくも'] },
+  { no: 8, name: '281系', operator: 'JR西日本', nickname: 'はるか（関空特急）', debut: '1994', rarity: 3, matchKeys: ['281系', 'はるか'] },
+  { no: 9, name: '683系・681系', operator: 'JR西日本', nickname: 'サンダーバード', debut: '1995', rarity: 3, matchKeys: ['683系', '681系', 'サンダーバード'] },
+  { no: 10, name: '787系', operator: 'JR九州', nickname: '特急（九州）', debut: '1992', rarity: 3, matchKeys: ['787系'] },
+  { no: 11, name: 'HC85系', operator: 'JR東海', nickname: 'ひだ／南紀', debut: '2022', rarity: 3, matchKeys: ['hc85'] },
+  { no: 12, name: '小田急70000形 GSE', operator: '小田急', nickname: 'ロマンスカー', debut: '2018', rarity: 3, matchKeys: ['70000形', 'gse'] },
+  { no: 13, name: '近鉄80000系 ひのとり', operator: '近鉄', nickname: '名阪特急', debut: '2020', rarity: 3, matchKeys: ['80000系', 'ひのとり'] },
+  { no: 14, name: '近鉄50000系 しまかぜ', operator: '近鉄', nickname: '観光特急', debut: '2013', rarity: 4, matchKeys: ['50000系', 'しまかぜ'] },
+  { no: 15, name: '西武001系 Laview', operator: '西武', nickname: '特急ラビュー', debut: '2019', rarity: 3, matchKeys: ['001系', 'laview', 'ラビュー'] },
+  { no: 16, name: '京成AE形 スカイライナー', operator: '京成', nickname: '空港アクセス特急', debut: '2010', rarity: 3, matchKeys: ['ae形', 'スカイライナー'] },
+  { no: 17, name: '名鉄2000系 ミュースカイ', operator: '名鉄', nickname: '空港特急', debut: '2005', rarity: 4, matchKeys: ['2000系', 'ミュースカイ'] },
+  { no: 18, name: '東武500系 リバティ', operator: '東武', nickname: '特急リバティ', debut: '2017', rarity: 3, matchKeys: ['リバティ', '東武500'] },
+  { no: 19, name: '東武N100系 スペーシアX', operator: '東武', nickname: '新型スペーシア', debut: '2023', rarity: 4, matchKeys: ['n100系', 'スペーシアx'] },
+  { no: 20, name: '京急2100形', operator: '京急', nickname: '快特', debut: '1998', rarity: 3, matchKeys: ['2100形', '2100系'] },
+  { no: 21, name: '阪急電車（マルーン）', operator: '阪急', nickname: '伝統のマルーン塗装', debut: '—', rarity: 2, matchKeys: ['阪急'] },
+  { no: 22, name: '江ノ電', operator: '江ノ島電鉄', nickname: '海沿いの路面区間', debut: '—', rarity: 3, matchKeys: ['江ノ電', '江ノ島'] },
+  { no: 23, name: 'SL（蒸気機関車）', operator: 'JR各社', nickname: 'やまぐち号／D51 ほか', debut: '—', rarity: 5, matchKeys: ['sl', 'd51', 'c57', '蒸気'] },
+  { no: 24, name: 'ななつ星 in 九州', operator: 'JR九州', nickname: '豪華寝台', debut: '2013', rarity: 5, matchKeys: ['ななつ星', 'ななつぼし'] },
+];
+
+/* ===== 車（RideDexの顔） ===== */
+const MASTER_CAR = [
+  { no: 1, name: 'プリウス', operator: 'トヨタ', nickname: 'ハイブリッドの代名詞', debut: '—', rarity: 1, matchKeys: ['プリウス', 'prius'] },
+  { no: 2, name: 'アクア', operator: 'トヨタ', nickname: 'コンパクトHV', debut: '—', rarity: 1, matchKeys: ['アクア', 'aqua'] },
+  { no: 3, name: 'カローラ', operator: 'トヨタ', nickname: '世界の定番', debut: '—', rarity: 1, matchKeys: ['カローラ', 'corolla'] },
+  { no: 4, name: 'クラウン', operator: 'トヨタ', nickname: '高級セダンの象徴', debut: '—', rarity: 2, matchKeys: ['クラウン', 'crown'] },
+  { no: 5, name: 'ランドクルーザー', operator: 'トヨタ', nickname: '本格SUV', debut: '—', rarity: 3, matchKeys: ['ランドクルーザー', 'ランクル', 'landcruiser'] },
+  { no: 6, name: 'N-BOX', operator: 'ホンダ', nickname: '軽の大ヒット', debut: '—', rarity: 1, matchKeys: ['nbox', 'n-box', 'エヌボックス'] },
+  { no: 7, name: 'フィット', operator: 'ホンダ', nickname: 'コンパクトの定番', debut: '—', rarity: 1, matchKeys: ['フィット', 'fit'] },
+  { no: 8, name: 'シビック', operator: 'ホンダ', nickname: 'スポーティ', debut: '—', rarity: 2, matchKeys: ['シビック', 'civic'] },
+  { no: 9, name: 'ノート', operator: '日産', nickname: 'e-POWER', debut: '—', rarity: 1, matchKeys: ['ノート', 'note'] },
+  { no: 10, name: 'セレナ', operator: '日産', nickname: '人気ミニバン', debut: '—', rarity: 2, matchKeys: ['セレナ', 'serena'] },
+  { no: 11, name: 'ロードスター', operator: 'マツダ', nickname: '世界一売れたオープン2座', debut: '—', rarity: 3, matchKeys: ['ロードスター', 'roadster', 'miata', 'mx-5'] },
+  { no: 12, name: 'CX-5', operator: 'マツダ', nickname: '人気SUV', debut: '—', rarity: 2, matchKeys: ['cx-5', 'cx5'] },
+  { no: 13, name: 'インプレッサ／WRX', operator: 'スバル', nickname: '走りのスバル', debut: '—', rarity: 3, matchKeys: ['インプレッサ', 'wrx', 'impreza'] },
+  { no: 14, name: 'ジムニー', operator: 'スズキ', nickname: '軽の本格オフローダー', debut: '—', rarity: 3, matchKeys: ['ジムニー', 'jimny'] },
+  { no: 15, name: 'ハスラー', operator: 'スズキ', nickname: '遊べる軽', debut: '—', rarity: 2, matchKeys: ['ハスラー', 'hustler'] },
+  { no: 16, name: 'タント', operator: 'ダイハツ', nickname: '広い軽', debut: '—', rarity: 1, matchKeys: ['タント', 'tanto'] },
+  { no: 17, name: 'デリカD:5', operator: '三菱', nickname: '走破性ミニバン', debut: '—', rarity: 3, matchKeys: ['デリカ', 'delica'] },
+  { no: 18, name: 'レクサス（RX/LX 等）', operator: 'レクサス', nickname: '高級ブランド', debut: '—', rarity: 3, matchKeys: ['レクサス', 'lexus'] },
+  { no: 19, name: 'フェアレディZ', operator: '日産', nickname: '名門スポーツ', debut: '—', rarity: 4, matchKeys: ['フェアレディ', 'フェアレディz', 'nissan z'] },
+  { no: 20, name: 'スープラ', operator: 'トヨタ', nickname: '伝説のスポーツ', debut: '—', rarity: 4, matchKeys: ['スープラ', 'supra'] },
+  { no: 21, name: 'スカイラインGT-R（R34 等）', operator: '日産', nickname: '高騰する名車', debut: '—', rarity: 5, matchKeys: ['gt-r', 'gtr', 'スカイライン', 'r34'] },
+  { no: 22, name: 'NSX', operator: 'ホンダ', nickname: '和製スーパーカー', debut: '—', rarity: 5, matchKeys: ['nsx'] },
+];
+
+/* ===== 飛行機（PlaneDexの顔・新規） ===== */
+const MASTER_PLANE = [
+  { no: 1, name: 'ボーイング 787 ドリームライナー', operator: 'ANA／JAL ほか', nickname: '中型主力', debut: '2011', rarity: 1, matchKeys: ['787', 'b787', 'ドリームライナー', 'dreamliner'] },
+  { no: 2, name: 'ボーイング 737', operator: '各社', nickname: '世界一売れた旅客機', debut: '—', rarity: 1, matchKeys: ['737', 'b737'] },
+  { no: 3, name: 'ボーイング 777', operator: 'ANA／JAL ほか', nickname: 'トリプルセブン', debut: '—', rarity: 2, matchKeys: ['777', 'b777', 'トリプルセブン'] },
+  { no: 4, name: 'ボーイング 767', operator: 'ANA／JAL ほか', nickname: '中型機', debut: '—', rarity: 2, matchKeys: ['767', 'b767'] },
+  { no: 5, name: 'エアバス A320／A321', operator: '各社', nickname: '小型の定番', debut: '—', rarity: 1, matchKeys: ['a320', 'a321'] },
+  { no: 6, name: 'エアバス A350', operator: 'JAL ほか', nickname: '最新中大型', debut: '—', rarity: 2, matchKeys: ['a350'] },
+  { no: 7, name: 'エアバス A380', operator: 'ANA（FLYING HONU）ほか', nickname: '総2階の超大型', debut: '—', rarity: 4, matchKeys: ['a380', 'フライングホヌ', 'flyinghonu', 'honu'] },
+  { no: 8, name: 'ボーイング 747 ジャンボ', operator: '貨物／政府 ほか', nickname: 'ジャンボジェット', debut: '—', rarity: 5, matchKeys: ['747', 'b747', 'ジャンボ', 'jumbo'] },
+  { no: 9, name: 'ボンバルディア DHC-8 Q400', operator: 'ANA Wings ほか', nickname: 'プロペラ機', debut: '—', rarity: 3, matchKeys: ['q400', 'dhc-8', 'dhc8', 'ボンバルディア'] },
+  { no: 10, name: 'ATR 42／72', operator: '地域路線', nickname: 'プロペラ機', debut: '—', rarity: 3, matchKeys: ['atr', 'atr42', 'atr72'] },
+  { no: 11, name: '政府専用機（777-300ER）', operator: '航空自衛隊', nickname: '日本国のVIP機', debut: '2019', rarity: 5, matchKeys: ['政府専用機', '777-300er'] },
+  { no: 12, name: '特別塗装機（ポケモンジェット 等）', operator: 'ANA／JAL ほか', nickname: 'レアな塗装', debut: '—', rarity: 4, matchKeys: ['特別塗装', 'ポケモンジェット', 'ジェットスター', '塗装機'] },
+];
+
+const GENRES = {
+  train: {
+    key: 'train', brand: 'TrainDex', tagline: '鉄道さがしの宝探し', emoji: '🚃', hubLabel: '鉄道',
+    huntLead: '路面電車・電車・新幹線を撮って、自分で記録しよう。',
+    huntSub: '撮ったら事業者・形式を自分で入力（あなたの記録が正解）。形式がわからない時はAIに推測してもらえます。',
+    blurHint: '⚠️ 写り込んだ人の顔は、隠したい所を写真で<b>指でなぞって</b>隠してください。',
+    aiNote: 'これはAIの推定で、形式（N700とN700Sなど）を外すこともあります。違っていたら直してください（あなたの訂正が正解になります）。',
+    categories: [{ id: 'shinkansen', emoji: '🚄', label: '新幹線' }, { id: 'local', emoji: '🚃', label: '在来線・私鉄' }, { id: 'tram', emoji: '🚋', label: '路面電車' }],
+    defaultCategory: 'local',
+    fields: [
+      { id: 'operator', label: '事業者', ph: '例: JR東日本 / 京急 / 広島電鉄' },
+      { id: 'series', label: '形式・系列', ph: '例: E5系 / 京急2100形 / N700S', required: true },
+      { id: 'kind', label: '種別', ph: '例: 新幹線 / 特急 / 通勤型 / 路面電車' },
+      { id: 'debut', label: '登場年', ph: '例: 2011 / 2007– / 国鉄時代' },
+    ],
+    nameFields: ['operator', 'series'],
+    chapters: [
+      { id: 'sk', title: '🚄 新幹線図鑑', category: 'shinkansen', masters: MASTER_TRAIN_SK },
+      { id: 'lo', title: '📗 在来線・私鉄図鑑', category: 'local', masters: MASTER_TRAIN_LOCAL },
+    ],
+    countUnit: { species: '形式', total: '回' },
+  },
+  ride: {
+    key: 'ride', brand: 'RideDex', tagline: '乗り物さがしの宝探し', emoji: '🚗', hubLabel: '車・バイク',
+    huntLead: '街の車・バイクを撮って、自分で記録しよう。',
+    huntSub: 'メーカー・車種を自分で入力（あなたの記録が正解）。わからない時はAIに推測してもらえます。',
+    blurHint: '⚠️ ナンバープレートは、隠したい所を写真で<b>指でなぞって</b>隠してください。',
+    aiNote: 'これはAIの推定で、車種を外すこともあります。違っていたら直してください（あなたの訂正が正解になります）。',
+    categories: [{ id: 'car', emoji: '🚗', label: '四輪' }, { id: 'bike', emoji: '🏍️', label: '二輪' }],
+    defaultCategory: 'car',
+    fields: [
+      { id: 'operator', label: 'メーカー', ph: '例: トヨタ / ホンダ / 日産' },
+      { id: 'series', label: '車種', ph: '例: プリウス / ジムニー / GT-R', required: true },
+      { id: 'kind', label: 'ボディタイプ', ph: '例: SUV / セダン / 軽 / スポーツ' },
+      { id: 'debut', label: '世代・年式', ph: '例: 50系 / 2015–2022 / R34' },
+    ],
+    nameFields: ['operator', 'series'],
+    chapters: [
+      { id: 'car', title: '🚗 人気車図鑑', category: 'car', masters: MASTER_CAR },
+    ],
+    countUnit: { species: '車種', total: '回' },
+  },
+  plane: {
+    key: 'plane', brand: 'PlaneDex', tagline: '飛行機さがしの宝探し', emoji: '✈️', hubLabel: '飛行機',
+    huntLead: '空港や空で見た飛行機を撮って、自分で記録しよう。',
+    huntSub: '航空会社・機種を自分で入力（あなたの記録が正解）。わからない時はAIに推測してもらえます。',
+    blurHint: '⚠️ 写り込んだ人の顔は、隠したい所を写真で<b>指でなぞって</b>隠してください。',
+    aiNote: 'これはAIの推定で、機種を外すこともあります。違っていたら直してください（あなたの訂正が正解になります）。',
+    categories: [{ id: 'jet', emoji: '✈️', label: 'ジェット機' }, { id: 'prop', emoji: '🛩️', label: 'プロペラ機' }, { id: 'heli', emoji: '🚁', label: 'ヘリ' }],
+    defaultCategory: 'jet',
+    fields: [
+      { id: 'operator', label: '航空会社', ph: '例: ANA / JAL / スカイマーク' },
+      { id: 'series', label: '機種', ph: '例: ボーイング787 / A350 / Q400', required: true },
+      { id: 'kind', label: 'タイプ', ph: '例: 旅客機 / 貨物機 / プロペラ機' },
+      { id: 'debut', label: '就航年 など', ph: '例: 2011 / —' },
+    ],
+    nameFields: ['operator', 'series'],
+    chapters: [
+      { id: 'jet', title: '✈️ 旅客機図鑑', category: 'jet', masters: MASTER_PLANE },
+    ],
+    countUnit: { species: '機種', total: '回' },
+  },
+};

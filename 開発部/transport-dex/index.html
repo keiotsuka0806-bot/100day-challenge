@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e1730" />
+  <title>TransportDex — 乗り物の図鑑</title>
+  <meta name="description" content="車・鉄道・飛行機を撮って集める乗り物の図鑑。持ってる形式とまだ集めるべき形式が一目で分かる。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="TransportDex — 乗り物の図鑑" />
+  <meta property="og:description" content="車・鉄道・飛行機を撮って集める乗り物の図鑑。" />
+  <meta property="og:image" content="icon.svg" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ハブ（TransportDex：全ジャンルの入口＋横断コレクション） -->
+  <section id="hub" class="hub hidden">
+    <div class="hub-inner">
+      <h1 class="hub-title">🚉 TransportDex</h1>
+      <p class="hub-sub">乗り物を撮って集める図鑑。ジャンルを選ぼう。</p>
+      <div class="hub-total" id="hubTotal"></div>
+      <div class="hub-genres" id="hubGenres"></div>
+      <p class="hub-foot">各ジャンルは専門アプリとして単体でも使えます。</p>
+    </div>
+  </section>
+
+  <!-- ジャンル別アプリ（顔は特化：ブランドはJSが流し込む） -->
+  <div id="appRoot" class="hidden">
+    <header class="topbar">
+      <div class="brand"><a href="?" class="brand-home" title="ハブへ">‹</a> <span class="brand-mark" id="brandMark">🚉</span> <span id="brandName">TransportDex</span></div>
+      <div class="stat-chips">
+        <span class="chip" id="chipSpecies">0</span>
+        <span class="chip" id="chipTotal">0</span>
+      </div>
+    </header>
+
+    <main>
+      <section id="view-hunt" class="view">
+        <div class="hunt-hero">
+          <p class="hunt-lead" id="huntLead"></p>
+          <p class="hunt-sub" id="huntSub"></p>
+          <label class="btn-hunt">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+            📷 さがす（撮影）
+          </label>
+          <p class="privacy-note">写り込んだ人の顔・ナンバーは記録画面でなぞって隠せます。元の写真はサーバーに残しません。</p>
+          <p class="mode-note hidden" id="modeNote"></p>
+        </div>
+      </section>
+
+      <section id="view-dex" class="view hidden">
+        <div class="dex-filters" id="dexFilters"></div>
+        <div id="masterHead" class="master-head hidden"></div>
+        <div id="achievements" class="achievements"></div>
+        <div id="dexGrid" class="dex-grid"></div>
+        <p id="dexEmpty" class="dex-empty">まだ図鑑は空っぽ。<br>「さがす」で最初の1つを見つけよう。</p>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <button class="tab active" data-view="hunt">🔎 さがす</button>
+      <button class="tab" data-view="dex">📖 図鑑</button>
+    </nav>
+
+    <div id="scanOverlay" class="overlay hidden">
+      <div class="scan-box"><div class="scan-line"></div><div class="scan-emoji">🔍</div></div>
+      <p>鑑定中…</p>
+    </div>
+    <div id="resultModal" class="modal hidden"><div class="modal-card" id="resultCard"></div></div>
+    <div id="reveal" class="reveal hidden"></div>
+  </div>
+
+  <script src="genres.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
