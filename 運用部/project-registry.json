@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-27T16:03:16.917Z",
+  "updatedAt": "2026-06-28T15:21:34.756Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -251,6 +251,16 @@
       "lastCouncil": "2026-06-27",
       "lastDeploy": "2026-06-27",
       "councilReport": "デザイン部/reports/2026-06-27-train-dex-genius-council.md"
+    },
+    "transport-dex": {
+      "path": "開発部/transport-dex",
+      "url": "http://localhost:8798/",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ後改善中",
+      "lastCouncil": "2026-06-28",
+      "lastDeploy": "2026-06-28",
+      "councilReport": "デザイン部/reports/2026-06-28-transport-dex-genius-council.md"
     }
   }
 }
