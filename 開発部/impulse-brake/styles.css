@@ -83,3 +83,9 @@ input:focus{outline:none; border-color:var(--accent)}
 .chip{background:var(--card2); border:1px solid #334155; border-radius:999px; padding:6px 12px; font-size:.85rem}
 .chip-regret{border-color:var(--warn)}
 .chip-ok{border-color:var(--ok)}
+
+/* 再考中カードの削除ボタン */
+.card{position:relative}
+.card-del{position:absolute; top:4px; right:6px; width:32px; height:32px; padding:0; background:transparent; border:none; color:var(--muted); font-size:1.4rem; line-height:1; border-radius:8px}
+.card-del:active{color:var(--warn)}
+.item-head{padding-right:26px}

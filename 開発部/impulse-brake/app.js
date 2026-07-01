@@ -147,6 +147,14 @@ function coolingCard(i) {
   const remain = i.cooldownUntil - Date.now();
   const ready = remain <= 0;
 
+  const del = document.createElement('button');
+  del.className = 'card-del';
+  del.type = 'button';
+  del.setAttribute('aria-label', '消す');
+  del.textContent = '×';
+  del.onclick = () => deleteItem(i.id);
+  li.appendChild(del);
+
   li.appendChild(itemHead(i));
 
   const row = document.createElement('div');
@@ -238,6 +246,14 @@ function setStatus(id, status) {
   i.status = status;
   if (status === 'skipped') i.thumb = null; // 見送り済みは表示しない→容量節約
   save();
+}
+
+// 再考中の項目を一覧から消す（統計には影響しない中立の削除）
+function deleteItem(id) {
+  if (!confirm('この再考中の項目を消しますか？（見送りにはカウントされません）')) return;
+  state.items = state.items.filter(x => x.id !== id);
+  save();
+  renderHome();
 }
 function markBought(id) {
   const i = state.items.find(x => x.id === id);
