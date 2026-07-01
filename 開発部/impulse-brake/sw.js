@@ -1,6 +1,7 @@
 /* 衝動ブレーキ Service Worker
-   キャッシュを更新したいときは必ず CACHE の版番号を上げる（SWキャッシュ優先の反映漏れ対策） */
-const CACHE = 'impulse-brake-v6';
+   方針: ネットワーク優先（常に最新を取得・オフライン時のみキャッシュ）。
+   これで「古いキャッシュ版が居座って画面が出ない」問題を防ぐ。 */
+const CACHE = 'impulse-brake-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -27,7 +28,14 @@ self.addEventListener('fetch', e => {
   // APIは常にネットワーク（キャッシュしない）
   if (request.url.includes('/api/')) return;
   if (request.method !== 'GET') return;
+  // ネットワーク優先: 取れたら最新を返しつつキャッシュ更新、失敗時のみキャッシュ、最後はindex.html
   e.respondWith(
-    caches.match(request).then(hit => hit || fetch(request).catch(() => caches.match('./index.html')))
+    fetch(request)
+      .then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(request, copy)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
   );
 });
