@@ -1,0 +1,79 @@
+:root{
+  --bg:#0f172a; --card:#1e293b; --card2:#243244;
+  --ink:#e2e8f0; --muted:#94a3b8;
+  --accent:#38bdf8; --accent-ink:#04222f;
+  --warn:#fb7185; --ok:#34d399;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+#app{max-width:520px; margin:0 auto; padding:20px 18px calc(40px + env(safe-area-inset-bottom));}
+.screen{display:none; animation:fade .25s ease}
+.screen.visible{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.hero{text-align:center; margin:14px 0 22px}
+h1{font-size:1.9rem; margin:0}
+.tagline{color:var(--muted); margin:.2rem 0 0}
+h2{font-size:1.15rem; margin:1.4rem 0 .6rem}
+.muted{color:var(--muted); font-size:.9rem}
+
+.stats{display:flex; gap:12px; margin:8px 0 20px}
+.stat{flex:1; background:var(--card); border-radius:var(--radius); padding:16px; text-align:center}
+.stat-value{display:block; font-size:1.7rem; font-weight:700}
+#regret-rate{color:var(--warn)}
+#skipped-total{color:var(--ok)}
+.stat-label{font-size:.8rem; color:var(--muted)}
+
+button{font:inherit; cursor:pointer; border:none; border-radius:12px}
+.primary{background:var(--accent); color:var(--accent-ink); font-weight:700; padding:14px 18px}
+.primary.big, .big{width:100%; font-size:1.1rem; padding:16px}
+.ghost{background:transparent; color:var(--muted); border:1px solid #334155; padding:14px 18px}
+.link{background:none; color:var(--accent); padding:12px 0; width:100%; text-align:left}
+.back{background:none; color:var(--muted); padding:6px 0; margin-bottom:6px}
+
+.list-block{margin-top:22px}
+.cards{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+.card{background:var(--card); border-radius:14px; padding:14px}
+.card .name{font-weight:600}
+.card .meta{color:var(--muted); font-size:.85rem; margin-top:2px}
+.card .row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.card .row button{flex:1 1 auto; padding:10px 12px; font-size:.95rem}
+.countdown{color:var(--accent); font-variant-numeric:tabular-nums}
+
+label{display:block; margin:12px 0}
+input[type=text],input[type=number]{
+  width:100%; margin-top:6px; padding:13px 14px; font-size:1rem;
+  background:var(--card2); color:var(--ink); border:1px solid #334155; border-radius:12px;
+}
+input:focus{outline:none; border-color:var(--accent)}
+
+.banner{background:var(--card); border-left:4px solid var(--warn); border-radius:12px; padding:14px; margin:6px 0 14px}
+.banner.good{border-left-color:var(--ok)}
+.banner b{color:var(--warn)}
+
+.questions{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:12px}
+.questions li{padding-left:4px}
+.pause-actions{display:flex; gap:10px; margin-top:18px}
+.pause-actions button{flex:1}
+
+.howto{padding-left:1.2em; display:flex; flex-direction:column; gap:10px}
+.howto li{padding-left:4px}
+
+.loading{color:var(--muted); font-style:italic}
+
+.hint{text-align:center; margin:10px 4px 4px}
+#share-skipped{text-align:center}
+
+/* スクショ入力とサムネイル */
+.photo-label input[type=file]{display:block; margin-top:8px; color:var(--muted); font-size:.9rem}
+.preview{display:block; width:100%; max-width:240px; border-radius:12px; margin:6px 0 4px; border:1px solid #334155}
+.item-head{display:flex; gap:12px; align-items:center}
+.thumb{width:52px; height:52px; object-fit:cover; border-radius:10px; flex:0 0 auto; border:1px solid #334155}
+.item-info{min-width:0}
+.item-info .name{overflow:hidden; text-overflow:ellipsis}

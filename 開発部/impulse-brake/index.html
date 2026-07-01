@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>衝動ブレーキ</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ホーム -->
+    <section id="home" class="screen visible">
+      <header class="hero">
+        <h1>衝動ブレーキ</h1>
+        <p class="tagline">買う前に、ひと呼吸。</p>
+      </header>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="regret-rate">—</span>
+          <span class="stat-label">あなたの後悔率</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="skipped-total">0回</span>
+          <span class="stat-label" id="skipped-label">見送った回数</span>
+        </div>
+      </div>
+
+      <button id="start-pause" class="primary big">買い物を止める</button>
+      <p class="muted hint">ポチる前にここへ。3つの問いと24時間の間で、勢いを一度冷やします。</p>
+      <button id="share-skipped" class="link" hidden>見送った金額をシェア →</button>
+
+      <div class="list-block">
+        <h2>再考中 <span class="muted" id="cooling-count"></span></h2>
+        <ul id="cooling-list" class="cards"></ul>
+      </div>
+
+      <div class="list-block" id="checkin-block" hidden>
+        <h2>後悔チェックイン</h2>
+        <p class="muted">少し前に買ったもの。どうでした？</p>
+        <ul id="checkin-list" class="cards"></ul>
+      </div>
+
+      <button id="open-shortcut" class="link">Amazon・楽天を開くと自動で立ち上げる設定 →</button>
+    </section>
+
+    <!-- ポーズ（貼る→後悔率→3問→判断） -->
+    <section id="pause" class="screen">
+      <button class="back" data-to="home">← 戻る</button>
+      <h2>いま、何を買おうとしてる？</h2>
+
+      <div id="pause-input">
+        <label class="photo-label">スクショを貼る<span class="muted">（その買い物の「顔」になります・任意）</span>
+          <input id="p-photo" type="file" accept="image/*">
+        </label>
+        <img id="p-preview" class="preview" alt="貼ったスクショ" hidden>
+        <label>一言メモ<span class="muted">（任意）</span><input id="p-memo" type="text" placeholder="例: セール最終日で焦ってる" autocomplete="off"></label>
+        <label>値段<span class="muted">（任意・打つと「見送った金額」が貯まります）</span><input id="p-price" type="number" inputmode="numeric" placeholder="例: 18000"></label>
+        <button id="p-go" class="primary big">一拍おく</button>
+      </div>
+
+      <div id="pause-result" hidden>
+        <div id="regret-banner" class="banner"></div>
+        <ol id="questions" class="questions"></ol>
+        <div class="pause-actions">
+          <button id="p-cool" class="primary">再考する（24時間）</button>
+          <button id="p-buy" class="ghost">それでも買う</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- オンボーディング（後悔率の初期シード） -->
+    <section id="onboard" class="screen">
+      <h2>はじめに</h2>
+      <p>直近で「勢いで買っちゃったな」という物を思い出してください。1つずつ、後悔したかどうか教えてください。（スキップ可）</p>
+      <div id="seed-input">
+        <label>買ったもの<input id="s-name" type="text" placeholder="例: 使ってないガジェット"></label>
+        <div class="pause-actions">
+          <button data-seed="regret" class="ghost">後悔した</button>
+          <button data-seed="ok" class="primary">よかった</button>
+        </div>
+        <p class="muted" id="seed-count">まだ0件</p>
+        <button id="seed-done" class="link">思い出せない・スキップして始める →</button>
+      </div>
+    </section>
+
+    <!-- ショートカット設定手順 -->
+    <section id="shortcut" class="screen">
+      <button class="back" data-to="home">← 戻る</button>
+      <h2>買い物アプリを開くと自動で立ち上げる（iPhone）</h2>
+      <ol class="howto">
+        <li>iPhoneの「ショートカット」アプリを開く</li>
+        <li>下の「オートメーション」→「+」→「個人用オートメーションを作成」</li>
+        <li>「App」を選び、Amazon・楽天市場・Yahoo!ショッピング・メルカリなど<b>見張りたいアプリ</b>を選ぶ →「開いている」にチェック</li>
+        <li>操作に「URLを開く」を追加し、このアプリのURLを貼る</li>
+        <li>「すぐに実行」をオンにして完成</li>
+      </ol>
+      <p class="muted">これで対象アプリを開くたび、衝動ブレーキが先に立ち上がります。ブラウザで買う場合やAndroidは今後対応予定です。</p>
+    </section>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

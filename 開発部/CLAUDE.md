@@ -148,3 +148,9 @@ db.collection('items').doc(id).delete();
 <!-- HEIC画像変換 -->
 <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 ```
+
+## impulse-brake（衝動ブレーキ）2026-07-01
+- 買う前に一拍おく道具。貼る→後悔率提示→AI3問(未来の自分)→24hクールダウン→見送り累計＆後悔率が育つ
+- Vanilla JS / PWA / localStorage(端末内) / Vercel関数(api/questions.js, OpenAI gpt-4o-mini・鍵なしモック)
+- 全ショップ対応は"貼るだけ"設計。iPhoneショートカットでAmazon/楽天等の起動時に自動立ち上げ(ショートカット設定.md)
+- 心の支え柱(thought-second-opinion系)。研究起点=test-time computeを人間の衝動買いに翻訳

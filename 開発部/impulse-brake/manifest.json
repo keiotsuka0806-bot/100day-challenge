@@ -1,0 +1,12 @@
+{
+  "name": "衝動ブレーキ",
+  "short_name": "衝動ブレーキ",
+  "description": "買う前に、ひと呼吸。衝動買いを止める道具。",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-28T15:21:34.756Z",
+  "updatedAt": "2026-07-01T12:25:38.908Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -11,12 +11,7 @@
       "lastDeploy": "2026-06-06",
       "lastCouncil": "2026-06-06",
       "councilReport": "デザイン部/reports/2026-06-06-lexworld-genius-council.md",
-      "lastReleaseCheck": "2026-06-06",
-      "lastVerifiedAt": "2026-06-06T13:28:41.945Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://lexworld-seven.vercel.app",
-      "lastVisualCheckAt": "2026-06-06T13:28:41.945Z",
-      "lastVisualCheck": "HTTP 200; mode=html"
+      "lastReleaseCheck": "2026-06-06"
     },
     "sound-frame": {
       "path": "開発部/sound-frame",
@@ -28,12 +23,7 @@
       "lastDeploy": "2026-06-08",
       "lastCouncil": "2026-06-07",
       "councilReport": "デザイン部/reports/2026-06-07-sound-frame-genius-council.md",
-      "lastReleaseCheck": "2026-06-06",
-      "lastVerifiedAt": "2026-06-06T13:28:45.439Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://sound-frame-kei-2026.web.app",
-      "lastVisualCheckAt": "2026-06-06T13:28:45.439Z",
-      "lastVisualCheck": "HTTP 200; mode=html"
+      "lastReleaseCheck": "2026-06-06"
     },
     "tatsuro": {
       "path": "開発部/tatsuro",
@@ -41,29 +31,23 @@
       "type": "visual-share",
       "council": "Visual Share Council",
       "status": "デプロイ済み",
-      "hosting": "firebase",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-08",
       "lastCouncil": "",
       "councilReport": "",
-      "lastReleaseCheck": "2026-06-07",
-      "lastVerifiedAt": "2026-06-08T06:45:22Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://tatsuro-kei-2026.web.app",
-      "lastVisualCheckAt": "2026-06-08T06:45:22Z",
-      "lastVisualCheck": "HTTP 200; mode=html"
+      "lastReleaseCheck": "2026-06-07"
     },
     "vibe-sanitizer": {
       "path": "開発部/vibe-sanitizer",
       "url": "https://vibe-sanitizer.vercel.app",
-      "type": "ai-app",
+      "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ済み",
       "hosting": "vercel",
       "lastDeploy": "2026-06-10",
       "lastCouncil": "",
       "councilReport": "",
-      "lastReleaseCheck": "",
-      "notes": "ANTHROPIC_API_KEY 未設定。設定後に動作確認が必要"
+      "lastReleaseCheck": ""
     },
     "mood-forecast": {
       "path": "開発部/mood-forecast",
@@ -71,7 +55,7 @@
       "type": "general",
       "council": "Product Genius Council",
       "status": "開発中",
-      "hosting": "vercel",
+      "hosting": "unknown",
       "lastDeploy": "",
       "lastCouncil": "",
       "councilReport": "",
@@ -92,73 +76,98 @@
     "ai-debate-stage": {
       "path": "開発部/ai-debate-stage",
       "url": "https://ai-debate-stage.vercel.app",
-      "type": "ai-app",
+      "type": "ai",
       "council": "AI Product Council",
       "status": "共有可能",
       "hosting": "vercel",
       "lastDeploy": "2026-06-11",
       "lastCouncil": "2026-06-11",
       "councilReport": "デザイン部/reports/2026-06-11-ai-debate-stage-genius-council.md",
-      "lastReleaseCheck": "2026-06-11",
-      "lastVerifiedAt": "2026-06-11T11:11:00Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://ai-debate-stage.vercel.app"
+      "lastReleaseCheck": "2026-06-11"
     },
     "gekikara-review": {
       "path": "開発部/gekikara-review",
       "url": "https://gekikara-review.vercel.app",
-      "type": "ai-app",
+      "type": "learning",
+      "council": "Learning Science Council",
       "status": "ドロップ",
       "hosting": "vercel",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "meeting-cost-meter": {
       "path": "開発部/meeting-cost-meter",
       "url": "https://meeting-cost-meter-kei2026.web.app",
-      "type": "ops-tool",
+      "type": "visual-share",
+      "council": "Visual Share Council",
       "status": "ドロップ",
       "hosting": "firebase",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "food-score": {
       "path": "開発部/food-score",
       "url": "https://food-score-sigma.vercel.app",
       "type": "visual-share",
+      "council": "Visual Share Council",
       "status": "ドロップ",
       "hosting": "vercel",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "mini-kanban": {
       "path": "開発部/mini-kanban",
       "url": "https://mini-kanban-kei-2999.web.app",
       "type": "ops-tool",
+      "council": "Operational Excellence Council",
       "status": "ドロップ",
       "hosting": "firebase",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "nani-taberu": {
       "path": "開発部/nani-taberu",
       "url": "https://nani-taberu-app.web.app",
       "type": "visual-share",
+      "council": "Visual Share Council",
       "status": "ドロップ",
       "hosting": "firebase",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "quote-court": {
       "path": "開発部/quote-court",
       "url": "https://quote-court-game.web.app",
       "type": "game",
+      "council": "Game Master Council",
       "status": "ドロップ",
       "hosting": "vercel",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "whisky-note": {
       "path": "開発部/whisky-note",
       "url": "https://whisky-note-e137d.web.app",
       "type": "visual-share",
+      "council": "Visual Share Council",
       "status": "ドロップ",
       "hosting": "firebase",
-      "droppedAt": "2026-06-11"
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     },
     "aida": {
       "path": "開発部/aida",
@@ -166,12 +175,10 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "共有可能",
-      "lastCouncil": "2026-06-14",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-14",
+      "lastCouncil": "2026-06-14",
       "councilReport": "デザイン部/reports/2026-06-14-aida-genius-council.md",
-      "lastVerifiedAt": "2026-06-14T06:31:05.204Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://aida-deploy-sooty.vercel.app",
       "lastReleaseCheck": "2026-06-14"
     },
     "receipt-warikan": {
@@ -180,12 +187,10 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "共有可能",
-      "lastCouncil": "2026-06-16",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-16",
+      "lastCouncil": "2026-06-16",
       "councilReport": "デザイン部/reports/2026-06-16-receipt-warikan-genius-council.md",
-      "lastVerifiedAt": "2026-06-16T10:19:54.753Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://receipt-warikan-delta.vercel.app",
       "lastReleaseCheck": "2026-06-16"
     },
     "gratitude-jar": {
@@ -194,12 +199,10 @@
       "type": "visual-share",
       "council": "Visual Share Council",
       "status": "共有可能",
-      "lastCouncil": "2026-06-17",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-17",
+      "lastCouncil": "2026-06-17",
       "councilReport": "デザイン部/reports/2026-06-17-gratitude-jar-genius-council.md",
-      "lastVerifiedAt": "2026-06-17T09:49:41.754Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://gratitude-jar-lyart.vercel.app",
       "lastReleaseCheck": "2026-06-17"
     },
     "qr-live-poll": {
@@ -208,9 +211,11 @@
       "type": "ops-tool",
       "council": "Operational Excellence Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-06-20",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-20",
-      "councilReport": "デザイン部/reports/2026-06-20-qr-live-poll-genius-council.md"
+      "lastCouncil": "2026-06-20",
+      "councilReport": "デザイン部/reports/2026-06-20-qr-live-poll-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "tsugihagi-sakubun-lab": {
       "path": "開発部/tsugihagi-sakubun-lab",
@@ -218,19 +223,23 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-06-23",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-23",
-      "councilReport": "デザイン部/reports/2026-06-23-tsugihagi-sakubun-lab-genius-council.md"
+      "lastCouncil": "2026-06-23",
+      "councilReport": "デザイン部/reports/2026-06-23-tsugihagi-sakubun-lab-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "dandori": {
       "path": "開発部/dandori",
       "url": "https://dandori-snowy.vercel.app",
-      "type": "tool",
-      "council": "業務ツール/管理アプリ Council",
+      "type": "ops-tool",
+      "council": "Operational Excellence Council",
       "status": "デプロイ済み",
-      "lastCouncil": "2026-06-23",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-24",
-      "councilReport": "デザイン部/reports/2026-06-23-dandori-genius-council.md"
+      "lastCouncil": "2026-06-23",
+      "councilReport": "デザイン部/reports/2026-06-23-dandori-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "ride-dex": {
       "path": "開発部/ride-dex",
@@ -238,9 +247,11 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-06-26",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-26",
-      "councilReport": "デザイン部/reports/2026-06-26-ride-dex-genius-council.md"
+      "lastCouncil": "2026-06-26",
+      "councilReport": "デザイン部/reports/2026-06-26-ride-dex-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "train-dex": {
       "path": "開発部/train-dex",
@@ -248,9 +259,11 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-06-27",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-27",
-      "councilReport": "デザイン部/reports/2026-06-27-train-dex-genius-council.md"
+      "lastCouncil": "2026-06-27",
+      "councilReport": "デザイン部/reports/2026-06-27-train-dex-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "transport-dex": {
       "path": "開発部/transport-dex",
@@ -258,9 +271,179 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-06-28",
+      "hosting": "vercel",
       "lastDeploy": "2026-06-28",
-      "councilReport": "デザイン部/reports/2026-06-28-transport-dex-genius-council.md"
+      "lastCouncil": "2026-06-28",
+      "councilReport": "デザイン部/reports/2026-06-28-transport-dex-genius-council.md",
+      "lastReleaseCheck": ""
+    },
+    "ai-org-sim": {
+      "path": "開発部/ai-org-sim",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "vercel",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "ai-project-os": {
+      "path": "開発部/ai-project-os",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "ai-shohosen": {
+      "path": "開発部/ai-shohosen",
+      "url": "https://token-diet-kei-2026.web.app",
+      "type": "ops-tool",
+      "council": "Operational Excellence Council",
+      "status": "デプロイ済み",
+      "hosting": "firebase",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "asa-brief": {
+      "path": "開発部/asa-brief",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "vercel",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "card-ogp": {
+      "path": "開発部/card-ogp",
+      "url": "",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "glass-factory": {
+      "path": "開発部/glass-factory",
+      "url": "",
+      "type": "game",
+      "council": "Game Master Council",
+      "status": "開発中",
+      "hosting": "vercel",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "lyric-spark": {
+      "path": "開発部/lyric-spark",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "persona-forge": {
+      "path": "開発部/persona-forge",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "portfolio-forge": {
+      "path": "開発部/portfolio-forge",
+      "url": "",
+      "type": "learning",
+      "council": "Learning Science Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "retro-snap": {
+      "path": "開発部/retro-snap",
+      "url": "https://retro-snap-xxxx.web.app",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "デプロイ済み",
+      "hosting": "firebase",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "shorts-studio": {
+      "path": "開発部/shorts-studio",
+      "url": "https://shorts-studio-kei-2026.web.app",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "デプロイ済み",
+      "hosting": "firebase",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "thought-second-opinion": {
+      "path": "開発部/thought-second-opinion",
+      "url": "https://thought-second-opinion.vercel.app",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ済み",
+      "hosting": "vercel",
+      "lastDeploy": "2026-06-30",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": "",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://thought-second-opinion.vercel.app"
+    },
+    "token-diet": {
+      "path": "開発部/token-diet",
+      "url": "https://token-diet-kei-2026.web.app",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ済み",
+      "hosting": "firebase",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "impulse-brake": {
+      "path": "開発部/impulse-brake",
+      "url": "http://127.0.0.1:8199",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "デプロイ後改善中",
+      "lastCouncil": "2026-07-01",
+      "lastDeploy": "2026-07-01",
+      "councilReport": "デザイン部/reports/2026-07-01-impulse-brake-genius-council.md"
     }
   }
 }
