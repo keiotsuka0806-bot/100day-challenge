@@ -1,6 +1,6 @@
 /* 衝動ブレーキ Service Worker
    キャッシュを更新したいときは必ず CACHE の版番号を上げる（SWキャッシュ優先の反映漏れ対策） */
-const CACHE = 'impulse-brake-v4';
+const CACHE = 'impulse-brake-v5';
 const ASSETS = [
   './',
   './index.html',

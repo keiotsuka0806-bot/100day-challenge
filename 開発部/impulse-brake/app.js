@@ -390,7 +390,11 @@ function addSeed(regret) {
   });
   save();
   seedCount++;
-  document.getElementById('seed-count').textContent = `${seedCount}件 記録した`;
+  document.getElementById('seed-count').textContent = `${seedCount}件 記録しました。続けてもOK、これで始めてもOK`;
+  const chip = document.createElement('li');
+  chip.className = 'chip ' + (regret ? 'chip-regret' : 'chip-ok');
+  chip.textContent = `${name}：${regret ? '後悔' : 'よかった'}`;
+  document.getElementById('seed-list').appendChild(chip);
   document.getElementById('s-name').value = '';
   document.getElementById('s-name').focus();
 }
