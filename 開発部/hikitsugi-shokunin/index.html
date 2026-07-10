@@ -58,7 +58,12 @@
 
       <!-- 資料タブ -->
       <section id="tab-sources" class="tab-panel">
-        <p class="panel-lead">手持ちのマニュアル・手順メモ・過去の引き継ぎ書を貼り込むと、AIが読んで<strong>下書きWiki</strong>を先に組みます。取材は「資料に書いていないこと」だけになります。</p>
+        <p class="panel-lead">手持ちのマニュアル・手順メモ・過去の引き継ぎ書を渡すと、AIが読んで<strong>下書きWiki</strong>を先に組みます。取材は「資料に書いていないこと」だけになります。</p>
+        <div id="drop-zone" class="drop-zone">
+          <p class="drop-title">📄 PDF・Word・PowerPoint をここにドロップ</p>
+          <label class="btn-secondary file-label">ファイルを選ぶ<input type="file" id="input-files" accept=".pdf,.docx,.pptx,.txt,.md" multiple hidden></label>
+          <p class="hint">読み取りはこの端末の中だけで行われます（この時点では外部送信なし）。スキャンPDF（文字が画像のもの）は読めません。Webページは本文をコピーして下の欄へ。</p>
+        </div>
         <div class="add-source">
           <input type="text" id="source-title" placeholder="資料の名前（例: 月次経理マニュアル）" maxlength="60">
           <textarea id="source-text" rows="6" placeholder="ここに資料の本文を貼り付け（テキスト）"></textarea>
@@ -196,6 +201,8 @@
 
   <div id="toast" class="toast hidden"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

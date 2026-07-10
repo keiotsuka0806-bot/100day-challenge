@@ -149,6 +149,20 @@ body {
 .char-count { font-size: 12px; color: var(--muted); }
 
 /* ===== 資料タブ ===== */
+.drop-zone {
+  background: #fff;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  margin-bottom: 12px;
+  transition: border-color .15s, background .15s;
+}
+.drop-zone.dragging { border-color: var(--accent); background: var(--paper-2); }
+.drop-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.drop-zone .hint { text-align: left; }
+.drop-zone .file-label { display: inline-block; margin-bottom: 8px; }
+
 .add-source { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
 .add-source input, .add-source textarea {
   width: 100%;

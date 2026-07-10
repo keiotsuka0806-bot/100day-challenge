@@ -242,6 +242,120 @@ function initSources() {
     toast('資料を追加しました');
   });
   $('#btn-draft').addEventListener('click', () => withConsent(runDraft));
+
+  const zone = $('#drop-zone');
+  $('#input-files').addEventListener('change', e => {
+    handleFiles(e.target.files);
+    e.target.value = '';
+  });
+  ['dragover', 'dragenter'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault();
+    zone.classList.add('dragging');
+  }));
+  ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault();
+    zone.classList.remove('dragging');
+  }));
+  zone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+}
+
+// ===== ファイル読み取り（PDF/Word/PowerPoint。すべて端末内で完結） =====
+
+const PDF_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const MAX_FILE_MB = 20;
+
+async function handleFiles(fileList) {
+  const files = [...fileList].slice(0, 6);
+  for (const file of files) {
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      toast(`⚠️ ${file.name}: ${MAX_FILE_MB}MBを超えるファイルは読み込めません`);
+      continue;
+    }
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    toast(`📄 ${file.name} を読み取っています…`);
+    try {
+      let text = '';
+      if (ext === 'pdf') text = await extractPdf(file);
+      else if (ext === 'docx') text = await extractDocx(file);
+      else if (ext === 'pptx') text = await extractPptx(file);
+      else if (ext === 'txt' || ext === 'md') text = await file.text();
+      else { toast(`⚠️ ${file.name}: 対応形式はPDF / .docx / .pptx / テキストです（古い.doc/.pptは新形式で保存し直してください）`); continue; }
+
+      text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      if (text.length < 50) {
+        toast(`⚠️ ${file.name}: 文字をほとんど取り出せませんでした（スキャンPDF・画像中心の資料かもしれません）`);
+        continue;
+      }
+      const title = file.name.replace(/\.[^.]+$/, '').slice(0, 60);
+      state.sources.push({ id: uid(), title, text: text.slice(0, 20000), addedAt: nowIso() });
+      save();
+      renderSources();
+      toast(`✅ ${title} を資料に追加しました（${Math.min(text.length, 20000)}字${text.length > 20000 ? '・上限で切り詰め' : ''}）`);
+    } catch (e) {
+      toast(`⚠️ ${file.name}: 読み取りに失敗しました（${e.message}）`);
+    }
+  }
+}
+
+async function extractPdf(file) {
+  if (!window.pdfjsLib) throw new Error('PDF読み取りライブラリが未読込。通信環境を確認して再読み込みしてください');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+  const doc = await pdfjsLib.getDocument({
+    data: await file.arrayBuffer(),
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',  // 日本語等のCJKフォント解読に必須
+    cMapPacked: true,
+  }).promise;
+  const maxPages = Math.min(doc.numPages, 50);
+  const out = [];
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await doc.getPage(i);
+    const tc = await page.getTextContent();
+    out.push(tc.items.map(it => it.str).join(' '));
+  }
+  if (doc.numPages > maxPages) out.push(`（${doc.numPages}ページ中、先頭${maxPages}ページのみ読み取り）`);
+  return out.join('\n');
+}
+
+function decodeXmlEntities(s) {
+  return s
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+}
+
+function xmlTexts(xml, tag) {
+  const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`, 'g');
+  const parts = [];
+  let m;
+  while ((m = re.exec(xml))) parts.push(decodeXmlEntities(m[1]));
+  return parts;
+}
+
+async function extractDocx(file) {
+  if (!window.JSZip) throw new Error('読み取りライブラリが未読込。通信環境を確認して再読み込みしてください');
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const doc = zip.file('word/document.xml');
+  if (!doc) throw new Error('Word文書の中身が見つかりません');
+  const xml = await doc.async('string');
+  return xml.split('</w:p>').map(p => xmlTexts(p, 'w:t').join('')).filter(t => t.trim()).join('\n');
+}
+
+async function extractPptx(file) {
+  if (!window.JSZip) throw new Error('読み取りライブラリが未読込。通信環境を確認して再読み込みしてください');
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const slideNum = name => Number((name.match(/slide(\d+)\.xml$/) || [])[1] || 0);
+  const slides = Object.keys(zip.files)
+    .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a, b) => slideNum(a) - slideNum(b));
+  if (!slides.length) throw new Error('スライドが見つかりません');
+  const out = [];
+  for (const name of slides) {
+    const xml = await zip.file(name).async('string');
+    const t = xmlTexts(xml, 'a:t').join('\n');
+    if (t.trim()) out.push(`--- スライド${slideNum(name)} ---\n${t}`);
+  }
+  return out.join('\n');
 }
 
 function renderSources() {
