@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>引き継ぎWiki職人 — AIの取材で暗黙知を残す</title>
+  <meta name="description" content="退職・異動前の引き継ぎ書づくりを、AIの取材で。資料を持ち込むと下書きWikiができ、書かれていないことだけ質問されます。データは端末内のみ。">
+  <meta name="theme-color" content="#22304d">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- 初回セットアップ -->
+  <section id="screen-setup" class="screen hidden">
+    <div class="setup-card">
+      <div class="setup-icon">📔</div>
+      <h1>引き継ぎWiki職人</h1>
+      <p class="setup-lead">退職・異動・産休の前に。AIがあなたに取材して、後任が辿って読める「引き継ぎWiki」を一緒に組み上げます。<strong>業務データはこの端末の中にだけ保存されます。</strong></p>
+      <label class="field">
+        <span>あなたの職種</span>
+        <select id="setup-jobtype">
+          <option value="事務">事務・バックオフィス</option>
+          <option value="営業">営業・顧客対応</option>
+          <option value="エンジニア">エンジニア・技術職</option>
+          <option value="その他" selected>その他</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>最終出社日・引き継ぎ期限（任意）</span>
+        <input type="date" id="setup-deadline">
+      </label>
+      <button id="btn-setup-done" class="btn-primary btn-wide">はじめる</button>
+    </div>
+  </section>
+
+  <!-- メイン -->
+  <div id="screen-main" class="screen hidden">
+    <header class="app-header">
+      <div class="app-title">📔 引き継ぎWiki職人</div>
+      <div class="header-right">
+        <span id="deadline-badge" class="deadline-badge hidden"></span>
+        <button id="btn-settings" class="btn-text" aria-label="設定">⚙️</button>
+      </div>
+    </header>
+
+    <nav class="tabbar" role="tablist">
+      <button class="tab active" data-tab="sources" role="tab">📥 資料</button>
+      <button class="tab" data-tab="interview" role="tab">🎙️ 取材</button>
+      <button class="tab" data-tab="wiki" role="tab">📚 Wiki<span id="page-count" class="tab-count"></span></button>
+      <button class="tab" data-tab="export" role="tab">📦 書き出し</button>
+    </nav>
+
+    <main class="main-content">
+
+      <!-- 資料タブ -->
+      <section id="tab-sources" class="tab-panel">
+        <p class="panel-lead">手持ちのマニュアル・手順メモ・過去の引き継ぎ書を貼り込むと、AIが読んで<strong>下書きWiki</strong>を先に組みます。取材は「資料に書いていないこと」だけになります。</p>
+        <div class="add-source">
+          <input type="text" id="source-title" placeholder="資料の名前（例: 月次経理マニュアル）" maxlength="60">
+          <textarea id="source-text" rows="6" placeholder="ここに資料の本文を貼り付け（テキスト）"></textarea>
+          <div class="row-end">
+            <span id="source-len" class="char-count">0字</span>
+            <button id="btn-add-source" class="btn-secondary">資料を追加</button>
+          </div>
+        </div>
+        <ul id="source-list" class="source-list"></ul>
+        <div class="cta-block">
+          <button id="btn-draft" class="btn-primary btn-wide" disabled>🪄 資料から下書きWikiを作る</button>
+          <p class="hint">資料がなくても大丈夫。「🎙️ 取材」タブから始めれば、ゼロから聞き取りで作れます。</p>
+        </div>
+      </section>
+
+      <!-- 取材タブ -->
+      <section id="tab-interview" class="tab-panel hidden">
+        <p class="panel-lead">AI記者が「Wikiにまだ書かれていないこと」を質問します。話すように答えるだけで、Wikiに整理されて追記されます。</p>
+        <div id="interview-empty" class="interview-start">
+          <button id="btn-start-interview" class="btn-primary btn-wide">🎙️ 取材を受ける</button>
+        </div>
+        <div id="interview-card" class="interview-card hidden">
+          <div class="q-meta"><span id="q-reason" class="q-reason"></span><span id="q-target" class="q-target"></span></div>
+          <p id="q-text" class="q-text"></p>
+          <textarea id="answer-text" rows="5" placeholder="話すように、そのまま書いてOK。AIが整えます"></textarea>
+          <div class="row-end">
+            <button id="btn-skip-q" class="btn-text">この質問はスキップ</button>
+            <button id="btn-send-answer" class="btn-primary">回答してWikiに追記</button>
+          </div>
+        </div>
+        <div id="interview-log" class="interview-log"></div>
+      </section>
+
+      <!-- Wikiタブ -->
+      <section id="tab-wiki" class="tab-panel hidden">
+        <div id="wiki-list-view">
+          <p class="panel-lead">後任はここを辿って読みます。<span class="ref-chip">出典</span>付きの記述は元資料まで遡れます。</p>
+          <div class="row-end">
+            <button id="btn-new-page" class="btn-secondary">＋ ページを手で追加</button>
+          </div>
+          <ul id="page-list" class="page-list"></ul>
+        </div>
+        <article id="wiki-page-view" class="hidden">
+          <button id="btn-back-list" class="btn-text">← ページ一覧へ</button>
+          <div class="page-head">
+            <h2 id="page-title"></h2>
+            <button id="btn-edit-page" class="btn-secondary">編集</button>
+          </div>
+          <div id="page-refs" class="page-refs"></div>
+          <div id="page-body" class="page-body"></div>
+          <div id="page-editor" class="page-editor hidden">
+            <textarea id="page-edit-text" rows="14"></textarea>
+            <div class="row-end">
+              <button id="btn-delete-page" class="btn-danger-text">ページを削除</button>
+              <button id="btn-save-page" class="btn-primary">保存</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 書き出しタブ -->
+      <section id="tab-export" class="tab-panel hidden">
+        <h3 class="section-title">🕳️ 抜け漏れリスト</h3>
+        <p class="panel-lead">資料や回答に言及があるのに、まだページ化されていないこと。</p>
+        <ul id="gap-list" class="gap-list"></ul>
+
+        <h3 class="section-title">🗓️ 後任の最初の30日プラン</h3>
+        <div id="plan30-box" class="plan30-box">
+          <button id="btn-plan30" class="btn-secondary">Wikiからプランを生成</button>
+        </div>
+
+        <h3 class="section-title">📦 引き継ぎ一式の書き出し</h3>
+        <div class="export-actions">
+          <button id="btn-export-html" class="btn-primary">後任に渡すHTMLを書き出す</button>
+          <p class="hint">ページ・リンク・30日プラン入りの1ファイル。ブラウザで開けます。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 設定モーダル -->
+  <div id="modal-settings" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3>設定</h3>
+      <label class="field">
+        <span>職種</span>
+        <select id="settings-jobtype">
+          <option value="事務">事務・バックオフィス</option>
+          <option value="営業">営業・顧客対応</option>
+          <option value="エンジニア">エンジニア・技術職</option>
+          <option value="その他">その他</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>最終出社日・引き継ぎ期限</span>
+        <input type="date" id="settings-deadline">
+      </label>
+      <div class="settings-io">
+        <button id="btn-export-json" class="btn-secondary">控えを書き出す（JSON）</button>
+        <label class="btn-secondary file-label">控えから復元<input type="file" id="input-import-json" accept=".json,application/json" hidden></label>
+      </div>
+      <p class="hint">データはこの端末のブラウザ内にのみ保存されます。機種変更・ブラウザ削除に備えて控えを書き出しておいてください。</p>
+      <button id="btn-wipe" class="btn-danger-text">すべてのデータを消去</button>
+      <div class="row-end"><button id="btn-close-settings" class="btn-primary">閉じる</button></div>
+    </div>
+  </div>
+
+  <!-- AI送信の同意モーダル -->
+  <div id="modal-consent" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3>AIに送る前の確認</h3>
+      <p class="consent-text">この機能は、入力内容をAI処理のため外部API（OpenAI）へ送信します。パスワード・口座番号らしき文字列は<strong>送信前に端末内で自動的に伏せ字</strong>にしますが、機密情報が含まれていないかご自身でもご確認ください。Wikiへの保存自体は端末内のみです。</p>
+      <div class="row-end">
+        <button id="btn-consent-cancel" class="btn-text">やめる</button>
+        <button id="btn-consent-ok" class="btn-primary">確認した、送信する</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

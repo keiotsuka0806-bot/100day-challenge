@@ -154,3 +154,20 @@ db.collection('items').doc(id).delete();
 - Vanilla JS / PWA / localStorage(端末内) / Vercel関数(api/questions.js, OpenAI gpt-4o-mini・鍵なしモック)
 - 全ショップ対応は"貼るだけ"設計。iPhoneショートカットでAmazon/楽天等の起動時に自動立ち上げ(ショートカット設定.md)
 - 心の支え柱(thought-second-opinion系)。研究起点=test-time computeを人間の衝動買いに翻訳
+
+## naze-box（なんで箱）2026-07-03
+- 子どもの「なんで？」に年齢別(3/5/7/10歳)でAIが答える"好奇心アルバム"。https://naze-box.vercel.app
+- Vanilla JS / PWA / localStorage / Vercel関数(api/ask.js, OpenAI gpt-4o-mini・鍵なしモック=コストゼロ)。AI生成は fetchAnswer() に分離
+- 回答=子どもファースト: カテゴリ絵文字ヒーロー＋答え1文を大きく／たとえ話・親向け補足は「おうちの人へ」折りたたみ／つぎの質問ボタンで連鎖／音声入力(話す・入力欄内アイコン)
+- 成長=**好奇心の森**: 分野(宇宙/生き物/体/食べ物/科学/社会/感情/その他)ごとに木が独立に育つ(め🌱→ふたば→き→はな→み🍎、その分野の質問数で段階)。木タップ→その分野の箱へ
+- 訪問者: 新しい分野の木が芽ぶくと**その分野の動物**が来訪しコメント＋おくりもの(gift-shelfに蓄積)。連打では湧かない(新分野=確定/活動=たまに)
+- 安全: センシティブ語(死/病気/事故等)で親向け補足を厚く(サーバ・クライアント両方)。XSSはescapeHtml＋textContent。二重送信ガードあり
+- 3ゲート通過(genius-audit GO / QA 正確性0件 / security 92点)。研究起点=Karpathy「文脈=プログラム」
+
+## hikitsugi-wiki（引き継ぎWiki職人）2026-07-10
+- 退職・異動前の引き継ぎ書づくりをAIの「取材」で。資料持ち込み→下書きWiki→差分インタビュー(書かれていないことだけ質問)→[[相互リンク]]Wiki→HTML一式書き出し
+- Vanilla JS / PWA(sw.js=network-first) / localStorage(端末内のみ+控えJSON書き出し/復元) / Vercel関数 api/interview.js(OpenAI gpt-4o-mini・鍵なしモック=コストゼロ)。mode=draft/question/integrate/plan30 の4役を1関数で
+- 安全設計: AI送信前に同意モーダル+機密らしき文字列(パスワード/口座/カード番号)を端末内で伏せ字化(maskSensitive)。Wiki描画はescapeHtml→ミニMarkdown(見出し/太字/箇条書き/[[リンク]])のみ
+- 付加価値: 抜け漏れリスト(資料・回答から自動検出→「取材で聞く」でキュー投入)+後任の最初の30日プラン生成+期限カウントダウンバッジ
+- ローカル確認は `node tools/dev-server.mjs`(8789番・Vercel関数アダプタ内蔵)。320px横はみ出し0実測済み
+- 収益の芽=A型(退職・異動の期限駆動)。研究起点=Karpathy LLM Wiki(知識は再検索でなく相互リンク蓄積で複利)

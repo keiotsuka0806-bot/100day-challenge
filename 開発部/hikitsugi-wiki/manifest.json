@@ -1,0 +1,12 @@
+{
+  "name": "引き継ぎWiki職人",
+  "short_name": "引き継ぎWiki",
+  "description": "AIの取材で暗黙知を残す引き継ぎ書づくり。データは端末内のみ。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#faf8f4",
+  "theme_color": "#22304d",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
