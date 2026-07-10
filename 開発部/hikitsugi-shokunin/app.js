@@ -278,8 +278,9 @@ async function handleFiles(fileList) {
       if (ext === 'pdf') text = await extractPdf(file);
       else if (ext === 'docx') text = await extractDocx(file);
       else if (ext === 'pptx') text = await extractPptx(file);
+      else if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') text = await extractExcel(file);
       else if (ext === 'txt' || ext === 'md') text = await file.text();
-      else { toast(`⚠️ ${file.name}: 対応形式はPDF / .docx / .pptx / テキストです（古い.doc/.pptは新形式で保存し直してください）`); continue; }
+      else { toast(`⚠️ ${file.name}: 対応形式はPDF / .docx / .pptx / .xlsx / テキストです（古い.doc/.pptは新形式で保存し直してください）`); continue; }
 
       text = text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
       if (text.length < 50) {
@@ -330,6 +331,18 @@ function xmlTexts(xml, tag) {
   let m;
   while ((m = re.exec(xml))) parts.push(decodeXmlEntities(m[1]));
   return parts;
+}
+
+async function extractExcel(file) {
+  if (!window.XLSX) throw new Error('Excel読み取りライブラリが未読込。通信環境を確認して再読み込みしてください');
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+  const out = [];
+  for (const name of wb.SheetNames.slice(0, 10)) {
+    const csv = XLSX.utils.sheet_to_csv(wb.Sheets[name], { blankrows: false });
+    if (csv.trim()) out.push(wb.SheetNames.length > 1 ? `--- シート: ${name} ---\n${csv.trim()}` : csv.trim());
+  }
+  if (wb.SheetNames.length > 10) out.push(`（${wb.SheetNames.length}シート中、先頭10シートのみ読み取り）`);
+  return out.join('\n\n');
 }
 
 async function extractDocx(file) {

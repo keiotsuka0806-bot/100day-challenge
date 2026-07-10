@@ -60,8 +60,8 @@
       <section id="tab-sources" class="tab-panel">
         <p class="panel-lead">手持ちのマニュアル・手順メモ・過去の引き継ぎ書を渡すと、AIが読んで<strong>下書きWiki</strong>を先に組みます。取材は「資料に書いていないこと」だけになります。</p>
         <div id="drop-zone" class="drop-zone">
-          <p class="drop-title">📄 PDF・Word・PowerPoint をここにドロップ</p>
-          <label class="btn-secondary file-label">ファイルを選ぶ<input type="file" id="input-files" accept=".pdf,.docx,.pptx,.txt,.md" multiple hidden></label>
+          <p class="drop-title">📄 PDF・Word・Excel・PowerPoint をここにドロップ</p>
+          <label class="btn-secondary file-label">ファイルを選ぶ<input type="file" id="input-files" accept=".pdf,.docx,.pptx,.xlsx,.xls,.csv,.txt,.md" multiple hidden></label>
           <p class="hint">読み取りはこの端末の中だけで行われます（この時点では外部送信なし）。スキャンPDF（文字が画像のもの）は読めません。Webページは本文をコピーして下の欄へ。</p>
         </div>
         <div class="add-source">
@@ -203,6 +203,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
