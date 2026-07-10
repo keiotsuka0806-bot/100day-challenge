@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-01T12:25:38.908Z",
+  "updatedAt": "2026-07-10T16:08:59.487Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -444,6 +444,32 @@
       "lastCouncil": "2026-07-01",
       "lastDeploy": "2026-07-01",
       "councilReport": "デザイン部/reports/2026-07-01-impulse-brake-genius-council.md"
+    },
+    "uchinoko-jiten": {
+      "path": "開発部/uchinoko-jiten",
+      "url": "https://uchinoko-jiten.vercel.app",
+      "type": "ai-app",
+      "council": "AI App Council",
+      "status": "デプロイ済み",
+      "hosting": "vercel",
+      "lastDeploy": "2026-07-09",
+      "lastCouncil": "2026-07-09",
+      "councilReport": "デザイン部/reports/2026-07-09-uchinoko-jiten-genius-council.md"
+    },
+    "hikitsugi-shokunin": {
+      "path": "開発部/hikitsugi-shokunin",
+      "url": "https://hikitsugi-shokunin.vercel.app",
+      "type": "ai-app",
+      "council": "AI App Council",
+      "status": "共有可能",
+      "hosting": "vercel",
+      "lastDeploy": "2026-07-10",
+      "lastCouncil": "2026-07-10",
+      "councilReport": "デザイン部/reports/2026-07-10-hikitsugi-shokunin-genius-council.md",
+      "lastVerifiedAt": "2026-07-10T16:08:59.484Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://hikitsugi-shokunin.vercel.app",
+      "lastReleaseCheck": "2026-07-10"
     }
   }
 }

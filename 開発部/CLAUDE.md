@@ -165,7 +165,8 @@ db.collection('items').doc(id).delete();
 - 3ゲート通過(genius-audit GO / QA 正確性0件 / security 92点)。研究起点=Karpathy「文脈=プログラム」
 
 ## hikitsugi-shokunin（引き継ぎ職人）2026-07-10
-- 退職・異動前の引き継ぎ書づくりをAIの「取材」で。資料持ち込み→下書きWiki→差分インタビュー(書かれていないことだけ質問)→[[相互リンク]]Wiki→HTML一式書き出し
+- **共有可能**（3ゲート通過: GC 15/15 / QA 29件検出22件修正 / セキュリティ92点。release-check合格）https://hikitsugi-shokunin.vercel.app ※OPENAI_API_KEY未登録=モック運用
+- 退職・異動前の引き継ぎ書づくりをAIの「取材」で。資料持ち込み(PDF/Word/Excel/PPTドロップ・端末内抽出)→下書きWiki→差分インタビュー(書かれていないことだけ質問・音声回答・1日3問ノルマ)→[[相互リンク]]Wiki→HTML一式書き出し+完了証明PNG
 - Vanilla JS / PWA(sw.js=network-first) / localStorage(端末内のみ+控えJSON書き出し/復元) / Vercel関数 api/interview.js(OpenAI gpt-4o-mini・鍵なしモック=コストゼロ)。mode=draft/question/integrate/plan30 の4役を1関数で
 - 安全設計: AI送信前に同意モーダル+機密らしき文字列(パスワード/口座/カード番号)を端末内で伏せ字化(maskSensitive)。Wiki描画はescapeHtml→ミニMarkdown(見出し/太字/箇条書き/[[リンク]])のみ
 - 付加価値: 抜け漏れリスト(資料・回答から自動検出→「取材で聞く」でキュー投入)+後任の最初の30日プラン生成+期限カウントダウンバッジ+**❓質問タブ(後任がWikiに質問→出典ページ付き回答・mode=ask)**+ページ確認済みトグルと進捗(x/y)
