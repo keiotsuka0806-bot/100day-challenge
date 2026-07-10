@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>引き継ぎWiki職人 — AIの取材で暗黙知を残す</title>
+  <title>引き継ぎ職人 — AIの取材で暗黙知を残す</title>
   <meta name="description" content="退職・異動前の引き継ぎ書づくりを、AIの取材で。資料を持ち込むと下書きWikiができ、書かれていないことだけ質問されます。データは端末内のみ。">
   <meta name="theme-color" content="#22304d">
   <link rel="manifest" href="manifest.json">
@@ -17,7 +17,7 @@
   <section id="screen-setup" class="screen hidden">
     <div class="setup-card">
       <div class="setup-icon">📔</div>
-      <h1>引き継ぎWiki職人</h1>
+      <h1>引き継ぎ職人</h1>
       <p class="setup-lead">退職・異動・産休の前に。AIがあなたに取材して、後任が辿って読める「引き継ぎWiki」を一緒に組み上げます。<strong>業務データはこの端末の中にだけ保存されます。</strong></p>
       <label class="field">
         <span>あなたの職種</span>
@@ -39,7 +39,7 @@
   <!-- メイン -->
   <div id="screen-main" class="screen hidden">
     <header class="app-header">
-      <div class="app-title">📔 引き継ぎWiki職人</div>
+      <div class="app-title">📔 引き継ぎ職人</div>
       <div class="header-right">
         <span id="deadline-badge" class="deadline-badge hidden"></span>
         <button id="btn-settings" class="btn-text" aria-label="設定">⚙️</button>
@@ -50,6 +50,7 @@
       <button class="tab active" data-tab="sources" role="tab">📥 資料</button>
       <button class="tab" data-tab="interview" role="tab">🎙️ 取材</button>
       <button class="tab" data-tab="wiki" role="tab">📚 Wiki<span id="page-count" class="tab-count"></span></button>
+      <button class="tab" data-tab="ask" role="tab">❓ 質問</button>
       <button class="tab" data-tab="export" role="tab">📦 書き出し</button>
     </nav>
 
@@ -96,6 +97,7 @@
         <div id="wiki-list-view">
           <p class="panel-lead">後任はここを辿って読みます。<span class="ref-chip">出典</span>付きの記述は元資料まで遡れます。</p>
           <div class="row-end">
+            <span id="check-progress" class="check-progress"></span>
             <button id="btn-new-page" class="btn-secondary">＋ ページを手で追加</button>
           </div>
           <ul id="page-list" class="page-list"></ul>
@@ -104,7 +106,10 @@
           <button id="btn-back-list" class="btn-text">← ページ一覧へ</button>
           <div class="page-head">
             <h2 id="page-title"></h2>
-            <button id="btn-edit-page" class="btn-secondary">編集</button>
+            <div class="page-head-actions">
+              <button id="btn-check-page" class="btn-secondary">✔ 確認済みにする</button>
+              <button id="btn-edit-page" class="btn-secondary">編集</button>
+            </div>
           </div>
           <div id="page-refs" class="page-refs"></div>
           <div id="page-body" class="page-body"></div>
@@ -116,6 +121,18 @@
             </div>
           </div>
         </article>
+      </section>
+
+      <!-- 質問タブ（後任モード） -->
+      <section id="tab-ask" class="tab-panel hidden">
+        <p class="panel-lead">Wikiに向かって質問できます（<strong>後任の人向け</strong>）。AIがWikiの中身だけを根拠に、出典ページ付きで答えます。書かれていないことは「記載なし」と正直に返します。</p>
+        <div class="ask-box">
+          <textarea id="ask-text" rows="3" placeholder="例: B社の請求書はどう送る？"></textarea>
+          <div class="row-end">
+            <button id="btn-ask" class="btn-primary">Wikiに質問する</button>
+          </div>
+        </div>
+        <div id="ask-log" class="ask-log"></div>
       </section>
 
       <!-- 書き出しタブ -->

@@ -164,10 +164,10 @@ db.collection('items').doc(id).delete();
 - 安全: センシティブ語(死/病気/事故等)で親向け補足を厚く(サーバ・クライアント両方)。XSSはescapeHtml＋textContent。二重送信ガードあり
 - 3ゲート通過(genius-audit GO / QA 正確性0件 / security 92点)。研究起点=Karpathy「文脈=プログラム」
 
-## hikitsugi-wiki（引き継ぎWiki職人）2026-07-10
+## hikitsugi-shokunin（引き継ぎ職人）2026-07-10
 - 退職・異動前の引き継ぎ書づくりをAIの「取材」で。資料持ち込み→下書きWiki→差分インタビュー(書かれていないことだけ質問)→[[相互リンク]]Wiki→HTML一式書き出し
 - Vanilla JS / PWA(sw.js=network-first) / localStorage(端末内のみ+控えJSON書き出し/復元) / Vercel関数 api/interview.js(OpenAI gpt-4o-mini・鍵なしモック=コストゼロ)。mode=draft/question/integrate/plan30 の4役を1関数で
 - 安全設計: AI送信前に同意モーダル+機密らしき文字列(パスワード/口座/カード番号)を端末内で伏せ字化(maskSensitive)。Wiki描画はescapeHtml→ミニMarkdown(見出し/太字/箇条書き/[[リンク]])のみ
-- 付加価値: 抜け漏れリスト(資料・回答から自動検出→「取材で聞く」でキュー投入)+後任の最初の30日プラン生成+期限カウントダウンバッジ
+- 付加価値: 抜け漏れリスト(資料・回答から自動検出→「取材で聞く」でキュー投入)+後任の最初の30日プラン生成+期限カウントダウンバッジ+**❓質問タブ(後任がWikiに質問→出典ページ付き回答・mode=ask)**+ページ確認済みトグルと進捗(x/y)
 - ローカル確認は `node tools/dev-server.mjs`(8789番・Vercel関数アダプタ内蔵)。320px横はみ出し0実測済み
 - 収益の芽=A型(退職・異動の期限駆動)。研究起点=Karpathy LLM Wiki(知識は再検索でなく相互リンク蓄積で複利)

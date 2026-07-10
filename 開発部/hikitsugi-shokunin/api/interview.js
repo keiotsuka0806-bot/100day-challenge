@@ -1,7 +1,7 @@
-// 引き継ぎWiki職人 — サーバー関数（Vercel）
+// 引き継ぎ職人 — サーバー関数（Vercel）
 // OPENAI_API_KEY があれば本物、無ければモックを返す。キーはサーバー内のみで使用しクライアントに出さない。
 // キー未設定なら OpenAI を一切叩かない＝コストゼロで動く。
-// mode: draft(資料→下書きWiki) / question(差分インタビューの質問) / integrate(回答→ページ追記) / plan30(最初の30日プラン)
+// mode: draft(資料→下書きWiki) / question(差分インタビューの質問) / integrate(回答→ページ追記) / plan30(最初の30日プラン) / ask(後任がWikiに質問)
 
 const MODEL = 'gpt-4o-mini';
 
@@ -59,6 +59,26 @@ function mockIntegrate(q, a) {
     pageTitle: '取材メモ',
     addition: `**Q: ${clip(q, 200)}**\n\n${clip(a, 800)}`,
     gaps: [],
+    mock: true,
+  };
+}
+
+function mockAsk(question, pages) {
+  // 日本語は分かち書きされないため、2文字ずつの断片(bigram)が本文に何個現れるかで関連ページを推定する
+  const q = String(question).replace(/[\s、。？?！!]/g, '');
+  const bigrams = [];
+  for (let i = 0; i < q.length - 1; i++) bigrams.push(q.slice(i, i + 2));
+  let hit = null; let best = 1;
+  for (const p of pages) {
+    if (!p.body) continue;
+    const score = bigrams.filter(b => p.body.includes(b)).length;
+    if (score > best) { best = score; hit = p; }
+  }
+  return {
+    answer: hit
+      ? `（モックモード）関連しそうなページは「${hit.title}」です。そのページを開いて確認してください。OPENAI_API_KEY 設定後は、Wikiの中身を読んだ上での回答になります。`
+      : '（モックモード）Wikiの中から答えを探す機能は、OPENAI_API_KEY 設定後に本稼働します。いまはページ一覧から関連ページを開いて確認してください。',
+    sources: hit ? [hit.title] : [],
     mock: true,
   };
 }
@@ -175,6 +195,17 @@ function plan30Prompt(pageSummaries, deadline) {
   );
 }
 
+function askPrompt(question, pages) {
+  return (
+    `あなたは前任者の引き継ぎWikiを熟読した案内役です。後任者の質問に、Wikiに書かれている内容だけを根拠に答えてください。\n` +
+    `質問: ${question}\n\nWiki全ページ:\n${pages.map(p => `【${p.title}】\n${p.body}`).join('\n\n')}\n\n` +
+    COMMON_RULES +
+    `- Wikiに答えがあれば、簡潔に答え、根拠にしたページ名を sources に入れる\n` +
+    `- Wikiに書かれていないことは推測で答えず、「Wikiには記載がありません」と正直に言い、関連しそうなページや「前任者・周囲に確認すべき」ことを案内する（その場合 sources は空でよい）\n` +
+    `出力JSON: {"answer":"回答（3文以内目安）","sources":["根拠ページ名"]}`
+  );
+}
+
 // ===== ハンドラ =====
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -255,6 +286,26 @@ export default async function handler(req, res) {
       return;
     }
 
+    if (mode === 'ask') {
+      const question = clip(body.question, 300).trim();
+      const pages = asArray(body.pages, 12)
+        .map(p => ({ title: clip(p && p.title, 60), body: clip(p && p.body, 1200) }))
+        .filter(p => p.title);
+      if (!question) { res.status(400).json({ error: 'question required' }); return; }
+      if (!pages.length) { res.status(400).json({ error: 'pages required' }); return; }
+      if (!key) { res.status(200).json(mockAsk(question, pages)); return; }
+      const parsed = await callOpenAI(key, askPrompt(question, pages), 500);
+      const answer = clip(parsed.answer, 1000);
+      if (!answer.trim()) { res.status(200).json(mockAsk(question, pages)); return; }
+      const validTitles = new Set(pages.map(p => p.title));
+      res.status(200).json({
+        answer,
+        sources: asArray(parsed.sources, 5).map(s => clip(s, 60)).filter(s => validTitles.has(s)),
+        mock: false,
+      });
+      return;
+    }
+
     if (mode === 'plan30') {
       const pageSummaries = asArray(body.pageSummaries, 20)
         .map(p => ({ title: clip(p && p.title, 60), outline: clip(p && p.outline, 300) }));
@@ -279,6 +330,7 @@ export default async function handler(req, res) {
     if (mode === 'question') { res.status(200).json({ questions: MOCK_QUESTIONS[jobType].slice(0, 3), mock: true }); return; }
     if (mode === 'integrate') { res.status(200).json(mockIntegrate(clip(body.q, 300), clip(body.a, 1500))); return; }
     if (mode === 'plan30') { res.status(200).json(mockPlan30(asArray(body.pageSummaries, 20).map(p => clip(p && p.title, 60)))); return; }
+    if (mode === 'ask') { res.status(200).json(mockAsk(clip(body.question, 300), asArray(body.pages, 12).map(p => ({ title: clip(p && p.title, 60), body: clip(p && p.body, 1200) })))); return; }
     res.status(500).json({ error: 'internal' });
   }
 }

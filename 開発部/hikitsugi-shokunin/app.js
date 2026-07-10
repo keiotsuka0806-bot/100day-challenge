@@ -1,4 +1,4 @@
-// 引き継ぎWiki職人 — 全アプリロジック
+// 引き継ぎ職人 — 全アプリロジック
 // データは localStorage のみ（端末外に保存しない）。AI呼び出しは /api/interview（鍵なしモックで縮退）。
 
 const LS_KEY = 'hikitsugi_wiki_v1';
@@ -11,6 +11,7 @@ const state = {
   queue: [],     // {q, target, reason}
   gaps: [],      // {id, text, done}
   plan30: null,  // [{phase, items:[]}]
+  asks: [],      // {q, answer, sources:[], mock, at} 後任の質問履歴
 };
 
 let currentPageId = null;
@@ -60,6 +61,7 @@ function applyImported(d) {
     body: str(p.body).slice(0, 20000),
     refs: (Array.isArray(p.refs) ? p.refs : []).slice(0, 10).map(r => str(r).slice(0, 60)),
     origin: ['draft', 'interview', 'manual'].includes(p.origin) ? p.origin : 'manual',
+    checked: p.checked === true,
     updatedAt: str(p.updatedAt),
   }));
   state.history = (Array.isArray(d.history) ? d.history : []).slice(0, 200).map(h => ({
@@ -78,6 +80,11 @@ function applyImported(d) {
         items: (Array.isArray(ph.items) ? ph.items : []).slice(0, 6).map(i => str(i).slice(0, 200)),
       }))
     : null;
+  state.asks = (Array.isArray(d.asks) ? d.asks : []).slice(0, 30).map(x => ({
+    q: str(x.q).slice(0, 300), answer: str(x.answer).slice(0, 1000),
+    sources: (Array.isArray(x.sources) ? x.sources : []).slice(0, 5).map(s => str(s).slice(0, 60)),
+    mock: x.mock === true, at: str(x.at),
+  })).filter(x => x.q);
 }
 
 function str(v) { return typeof v === 'string' ? v : ''; }
@@ -207,10 +214,11 @@ function initTabs() {
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  ['sources', 'interview', 'wiki', 'export'].forEach(t => {
+  ['sources', 'interview', 'wiki', 'ask', 'export'].forEach(t => {
     $(`#tab-${t}`).classList.toggle('hidden', t !== name);
   });
   if (name === 'wiki') backToList();
+  if (name === 'ask') renderAsks();
   if (name === 'export') renderExportTab();
 }
 
@@ -412,6 +420,7 @@ function upsertPage(title, body, opts = {}) {
     body: body || '',
     refs: opts.refs || [],
     origin: opts.origin || 'manual',
+    checked: false,
     updatedAt: nowIso(),
   };
   state.pages.push(page);
@@ -435,6 +444,14 @@ function initWiki() {
     openPage(page.id, true);
   });
   $('#btn-back-list').addEventListener('click', backToList);
+  $('#btn-check-page').addEventListener('click', () => {
+    const page = state.pages.find(p => p.id === currentPageId);
+    if (!page) return;
+    page.checked = !page.checked;
+    save();
+    renderCheckButton(page);
+    toast(page.checked ? '✔ 確認済みにしました' : '確認済みを外しました');
+  });
   $('#btn-edit-page').addEventListener('click', () => {
     const page = state.pages.find(p => p.id === currentPageId);
     if (!page) return;
@@ -480,7 +497,7 @@ function renderPageList() {
     const li = document.createElement('li');
     li.className = 'page-item';
     const t = document.createElement('strong');
-    t.textContent = p.title;
+    t.textContent = `${p.checked ? '✅ ' : ''}${p.title}`;
     const meta = document.createElement('span');
     meta.className = 'page-meta';
     meta.textContent = `${originLabel[p.origin] || ''} · ${p.body.length}字`;
@@ -489,16 +506,19 @@ function renderPageList() {
     ul.appendChild(li);
   });
   $('#page-count').textContent = state.pages.length ? ` ${state.pages.length}` : '';
+  const checkedCount = state.pages.filter(p => p.checked).length;
+  $('#check-progress').textContent = state.pages.length ? `確認済み ${checkedCount}/${state.pages.length}` : '';
 }
 
 function openPage(id, edit = false) {
   const page = state.pages.find(p => p.id === id);
   if (!page) return;
+  switchTab('wiki');  // 先にタブを切り替える（switchTab→backToListがcurrentPageIdを消すため、セットはこの後）
   currentPageId = id;
-  switchTab('wiki');
   hide('#wiki-list-view');
   show('#wiki-page-view');
   $('#page-title').textContent = page.title;
+  renderCheckButton(page);
   const refs = $('#page-refs');
   refs.textContent = '';
   page.refs.forEach(r => {
@@ -523,6 +543,82 @@ function backToList() {
   show('#wiki-list-view');
   hide('#wiki-page-view');
   renderPageList();
+}
+
+function renderCheckButton(page) {
+  const btn = $('#btn-check-page');
+  btn.textContent = page.checked ? '✅ 確認済み' : '✔ 確認済みにする';
+  btn.classList.toggle('is-checked', page.checked);
+}
+
+// ===== 質問タブ（後任モード） =====
+
+function initAsk() {
+  $('#btn-ask').addEventListener('click', () => withConsent(runAsk));
+}
+
+async function runAsk() {
+  if (busy) return;
+  const q = $('#ask-text').value.trim();
+  if (!q) { toast('質問を書いてください'); return; }
+  if (!state.pages.length) { toast('まだWikiページがありません（資料 or 取材から作れます）'); return; }
+  const btn = $('#btn-ask');
+  setBusy(btn, true, '📖 Wikiを読んでいます…');
+  try {
+    const data = await api({
+      mode: 'ask',
+      question: q,
+      pages: state.pages.slice(0, 12).map(p => ({ title: p.title, body: maskSensitive(p.body).slice(0, 1200) })),
+    });
+    mockNotice(data);
+    state.asks.unshift({
+      q,
+      answer: data.answer || '',
+      sources: Array.isArray(data.sources) ? data.sources.slice(0, 5) : [],
+      mock: data.mock === true,
+      at: nowIso(),
+    });
+    state.asks = state.asks.slice(0, 30);
+    $('#ask-text').value = '';
+    save();
+    renderAsks();
+  } catch (e) {
+    toast(`⚠️ ${e.message}`);
+  } finally {
+    setBusy(btn, false);
+  }
+}
+
+function renderAsks() {
+  const log = $('#ask-log');
+  log.textContent = '';
+  state.asks.forEach(x => {
+    const card = document.createElement('div');
+    card.className = 'ask-item';
+    const q = document.createElement('p');
+    q.className = 'ask-q';
+    q.textContent = `Q. ${x.q}`;
+    const a = document.createElement('p');
+    a.className = 'ask-a';
+    a.textContent = x.answer;
+    card.append(q, a);
+    if (x.sources.length) {
+      const srcRow = document.createElement('div');
+      srcRow.className = 'ask-sources';
+      x.sources.forEach(title => {
+        const chip = document.createElement('button');
+        chip.className = 'ref-chip ref-chip-link';
+        chip.textContent = `📄 ${title}`;
+        chip.addEventListener('click', () => {
+          const page = findPageByTitle(title);
+          if (page) openPage(page.id);
+        });
+        srcRow.appendChild(chip);
+      });
+      card.appendChild(srcRow);
+    }
+    log.appendChild(card);
+  });
 }
 
 // ===== 抜け漏れ =====
@@ -655,7 +751,7 @@ function buildExportHtml() {
       : `<span class="deadlink">${label}</span>`
   );
 
-  const nav = state.pages.map((p, i) => `<li><a href="#${slugify(p.title, i)}">${escapeHtml(p.title)}</a></li>`).join('');
+  const nav = state.pages.map((p, i) => `<li><a href="#${slugify(p.title, i)}">${p.checked ? '✅ ' : ''}${escapeHtml(p.title)}</a></li>`).join('');
   const sections = state.pages.map((p, i) =>
     `<section id="${slugify(p.title, i)}"><h2>${escapeHtml(p.title)}</h2>` +
     (p.refs.length ? `<p class="refs">出典: ${p.refs.map(escapeHtml).join(' / ')}</p>` : '') +
@@ -691,7 +787,7 @@ ul{padding-left:22px}footer{padding:24px;color:#8a8272;font-size:12px;text-align
 <nav><h1>📔 引き継ぎWiki</h1><p>${date}版</p><ul>${nav}${state.plan30 ? '<li><a href="#plan30">🗓️ 最初の30日プラン</a></li>' : ''}</ul></nav>
 <main>${plan}${sections}</main>
 </div>
-<footer>引き継ぎWiki職人で作成 — わからないことがあれば、まず関連ページのリンクを辿ってみてください</footer>
+<footer>引き継ぎ職人で作成 — わからないことがあれば、まず関連ページのリンクを辿ってみてください</footer>
 </body></html>`;
 }
 
@@ -774,6 +870,7 @@ function renderAll() {
   renderSources();
   renderInterview();
   renderPageList();
+  renderAsks();
   renderDeadline();
   renderExportTab();
 }
@@ -784,6 +881,7 @@ function init() {
   initSources();
   initInterview();
   initWiki();
+  initAsk();
   initPlan30();
   initExport();
   initSettings();
