@@ -58,7 +58,7 @@
 
       <!-- 資料タブ -->
       <section id="tab-sources" class="tab-panel">
-        <p class="panel-lead">手持ちのマニュアル・手順メモ・過去の引き継ぎ書を渡すと、AIが読んで<strong>下書きWiki</strong>を先に組みます。取材は「資料に書いていないこと」だけになります。</p>
+        <p class="panel-lead"><strong>整理しないでください。</strong>マニュアルでも、チャットのログでも、送信メールでも、日報でも——汚いまま全部投げてOK。仕分けと下書きWikiづくりはAIの仕事です。取材は「資料に書いていないこと」だけになります。</p>
         <div id="drop-zone" class="drop-zone">
           <p class="drop-title">📄 PDF・Word・Excel・PowerPoint をここにドロップ</p>
           <label class="btn-secondary file-label">ファイルを選ぶ<input type="file" id="input-files" accept=".pdf,.docx,.pptx,.xlsx,.xls,.csv,.txt,.md" multiple hidden></label>
@@ -66,7 +66,7 @@
         </div>
         <div class="add-source">
           <input type="text" id="source-title" placeholder="資料の名前（例: 月次経理マニュアル）" maxlength="60">
-          <textarea id="source-text" rows="6" placeholder="ここに資料の本文を貼り付け（テキスト）"></textarea>
+          <textarea id="source-text" rows="6" placeholder="ここに貼り付け（チャットログ・メール・日報など雑多なままでOK）"></textarea>
           <div class="row-end">
             <span id="source-len" class="char-count">0字</span>
             <button id="btn-add-source" class="btn-secondary">資料を追加</button>
@@ -81,7 +81,8 @@
 
       <!-- 取材タブ -->
       <section id="tab-interview" class="tab-panel hidden">
-        <p class="panel-lead">AI記者が「Wikiにまだ書かれていないこと」を質問します。話すように答えるだけで、Wikiに整理されて追記されます。</p>
+        <p class="panel-lead">AI記者が「Wikiにまだ書かれていないこと」を質問します。<strong>1問30秒、喋るだけでOK。</strong>Wikiへの整理はAIがやります。</p>
+        <p id="daily-goal" class="daily-goal"></p>
         <div id="interview-empty" class="interview-start">
           <button id="btn-start-interview" class="btn-primary btn-wide">🎙️ 取材を受ける</button>
         </div>
@@ -89,6 +90,10 @@
           <div class="q-meta"><span id="q-reason" class="q-reason"></span><span id="q-target" class="q-target"></span></div>
           <p id="q-text" class="q-text"></p>
           <textarea id="answer-text" rows="5" placeholder="話すように、そのまま書いてOK。AIが整えます"></textarea>
+          <div class="voice-row">
+            <button id="btn-voice" class="btn-voice">🎤 話して答える</button>
+            <span class="hint">押して話す・もう一度押して止める</span>
+          </div>
           <div class="row-end">
             <button id="btn-skip-q" class="btn-text">この質問はスキップ</button>
             <button id="btn-send-answer" class="btn-primary">回答してWikiに追記</button>
@@ -142,6 +147,14 @@
 
       <!-- 書き出しタブ -->
       <section id="tab-export" class="tab-panel hidden">
+        <h3 class="section-title">📜 引き継ぎ完了率</h3>
+        <div class="completion-box">
+          <div class="meter"><div id="meter-fill" class="meter-fill"></div></div>
+          <p id="completion-label" class="completion-label"></p>
+          <button id="btn-certificate" class="btn-secondary">完了証明を書き出す（画像）</button>
+          <p class="hint">「ちゃんと引き継ぎました」を上司・チームに見せられる1枚。確認済みページ・取材回答・抜け漏れ解消から算出します。</p>
+        </div>
+
         <h3 class="section-title">🕳️ 抜け漏れリスト</h3>
         <p class="panel-lead">資料や回答に言及があるのに、まだページ化されていないこと。</p>
         <ul id="gap-list" class="gap-list"></ul>

@@ -90,6 +90,7 @@ function applyImported(d) {
 function str(v) { return typeof v === 'string' ? v : ''; }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function nowIso() { return new Date().toISOString(); }
+function todayLocal() { return new Date().toLocaleDateString('sv-SE'); }  // ローカル時刻のYYYY-MM-DD（toISOStringはUTCで日付がズレる）
 
 // ===== XSS対策・ミニMarkdown描画 =====
 
@@ -432,6 +433,66 @@ function initInterview() {
     withConsent(nextQuestion);
   });
   $('#btn-send-answer').addEventListener('click', () => withConsent(sendAnswer));
+  initVoice();
+}
+
+// ===== 音声入力（Web Speech API。非対応ブラウザではボタンを隠す） =====
+
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = $('#btn-voice');
+  if (!SR) { btn.classList.add('hidden'); return; }
+  const rec = new SR();
+  rec.lang = 'ja-JP';
+  rec.interimResults = true;
+  rec.continuous = true;
+  let listening = false;
+  let baseText = '';
+  const ta = $('#answer-text');
+  rec.onresult = e => {
+    let text = '';
+    for (const r of e.results) text += r[0].transcript;
+    ta.value = (baseText + text).slice(0, 1500);
+  };
+  rec.onerror = () => { try { rec.stop(); } catch (_) {} };
+  rec.onend = () => {
+    listening = false;
+    btn.classList.remove('listening');
+    btn.textContent = '🎤 話して答える';
+  };
+  btn.addEventListener('click', () => {
+    if (listening) { rec.stop(); return; }
+    baseText = ta.value ? ta.value.trim() + ' ' : '';
+    try {
+      rec.start();
+      listening = true;
+      btn.classList.add('listening');
+      btn.textContent = '⏹ 聞き取り中…（押して終了）';
+    } catch (_) {}
+  });
+}
+
+// ===== 今日のノルマ（1日3問） =====
+
+const DAILY_GOAL = 3;
+
+function answeredToday() {
+  const today = new Date().toDateString();
+  return state.history.filter(h => h.at && new Date(h.at).toDateString() === today).length;
+}
+
+function renderDailyGoal() {
+  const el = $('#daily-goal');
+  const n = answeredToday();
+  let text = `きょうの取材: ${Math.min(n, DAILY_GOAL)}/${DAILY_GOAL}問`;
+  if (n >= DAILY_GOAL) text += ' — きょうの分はおしまい🎉（続けてもOK）';
+  else if (state.meta.deadline) {
+    const days = Math.max(0, Math.ceil((new Date(state.meta.deadline + 'T23:59:59') - new Date()) / 86400000));
+    text += `（1日3問×残り${days}日 ≒ あと${days * DAILY_GOAL}問ぶん聞けます）`;
+  } else {
+    text += '（1問30秒。喋るだけでOK）';
+  }
+  el.textContent = text;
 }
 
 async function nextQuestion() {
@@ -492,6 +553,7 @@ async function sendAnswer() {
 }
 
 function renderInterview() {
+  renderDailyGoal();
   const current = state.queue[0];
   if (current) {
     hide('#interview-empty');
@@ -859,8 +921,85 @@ function renderPlan30() {
 // ===== 書き出し =====
 
 function renderExportTab() {
+  renderCompletion();
   renderGaps();
   renderPlan30();
+}
+
+// ===== 完了率・完了証明 =====
+
+function completionStats() {
+  const pages = state.pages.length;
+  const checked = state.pages.filter(p => p.checked).length;
+  const gapsTotal = state.gaps.length;
+  const gapsDone = state.gaps.filter(g => g.done).length;
+  const pageScore = pages ? checked / pages : 0;
+  const gapScore = gapsTotal ? gapsDone / gapsTotal : 1;
+  const planScore = state.plan30 ? 1 : 0;
+  const rate = pages ? Math.round((pageScore * 0.5 + gapScore * 0.3 + planScore * 0.2) * 100) : 0;
+  return { pages, checked, gapsTotal, gapsDone, answers: state.history.length, rate };
+}
+
+function renderCompletion() {
+  const s = completionStats();
+  $('#meter-fill').style.width = `${s.rate}%`;
+  $('#completion-label').textContent = s.pages
+    ? `${s.rate}%（確認済み ${s.checked}/${s.pages}ページ・取材 ${s.answers}問・抜け漏れ解消 ${s.gapsDone}/${s.gapsTotal}件）`
+    : 'まだページがありません。資料か取材から始めましょう';
+}
+
+function drawCertificate() {
+  const s = completionStats();
+  const W = 1080, H = 1400;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+
+  x.fillStyle = '#faf8f4';
+  x.fillRect(0, 0, W, H);
+  x.strokeStyle = '#22304d'; x.lineWidth = 14; x.strokeRect(46, 46, W - 92, H - 92);
+  x.strokeStyle = '#c47b2c'; x.lineWidth = 3; x.strokeRect(72, 72, W - 144, H - 144);
+
+  x.textAlign = 'center';
+  x.fillStyle = '#22304d';
+  x.font = 'bold 76px "Hiragino Mincho ProN", "Yu Mincho", serif';
+  x.fillText('引き継ぎ完了証明', W / 2, 230);
+  x.fillStyle = '#8a8272';
+  x.font = '30px -apple-system, sans-serif';
+  x.fillText(new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }) + ' 現在', W / 2, 300);
+
+  x.fillStyle = '#c47b2c';
+  x.font = 'bold 190px -apple-system, sans-serif';
+  x.fillText(`${s.rate}%`, W / 2, 580);
+  x.fillStyle = '#22304d';
+  x.font = 'bold 38px -apple-system, sans-serif';
+  x.fillText('引き継ぎ完了率', W / 2, 650);
+
+  const lines = [
+    `業務ページ ${s.pages}ページ（確認済み ${s.checked}）`,
+    `取材に答えた数 ${s.answers}問`,
+    `抜け漏れの解消 ${s.gapsDone}/${s.gapsTotal}件`,
+    state.plan30 ? '後任の最初の30日プラン 作成済み' : '後任の最初の30日プラン 未作成',
+  ];
+  if (state.meta.deadline) lines.push(`最終出社日 ${state.meta.deadline}`);
+  x.font = '36px -apple-system, sans-serif';
+  lines.forEach((l, i) => x.fillText(l, W / 2, 790 + i * 80));
+
+  x.fillStyle = '#8a8272';
+  x.font = '26px -apple-system, sans-serif';
+  x.fillText('後任へ: 引き継ぎWiki（HTML）とセットでどうぞ', W / 2, H - 170);
+  x.fillText('引き継ぎ職人で作成', W / 2, H - 120);
+
+  c.toBlob(blob => {
+    if (!blob) { toast('⚠️ 画像の生成に失敗しました'); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `引き継ぎ完了証明_${todayLocal()}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('📜 完了証明を書き出しました');
+  }, 'image/png');
 }
 
 function slugify(title, i) {
@@ -929,9 +1068,13 @@ function download(filename, content, type) {
 }
 
 function initExport() {
+  $('#btn-certificate').addEventListener('click', () => {
+    if (!state.pages.length) { toast('まだページがありません'); return; }
+    drawCertificate();
+  });
   $('#btn-export-html').addEventListener('click', () => {
     if (!state.pages.length) { toast('まだページがありません'); return; }
-    download(`引き継ぎWiki_${new Date().toISOString().slice(0, 10)}.html`, buildExportHtml(), 'text/html');
+    download(`引き継ぎWiki_${todayLocal()}.html`, buildExportHtml(), 'text/html');
     toast('HTMLを書き出しました。そのまま後任に渡せます');
   });
 }
@@ -952,7 +1095,7 @@ function initSettings() {
     renderDeadline();
   });
   $('#btn-export-json').addEventListener('click', () => {
-    download(`hikitsugi_backup_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(state, null, 2), 'application/json');
+    download(`hikitsugi_backup_${todayLocal()}.json`, JSON.stringify(state, null, 2), 'application/json');
     toast('控えを書き出しました');
   });
   $('#input-import-json').addEventListener('change', e => {
