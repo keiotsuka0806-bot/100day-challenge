@@ -294,7 +294,7 @@ body {
   padding: 12px;
   resize: vertical;
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 14px;
+  font-size: 16px;  /* 16px未満だとiOSでフォーカス時に画面が勝手にズームする */
   line-height: 1.6;
 }
 
@@ -323,7 +323,15 @@ body {
 .ask-q { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
 .ask-a { font-size: 14px; margin-bottom: 8px; overflow-wrap: break-word; }
 .ask-sources { display: flex; flex-wrap: wrap; gap: 6px; }
-.ref-chip-link { border: none; cursor: pointer; color: #22508d; background: var(--paper-2); }
+.ref-chip-link {
+  border: none;
+  cursor: pointer;
+  color: #22508d;
+  background: var(--paper-2);
+  font-size: 13px;
+  padding: 8px 14px;
+  min-height: 32px;  /* 出典ジャンプは中核動線。タップしやすい高さを確保 */
+}
 .ref-chip-link:hover { background: var(--line); }
 
 /* ===== 書き出しタブ ===== */

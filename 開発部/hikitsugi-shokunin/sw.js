@@ -9,6 +9,7 @@ const ASSETS = [
   './app.js',
   './manifest.json',
   './icon.svg',
+  './icon-192.png',
 ];
 
 self.addEventListener('install', e => {
@@ -30,10 +31,14 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(request)
       .then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(request, copy)).catch(() => {});
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(request, copy)).catch(() => {});
+        }
         return res;
       })
-      .catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
+      .catch(() => caches.match(request).then(hit =>
+        hit || (request.mode === 'navigate' ? caches.match('./index.html') : Response.error())
+      ))
   );
 });

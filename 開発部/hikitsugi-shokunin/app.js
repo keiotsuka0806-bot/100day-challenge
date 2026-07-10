@@ -35,27 +35,33 @@ function load() {
     applyImported(JSON.parse(raw));
     return true;
   } catch (_) {
+    // 壊れたデータは捨てずに退避しておく（セットアップやり直しの上書きから守る）
+    try { localStorage.setItem(LS_KEY + '_broken', raw); } catch (_) {}
     return false;
   }
 }
 
-// 復元・インポート共通: 型を検証しながら state に流し込む（信用しない）
+// 復元・インポート共通: 型を検証しながら state に流し込む（信用しない）。
+// 全部を一時オブジェクトに組み立ててから一括適用する（途中で例外が出ても既存stateを半壊させない）。
+// 上限切り詰めは「新しい方を残す」＝末尾からslice（追記はpush=末尾なので、古い方から捨てる）。
 function applyImported(d) {
   if (!d || typeof d !== 'object') throw new Error('bad data');
-  const m = d.meta && typeof d.meta === 'object' ? d.meta : {};
-  state.meta = {
+  const obj = v => (v && typeof v === 'object' ? v : {});
+  const m = obj(d.meta);
+  const next = {};
+  next.meta = {
     jobType: ['事務', '営業', 'エンジニア', 'その他'].includes(m.jobType) ? m.jobType : 'その他',
     deadline: typeof m.deadline === 'string' ? m.deadline.slice(0, 10) : '',
     consented: m.consented === true,
     createdAt: typeof m.createdAt === 'string' ? m.createdAt : new Date().toISOString(),
   };
-  state.sources = (Array.isArray(d.sources) ? d.sources : []).slice(0, 30).map(s => ({
+  next.sources = (Array.isArray(d.sources) ? d.sources : []).slice(-30).map(obj).map(s => ({
     id: str(s.id) || uid(),
     title: str(s.title).slice(0, 60),
     text: str(s.text).slice(0, 20000),
     addedAt: str(s.addedAt),
   })).filter(s => s.text);
-  state.pages = (Array.isArray(d.pages) ? d.pages : []).slice(0, 100).map(p => ({
+  next.pages = (Array.isArray(d.pages) ? d.pages : []).slice(-100).map(obj).map(p => ({
     id: str(p.id) || uid(),
     title: str(p.title).slice(0, 60) || '無題ページ',
     body: str(p.body).slice(0, 20000),
@@ -64,27 +70,28 @@ function applyImported(d) {
     checked: p.checked === true,
     updatedAt: str(p.updatedAt),
   }));
-  state.history = (Array.isArray(d.history) ? d.history : []).slice(0, 200).map(h => ({
+  next.history = (Array.isArray(d.history) ? d.history : []).slice(-200).map(obj).map(h => ({
     q: str(h.q).slice(0, 300), a: str(h.a).slice(0, 2000),
     pageTitle: str(h.pageTitle).slice(0, 60), at: str(h.at),
   }));
-  state.queue = (Array.isArray(d.queue) ? d.queue : []).slice(0, 10).map(item => ({
+  next.queue = (Array.isArray(d.queue) ? d.queue : []).slice(0, 10).map(obj).map(item => ({
     q: str(item.q).slice(0, 300), target: str(item.target).slice(0, 60), reason: str(item.reason).slice(0, 100),
   })).filter(item => item.q);
-  state.gaps = (Array.isArray(d.gaps) ? d.gaps : []).slice(0, 50).map(g => ({
+  next.gaps = (Array.isArray(d.gaps) ? d.gaps : []).slice(-50).map(obj).map(g => ({
     id: str(g.id) || uid(), text: str(g.text).slice(0, 200), done: g.done === true,
   })).filter(g => g.text);
-  state.plan30 = Array.isArray(d.plan30)
-    ? d.plan30.slice(0, 3).map(ph => ({
+  next.plan30 = Array.isArray(d.plan30)
+    ? d.plan30.slice(0, 3).map(obj).map(ph => ({
         phase: str(ph.phase).slice(0, 20),
         items: (Array.isArray(ph.items) ? ph.items : []).slice(0, 6).map(i => str(i).slice(0, 200)),
       }))
     : null;
-  state.asks = (Array.isArray(d.asks) ? d.asks : []).slice(0, 30).map(x => ({
+  next.asks = (Array.isArray(d.asks) ? d.asks : []).slice(0, 30).map(obj).map(x => ({
     q: str(x.q).slice(0, 300), answer: str(x.answer).slice(0, 1000),
     sources: (Array.isArray(x.sources) ? x.sources : []).slice(0, 5).map(s => str(s).slice(0, 60)),
     mock: x.mock === true, at: str(x.at),
   })).filter(x => x.q);
+  Object.assign(state, next);
 }
 
 function str(v) { return typeof v === 'string' ? v : ''; }
@@ -134,8 +141,9 @@ function renderMarkdown(md) {
 // ===== 機密らしき文字列の伏せ字（送信前・端末内） =====
 
 function maskSensitive(text) {
+  // 英単語キーワードは\bで境界を取る（bypass等の部分一致で業務文を誤って伏せ字にしない）
   return String(text)
-    .replace(/((?:パスワード|パスﾜｰﾄﾞ|password|passwd|pass|pw|secret|api[_\s-]?key|token|暗証番号)[\s]*[:：=＝]?[\s]*)([^\s、。,]{4,})/gi, '$1●●●●')
+    .replace(/((?:パスワード|パスﾜｰﾄﾞ|暗証番号)|\b(?:password|passwd|pass|pw|secret|api[_\s-]?key|token)\b)([\s]*[:：=＝]?[\s]*)([^\s、。,]{4,})/gi, '$1$2●●●●')
     .replace(/((?:口座|振込先|account)[^\d]{0,10})(\d[\d-]{5,})/gi, '$1●●●●')
     .replace(/\b\d{13,16}\b/g, '●●●●');
 }
@@ -166,7 +174,9 @@ function withConsent(fn) {
 }
 
 function mockNotice(data) {
-  if (data && data.mock) toast('🔌 いまはお試しモード（AI未接続）。接続後に本物の生成になります');
+  if (!data || !data.mock) return;
+  if (data.reason === 'ai_error') toast('⚠️ AIが混み合っているため、仮の内容で続行しました（あとで再実行できます）');
+  else toast('🔌 いまはお試しモード（AI未接続）。接続後に本物の生成になります');
 }
 
 // ===== DOMヘルパー =====
@@ -428,6 +438,7 @@ async function runDraft() {
 function initInterview() {
   $('#btn-start-interview').addEventListener('click', () => withConsent(nextQuestion));
   $('#btn-skip-q').addEventListener('click', () => {
+    if (busy) return;
     state.queue.shift();
     save();
     withConsent(nextQuestion);
@@ -507,7 +518,9 @@ async function nextQuestion() {
         askedQs: state.history.slice(-10).map(h => h.q),
       });
       mockNotice(data);
-      state.queue = (data.questions || []).slice(0, 3);
+      // 代入でなくpush（フェッチ中に抜け漏れ「取材で聞く」でキューに積まれた質問を消さない）
+      state.queue.push(...(data.questions || []).slice(0, 3));
+      if (!state.queue.length) toast('いま出せる質問がありません。資料を足すか、しばらくしてもう一度どうぞ');
       save();
     } catch (e) {
       toast(`⚠️ ${e.message}`);
@@ -544,7 +557,10 @@ async function sendAnswer() {
     save();
     renderAll();
     toast(`「${title}」に追記しました`);
-    if (!state.queue.length) nextQuestion();
+    if (!state.queue.length) {
+      setBusy(btn, false);  // busyを解いてから次の質問を取りに行く（解かないとnextQuestionが即returnする）
+      nextQuestion();
+    }
   } catch (e) {
     toast(`⚠️ ${e.message}`);
   } finally {
@@ -591,14 +607,24 @@ function pageSummaries() {
 }
 
 function findPageByTitle(title) {
-  const norm = String(title).trim();
+  const norm = String(title).trim().slice(0, 60);  // 保存時と同じ正規化で照合（61字以上の同名すり抜け防止）
   return state.pages.find(p => p.title === norm);
+}
+
+const PAGE_BODY_MAX = 20000;
+
+function capBody(body) {
+  if (body.length > PAGE_BODY_MAX) {
+    toast('⚠️ ページが上限(2万字)に達しました。長くなった業務はページを分けてください');
+    return body.slice(0, PAGE_BODY_MAX);
+  }
+  return body;
 }
 
 function upsertPage(title, body, opts = {}) {
   const existing = findPageByTitle(title);
   if (existing) {
-    existing.body = existing.body ? existing.body + '\n\n' + body : body;
+    existing.body = capBody(existing.body ? existing.body + '\n\n' + body : body);
     (opts.refs || []).forEach(r => { if (!existing.refs.includes(r)) existing.refs.push(r); });
     existing.updatedAt = nowIso();
     return existing;
@@ -619,7 +645,7 @@ function upsertPage(title, body, opts = {}) {
 function appendToPage(title, addition, question) {
   const page = findPageByTitle(title) || upsertPage(title, '', { origin: 'interview' });
   const block = `## 取材より: ${question.slice(0, 60)}\n${addition}`;
-  page.body = page.body ? page.body + '\n\n' + block : block;
+  page.body = capBody(page.body ? page.body + '\n\n' + block : block);
   page.updatedAt = nowIso();
 }
 
@@ -681,6 +707,12 @@ function initWiki() {
 function renderPageList() {
   const ul = $('#page-list');
   ul.textContent = '';
+  if (!state.pages.length) {
+    const li = document.createElement('li');
+    li.className = 'empty-note';
+    li.textContent = 'まだページがありません。📥資料を投げるか、🎙️取材に答えると自動で増えていきます。';
+    ul.appendChild(li);
+  }
   const originLabel = { draft: '📥 資料から', interview: '🎙️ 取材から', manual: '✍️ 手動' };
   state.pages.forEach(p => {
     const li = document.createElement('li');
@@ -702,6 +734,7 @@ function renderPageList() {
 function openPage(id, edit = false) {
   const page = state.pages.find(p => p.id === id);
   if (!page) return;
+  if (id !== currentPageId && !confirmDiscardEdit()) return;
   switchTab('wiki');  // 先にタブを切り替える（switchTab→backToListがcurrentPageIdを消すため、セットはこの後）
   currentPageId = id;
   hide('#wiki-list-view');
@@ -727,7 +760,19 @@ function openPage(id, edit = false) {
   }
 }
 
+// 編集中の未保存テキストを黙って捨てない。破棄OKならtrue
+function confirmDiscardEdit() {
+  const page = state.pages.find(p => p.id === currentPageId);
+  const editorOpen = !$('#page-editor').classList.contains('hidden');
+  if (page && editorOpen && $('#page-edit-text').value !== page.body) {
+    if (!confirm('編集中の内容が保存されていません。破棄しますか？')) return false;
+    hide('#page-editor');  // 破棄が確定したら二重確認を防ぐため閉じる
+  }
+  return true;
+}
+
 function backToList() {
+  if (!confirmDiscardEdit()) return;
   currentPageId = null;
   show('#wiki-list-view');
   hide('#wiki-page-view');
@@ -781,6 +826,14 @@ async function runAsk() {
 function renderAsks() {
   const log = $('#ask-log');
   log.textContent = '';
+  if (!state.asks.length) {
+    const p = document.createElement('p');
+    p.className = 'empty-note';
+    p.textContent = state.pages.length
+      ? '例:「B社の請求書はどう送る？」「月末に何をやる？」— Wikiを読んだAIが出典付きで答えます。'
+      : 'まだWikiが空です。📥資料か🎙️取材でWikiを育てると、ここで質問できるようになります。';
+    log.appendChild(p);
+  }
   state.asks.forEach(x => {
     const card = document.createElement('div');
     card.className = 'ask-item';
@@ -841,6 +894,7 @@ function renderGaps() {
     ask.className = 'btn-secondary';
     ask.textContent = '🎙️ 取材で聞く';
     ask.addEventListener('click', () => {
+      if (busy) return;
       state.queue.unshift({ q: g.text.endsWith('？') || g.text.endsWith('?') ? g.text : `${g.text} — 詳しく教えてください`, target: '', reason: '抜け漏れの解消' });
       g.done = true;
       save();
@@ -1007,8 +1061,10 @@ function slugify(title, i) {
 }
 
 function buildExportHtml() {
+  // キーはescape済みタイトル（renderMarkdownの出力=HTML文字列から正規表現で取り出すnameはエスケープ済みのため。
+  // 生タイトルをキーにすると & や " を含むページへのリンクが全部deadlinkになる）
   const titleToSlug = new Map();
-  state.pages.forEach((p, i) => titleToSlug.set(p.title, slugify(p.title, i)));
+  state.pages.forEach((p, i) => titleToSlug.set(escapeHtml(p.title), slugify(p.title, i)));
 
   const renderBody = body => renderMarkdown(body).replace(
     /<a href="#" class="wiki-link" data-page="([^"]*)">([^<]*)<\/a>/g,
@@ -1093,6 +1149,7 @@ function initSettings() {
     save();
     hide('#modal-settings');
     renderDeadline();
+    renderDailyGoal();  // 期限変更を「きょうの取材」の残日数表示にも反映
   });
   $('#btn-export-json').addEventListener('click', () => {
     download(`hikitsugi_backup_${todayLocal()}.json`, JSON.stringify(state, null, 2), 'application/json');
@@ -1101,11 +1158,16 @@ function initSettings() {
   $('#input-import-json').addEventListener('change', e => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    if (state.pages.length && !confirm('現在のデータを、控えファイルの内容でまるごと置き換えます。よろしいですか？')) {
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         applyImported(JSON.parse(reader.result));
         save();
+        backToList();
         renderAll();
         hide('#modal-settings');
         toast('控えから復元しました');
@@ -1126,11 +1188,16 @@ function initSettings() {
 function renderDeadline() {
   const badge = $('#deadline-badge');
   if (!state.meta.deadline) { badge.classList.add('hidden'); return; }
-  const days = Math.ceil((new Date(state.meta.deadline + 'T23:59:59') - new Date()) / 86400000);
+  const end = new Date(state.meta.deadline + 'T23:59:59');
+  const now = new Date();
   badge.classList.remove('hidden');
-  if (days > 1) badge.textContent = `期限まで ${days}日`;
-  else if (days >= 0) badge.textContent = '期限は今日/明日！';
-  else badge.textContent = '期限超過';
+  if (end < now) {
+    badge.textContent = '期限超過';
+    badge.classList.add('urgent');
+    return;
+  }
+  const days = Math.ceil((end - now) / 86400000);
+  badge.textContent = days > 1 ? `期限まで ${days}日` : '期限は今日/明日！';
   badge.classList.toggle('urgent', days <= 7);
 }
 
