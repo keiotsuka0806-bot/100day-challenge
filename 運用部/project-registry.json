@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-11T16:26:20.444Z",
+  "updatedAt": "2026-07-11T16:47:49.950Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -419,9 +419,7 @@
       "lastDeploy": "2026-06-30",
       "lastCouncil": "",
       "councilReport": "",
-      "lastReleaseCheck": "",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://thought-second-opinion.vercel.app"
+      "lastReleaseCheck": ""
     },
     "token-diet": {
       "path": "開発部/token-diet",
@@ -441,45 +439,74 @@
       "type": "ai",
       "council": "AI Product Council",
       "status": "デプロイ後改善中",
-      "lastCouncil": "2026-07-01",
+      "hosting": "vercel",
       "lastDeploy": "2026-07-01",
-      "councilReport": "デザイン部/reports/2026-07-01-impulse-brake-genius-council.md"
+      "lastCouncil": "2026-07-01",
+      "councilReport": "デザイン部/reports/2026-07-01-impulse-brake-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "uchinoko-jiten": {
       "path": "開発部/uchinoko-jiten",
       "url": "https://uchinoko-jiten.vercel.app",
-      "type": "ai-app",
-      "council": "AI App Council",
+      "type": "ai",
+      "council": "AI Product Council",
       "status": "デプロイ済み",
       "hosting": "vercel",
       "lastDeploy": "2026-07-09",
       "lastCouncil": "2026-07-09",
-      "councilReport": "デザイン部/reports/2026-07-09-uchinoko-jiten-genius-council.md"
+      "councilReport": "デザイン部/reports/2026-07-09-uchinoko-jiten-genius-council.md",
+      "lastReleaseCheck": ""
     },
     "hikitsugi-shokunin": {
       "path": "開発部/hikitsugi-shokunin",
       "url": "https://hikitsugi-shokunin.vercel.app",
-      "type": "ai-app",
-      "council": "AI App Council",
+      "type": "ai",
+      "council": "AI Product Council",
       "status": "共有可能",
       "hosting": "vercel",
       "lastDeploy": "2026-07-10",
       "lastCouncil": "2026-07-10",
       "councilReport": "デザイン部/reports/2026-07-10-hikitsugi-shokunin-genius-council.md",
-      "lastVerifiedAt": "2026-07-10T16:08:59.484Z",
-      "lastHttpStatus": "HTTP 200",
-      "lastPublicUrl": "https://hikitsugi-shokunin.vercel.app",
       "lastReleaseCheck": "2026-07-10"
     },
     "jiyukenkyu-lab": {
       "path": "開発部/jiyukenkyu-lab",
-      "url": "http://127.0.0.1:8931",
+      "url": "https://jiyukenkyu-lab.vercel.app",
       "type": "ai",
       "council": "AI Product Council",
-      "status": "デプロイ後改善中",
-      "lastCouncil": "2026-07-11",
+      "status": "共有可能",
+      "hosting": "vercel",
       "lastDeploy": "2026-07-11",
-      "councilReport": "デザイン部/reports/2026-07-11-jiyukenkyu-lab-genius-council.md"
+      "lastCouncil": "2026-07-11",
+      "councilReport": "デザイン部/reports/2026-07-11-jiyukenkyu-lab-genius-council.md",
+      "lastReleaseCheck": "2026-07-11",
+      "lastVerifiedAt": "2026-07-11T16:47:49.942Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://jiyukenkyu-lab.vercel.app"
+    },
+    "naze-box": {
+      "path": "開発部/naze-box",
+      "url": "",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "開発中",
+      "hosting": "vercel",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
+    },
+    "vinroute": {
+      "path": "開発部/vinroute",
+      "url": "",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "開発中",
+      "hosting": "unknown",
+      "lastDeploy": "",
+      "lastCouncil": "",
+      "councilReport": "",
+      "lastReleaseCheck": ""
     }
   }
 }

@@ -37,6 +37,6 @@ Done
 - Skipped: 明確な理由つきで対象外
 
 ## 証拠
-- 変更ファイル: 開発部/jiyukenkyu-lab/app.js
-- 確認コマンド: 好き候補チップ20個+はかせの待ち時間セリフを追加、実機で確認
-- 公開URL確認: local 200
+- 変更ファイル: デザイン部/reports/2026-07-11-jiyukenkyu-lab-genius-council.md を参照
+- 確認コマンド: node 運用部/scripts/release-check.mjs --project jiyukenkyu-lab
+- 公開URL確認: https://jiyukenkyu-lab.vercel.app (HTTP 200)

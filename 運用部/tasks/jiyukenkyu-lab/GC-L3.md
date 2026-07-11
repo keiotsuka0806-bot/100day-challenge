@@ -37,6 +37,6 @@ Done
 - Skipped: 明確な理由つきで対象外
 
 ## 証拠
-- 変更ファイル: 開発部/jiyukenkyu-lab/SHARE.md
-- 確認コマンド: OGPメタタグ+SHARE.md(共有文面)を追加
-- 公開URL確認: local 200
+- 変更ファイル: デザイン部/reports/2026-07-11-jiyukenkyu-lab-genius-council.md を参照
+- 確認コマンド: node 運用部/scripts/release-check.mjs --project jiyukenkyu-lab
+- 公開URL確認: https://jiyukenkyu-lab.vercel.app (HTTP 200)
