@@ -268,7 +268,8 @@ function renderThemes() {
     card.className = 'card theme';
     const title = document.createElement('b'); title.textContent = t.title;
     const naze = document.createElement('span'); naze.textContent = '💡 ' + (t.naze || '');
-    const hint = document.createElement('span'); hint.className = 'toi-hint'; hint.textContent = '❓ ' + (t.toi_hint || '');
+    const hint = document.createElement('span'); hint.className = 'toi-hint';
+    hint.textContent = t.toi_hint ? '❓ たとえばこんな問いが作れる: ' + t.toi_hint : '';
     card.append(title, naze, hint);
     card.addEventListener('click', () => {
       state.theme = t;
