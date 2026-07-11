@@ -1,0 +1,100 @@
+{
+  "id": "italy",
+  "name": "イタリア",
+  "nameEn": "Italy",
+  "currencySymbol": "💰",
+
+  "geo": {
+    "bbox": { "minLon": 6.5, "maxLon": 18.8, "minLat": 36.4, "maxLat": 47.3 },
+    "outlines": [
+      { "name": "mainland", "latlon": [
+        [46.5,13.7],[45.6,13.9],[45.4,12.4],[44.3,12.4],[43.5,13.6],[42.4,14.3],
+        [41.9,15.15],[41.9,16.15],[41.4,16.9],[40.4,18.0],[40.0,18.5],[39.8,18.35],
+        [40.45,17.25],[39.8,16.6],[38.9,16.6],[37.9,16.05],[37.95,15.65],
+        [38.6,15.85],[39.0,16.05],[40.0,15.4],[40.6,14.9],[40.8,14.2],[41.2,13.6],
+        [41.9,12.2],[42.4,11.2],[43.5,10.3],[44.0,9.8],[44.4,8.9],[43.8,7.5],
+        [44.5,7.0],[45.1,6.7],[45.9,7.0],[46.5,8.0],[46.4,9.3],[46.4,10.5],
+        [47.0,11.5],[46.8,12.3],[46.5,13.7]
+      ] },
+      { "name": "sicilia", "latlon": [
+        [38.2,15.6],[37.1,15.3],[36.7,15.1],[37.1,13.9],[37.6,12.6],[38.0,12.5],
+        [38.2,13.3],[38.1,14.7],[38.2,15.6]
+      ] }
+    ],
+    "elevation": [
+      { "name": "アルプス",     "lat": 46.2, "lon": 10.0, "radius": 3.0, "strength": 1.0 },
+      { "name": "北アペニン",   "lat": 44.2, "lon": 10.5, "radius": 2.0, "strength": 0.6 },
+      { "name": "中南アペニン", "lat": 41.8, "lon": 14.0, "radius": 2.2, "strength": 0.6 }
+    ],
+    "rivers": [
+      { "name": "ポー川", "latlon": [[45.0,7.7],[45.1,9.0],[45.05,10.3],[44.95,11.4],[44.95,12.3]] },
+      { "name": "テヴェレ川", "latlon": [[43.5,12.2],[42.8,12.3],[42.2,12.4],[41.9,12.4]] }
+    ],
+    "seaLabels": [
+      { "name": "ティレニア海", "lat": 40.0, "lon": 12.0, "vertical": false },
+      { "name": "アドリア海", "lat": 43.3, "lon": 15.0, "vertical": false }
+    ]
+  },
+
+  "regions": {
+    "barolo":       { "name": "バローロ",         "nameEn": "Barolo",        "group": "red",     "type": "赤",   "value": 35, "lat": 44.61, "lon": 7.94,  "mark": "vines" },
+    "franciacorta": { "name": "フランチャコルタ", "nameEn": "Franciacorta",  "group": "sparkle", "type": "泡",   "value": 30, "lat": 45.60, "lon": 10.04, "mark": "sparkle" },
+    "valpolicella": { "name": "ヴァルポリチェッラ","nameEn": "Valpolicella", "group": "red",     "type": "赤",   "value": 28, "lat": 45.53, "lon": 10.90, "mark": "vines" },
+    "soave":        { "name": "ソアーヴェ",       "nameEn": "Soave",         "group": "white",   "type": "白",   "value": 22, "lat": 45.42, "lon": 11.25, "mark": "vines" },
+    "chianti":      { "name": "キャンティ",       "nameEn": "Chianti",       "group": "red",     "type": "赤",   "value": 35, "lat": 43.47, "lon": 11.25, "mark": "abbey" },
+    "brunello":     { "name": "ブルネッロ",       "nameEn": "Brunello di Montalcino", "group": "red", "type": "赤", "value": 33, "lat": 43.06, "lon": 11.49, "mark": "chateau" },
+    "orvieto":      { "name": "オルヴィエート",   "nameEn": "Orvieto",       "group": "white",   "type": "白",   "value": 21, "lat": 42.72, "lon": 12.11, "mark": "vines" },
+    "cerasuolo":    { "name": "チェラスオーロ",   "nameEn": "Cerasuolo d'Abruzzo", "group": "rose", "type": "ロゼ", "value": 24, "lat": 42.35, "lon": 13.90, "mark": "lavender" },
+    "taurasi":      { "name": "タウラージ",       "nameEn": "Taurasi",       "group": "red",     "type": "赤",   "value": 26, "lat": 40.95, "lon": 14.80, "mark": "vines" },
+    "marsala":      { "name": "マルサラ",         "nameEn": "Marsala",       "group": "white",   "type": "白",   "value": 25, "lat": 37.80, "lon": 12.44, "mark": "barrel" }
+  },
+
+  "cities": {
+    "roma":    { "name": "ローマ",       "lat": 41.90, "lon": 12.50, "mark": "city", "isStart": true },
+    "milano":  { "name": "ミラノ",       "lat": 45.46, "lon": 9.19,  "mark": "city" },
+    "torino":  { "name": "トリノ",       "lat": 45.07, "lon": 7.69,  "mark": "city" },
+    "firenze": { "name": "フィレンツェ", "lat": 43.77, "lon": 11.25, "mark": "city" },
+    "napoli":  { "name": "ナポリ",       "lat": 40.85, "lon": 14.27, "mark": "volcano" }
+  },
+
+  "links": [
+    { "a": "torino", "b": "barolo", "steps": 3 },
+    { "a": "barolo", "b": "milano", "steps": 5 },
+    { "a": "milano", "b": "torino", "steps": 4 },
+    { "a": "milano", "b": "franciacorta", "steps": 3 },
+    { "a": "franciacorta", "b": "valpolicella", "steps": 3 },
+    { "a": "valpolicella", "b": "soave", "steps": 2 },
+    { "a": "soave", "b": "firenze", "steps": 6 },
+    { "a": "milano", "b": "firenze", "steps": 7 },
+    { "a": "firenze", "b": "chianti", "steps": 2 },
+    { "a": "chianti", "b": "brunello", "steps": 3 },
+    { "a": "brunello", "b": "orvieto", "steps": 3 },
+    { "a": "orvieto", "b": "roma", "steps": 3 },
+    { "a": "firenze", "b": "orvieto", "steps": 4 },
+    { "a": "roma", "b": "cerasuolo", "steps": 5 },
+    { "a": "cerasuolo", "b": "taurasi", "steps": 5 },
+    { "a": "roma", "b": "napoli", "steps": 5 },
+    { "a": "napoli", "b": "taurasi", "steps": 2 },
+    { "a": "napoli", "b": "marsala", "steps": 9 },
+    { "a": "marsala", "b": "roma", "steps": 10 }
+  ],
+
+  "sets": {
+    "geo": {
+      "北部": ["barolo", "franciacorta", "valpolicella", "soave"],
+      "中部": ["chianti", "brunello", "orvieto"],
+      "南部": ["cerasuolo", "taurasi", "marsala"]
+    },
+    "typeLabels": ["赤", "白", "泡", "ロゼ"]
+  },
+
+  "quizFile": "quiz_italy.json",
+
+  "flavor": {
+    "startCityLine": "ローマから旅が始まる",
+    "criticName": "辛口評論家",
+    "endingMemo": "ローマから始まった旅。バローロ、キャンティ…",
+    "shareTag": "#VinRoute — イタリア全土を巡るワイン収集の旅",
+    "journeyName": "イタリアワインの旅"
+  }
+}

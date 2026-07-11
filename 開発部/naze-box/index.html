@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>なんで箱 — 子どもの「なんで？」を育てる</title>
+  <meta name="description" content="子どもの「なんで？」に年齢に合わせて答え、疑問を家族のアルバムとして育てるアプリ。" />
+  <meta name="theme-color" content="#fffdf6" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== Home ===== -->
+    <section id="screen-home" class="screen visible">
+      <div class="home-hero">
+        <div class="mascot" id="mascot" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="mascot-svg">
+            <path d="M60 42 C58 22 82 16 80 33 C95 27 94 50 64 48 Z" fill="#8fc98c"/>
+            <circle cx="60" cy="74" r="33" fill="#fff3d6" stroke="#f0d98f" stroke-width="3"/>
+            <circle cx="50" cy="72" r="4.2" fill="#5a4a2a"/>
+            <circle cx="70" cy="72" r="4.2" fill="#5a4a2a"/>
+            <path d="M50 84 Q60 92 70 84" stroke="#5a4a2a" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+            <circle cx="43" cy="82" r="4" fill="#f6b8b0" opacity=".65"/>
+            <circle cx="77" cy="82" r="4" fill="#f6b8b0" opacity=".65"/>
+          </svg>
+        </div>
+        <div class="speech">きょうは なにが きになる？</div>
+      </div>
+
+      <div class="ask-card">
+        <div class="input-wrap">
+          <textarea id="question-input" class="question-input" rows="2"
+            placeholder="なんで？ を いれてみよう&#10;例）なんで そらは あおいの？"></textarea>
+          <button id="mic-btn" class="mic-icon" hidden aria-label="こえで いれる">🎤</button>
+        </div>
+        <p id="mic-status" class="mic-status" hidden></p>
+
+        <button id="ask-btn" class="ask-btn">こたえてもらう</button>
+      </div>
+
+      <div class="home-sub">
+        <div class="age-row">
+          <span class="age-label">だれの「なんで？」？</span>
+          <div class="age-picker" id="age-picker">
+            <button class="age-chip" data-age="3">3さい</button>
+            <button class="age-chip is-active" data-age="5">5さい</button>
+            <button class="age-chip" data-age="7">7さい</button>
+            <button class="age-chip" data-age="10">10さい</button>
+          </div>
+        </div>
+        <div class="examples">
+          <span class="ex" data-q="なんで空は青いの？">なんで空は青いの？</span>
+          <span class="ex" data-q="なんで魚は水の中で息ができるの？">なんで魚は水の中で息ができるの？</span>
+          <span class="ex" data-q="なんで夜になると眠くなるの？">なんで夜になると眠くなるの？</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Answer ===== -->
+    <section id="screen-answer" class="screen">
+      <header class="sub-head">
+        <button class="back-btn" data-nav="home">‹ もどる</button>
+        <span class="mock-badge" id="mock-badge" hidden>モック回答</span>
+      </header>
+
+      <div class="answer-hero">
+        <div class="cat-emoji-big" id="ans-cat-emoji">❓</div>
+        <span class="q-age" id="ans-age">5さい</span>
+        <h2 id="ans-question">質問</h2>
+      </div>
+
+      <div id="answer-loading" class="loading" hidden>
+        <div class="spinner"></div>
+        <p>やさしい ことばで かんがえてるよ…</p>
+      </div>
+
+      <div id="answer-body" class="answer-body">
+        <p id="ans-child" class="child-answer-big"></p>
+
+        <details class="parent-toggle" id="parent-toggle">
+          <summary>おうちの人へ 👀</summary>
+          <div class="parent-inner">
+            <div class="p-block"><h4>💡 たとえ話</h4><p id="ans-analogy"></p></div>
+            <div class="p-block"><h4>👪 おうちの人へ</h4><p id="ans-parent"></p></div>
+          </div>
+        </details>
+
+        <button id="next-q-btn" class="next-q-btn" hidden>
+          <span class="nq-icon">🌱</span><span id="ans-next"></span>
+        </button>
+
+        <div class="answer-actions">
+          <button id="save-btn" class="save-btn">🌳 きに みを ならせる</button>
+          <button id="next-ask-btn" class="ghost-btn">べつの なんで？を きく</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Box ===== -->
+    <section id="screen-box" class="screen">
+      <header class="sub-head"><h2 class="page-title">🧺 なんで箱</h2></header>
+      <div class="box-filters" id="box-filters"></div>
+      <div id="box-list" class="box-list"></div>
+      <div id="box-empty" class="empty" hidden>
+        <p>まだ「なんで？」が しまわれていません。</p>
+        <button class="ghost-btn" data-nav="home">さいしょの なんで？を きく</button>
+      </div>
+    </section>
+
+    <!-- ===== Tree（好奇心の木＝成長記録） ===== -->
+    <section id="screen-tree" class="screen">
+      <header class="sub-head"><h2 class="page-title">🌳 こうきしんの木</h2></header>
+
+      <div id="tree-wrap" class="tree-wrap">
+        <div id="visitor-perch" class="visitor-perch" hidden></div>
+
+        <div id="visitor-card" class="visitor-card" hidden>
+          <div class="vc-top"><span id="vc-animal">🐦</span><b id="vc-name"></b> が あそびに きたよ！</div>
+          <p id="vc-comment" class="vc-comment"></p>
+          <div class="vc-gift">🎁 <span id="vc-present" class="vc-present"></span> を もらった！</div>
+          <button id="vc-thanks" class="vc-thanks">ありがとう</button>
+        </div>
+
+        <p class="garden-lead" id="garden-lead"></p>
+        <div id="garden" class="garden"></div>
+        <p class="garden-hint">木を タップすると、その ぶんやの なんで？が みられるよ</p>
+        <div id="gift-shelf" class="gift-shelf" hidden></div>
+      </div>
+
+      <div id="tree-empty" class="empty" hidden>
+        <p>なんで？を きくと、その ぶんやの 木が 芽を だすよ🌱</p>
+        <button class="ghost-btn" data-nav="home">なんで？を きく</button>
+      </div>
+    </section>
+
+    <!-- ===== Bottom nav ===== -->
+    <nav class="tabbar">
+      <button class="tab is-active" data-nav="home"><span>🏠</span>ホーム</button>
+      <button class="tab" data-nav="box"><span>🧺</span>なんで箱</button>
+      <button class="tab" data-nav="tree"><span>🌳</span>こうきしんの木</button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

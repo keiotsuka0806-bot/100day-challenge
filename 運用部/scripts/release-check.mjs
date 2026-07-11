@@ -27,7 +27,17 @@ function fetchStatus(url) {
       return;
     }
     const req = https.request(url, { method: 'HEAD', timeout: 10000 }, (res) => {
-      resolve({ ok: res.statusCode >= 200 && res.statusCode < 400, detail: `HTTP ${res.statusCode}` });
+      const location = res.headers.location || '';
+      // Vercel SSO/Deployment Protection の壁は 3xx/401 でログイン画面へ飛ばす。
+      // location が sso-api / vercel.com/sso なら「公開できていない」ので必ずNGにする。
+      const ssoWall = /sso-api|vercel\.com\/sso|\/\.well-known\/vercel-user-meta/i.test(location)
+        || res.statusCode === 401;
+      const status2xx = res.statusCode >= 200 && res.statusCode < 300;
+      const status3xxSafe = res.statusCode >= 300 && res.statusCode < 400 && !ssoWall;
+      const detail = ssoWall
+        ? `HTTP ${res.statusCode} → SSO login wall${location ? ` (${location})` : ''}`
+        : `HTTP ${res.statusCode}`;
+      resolve({ ok: (status2xx || status3xxSafe) && !ssoWall, detail });
     });
     req.on('timeout', () => {
       req.destroy();

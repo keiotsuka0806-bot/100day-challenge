@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>自由研究ラボ — 好き×好きで世界に1つのテーマ</title>
 <meta name="description" content="子どもの「好き」の掛け算から自由研究テーマを作り、問い・仮説・観察・まとめまで30日伴走する研究ノート。AIは答えを書きません。">
+<meta property="og:title" content="自由研究ラボ — 好き×好きで世界に1つのテーマ">
+<meta property="og:description" content="「好き」を2つ入れると、世界に1つの自由研究テーマが生まれる。研究はかせが30日伴走。AIは答えを書きません（考えるのは子ども自身）。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/icon-512.png">
+<meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#00897B">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -59,6 +64,8 @@
     <label class="field">好きなもの その2
       <input id="like2" type="text" maxlength="20" placeholder="例: 虫" autocomplete="off">
     </label>
+    <p class="hint">まよったらタップ👇（空いてる方に入るよ）</p>
+    <div class="chips" id="likeChips"></div>
     <label class="field">がくねん
       <select id="grade">
         <option value="小1〜2">小1〜2</option>
@@ -179,7 +186,7 @@
     <p class="picked" id="labQuestion"></p>
     <div class="record-form">
       <label class="photo-btn">📷 写真をつける（なくてもOK）
-        <input id="recPhoto" type="file" accept="image/*" capture="environment" hidden>
+        <input id="recPhoto" type="file" accept="image/*" hidden>
       </label>
       <img id="recPreview" class="hidden" alt="観察写真プレビュー">
       <label class="field">今日わかったこと・気づいたこと（1行でOK）

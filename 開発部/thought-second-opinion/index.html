@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>思考のセカンドオピニオン</title>
+  <meta name="description" content="つらくなった考えを、AIと一緒に現実的な見方へ。科学的なCBT（認知行動療法）の思考記録を5分で体験。" />
+  <meta name="theme-color" content="#0f1424" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">🫧 思考のセカンドオピニオン</span>
+    <span class="topbar-actions">
+      <button id="helpLink" class="ghost-btn" aria-label="つらい時の相談先を表示">つらい時は</button>
+      <button id="restartBtn" class="ghost-btn" hidden>最初から</button>
+    </span>
+  </header>
+
+  <div class="progress" id="progress" hidden><div class="progress-bar" id="progressBar"></div></div>
+
+  <main id="app">
+    <!-- イントロ -->
+    <section class="screen active" data-screen="intro">
+      <div class="card">
+        <h1>その考え、<br>もう一つの見方を探そう</h1>
+        <p class="lead">つらくなった時の考えには、事実より「考えのクセ（認知の歪み）」が混じっていることがあります。
+        AIが、答えを押し付けずに問いかけながら、より<strong>現実的でバランスの取れた見方</strong>を一緒に探します。約5分。</p>
+        <ul class="steps-preview">
+          <li>① 出来事と気持ちを書く</li>
+          <li>② 頭に浮かんだ考えを見つける</li>
+          <li>③ 問いに答えて、見方を広げる</li>
+          <li>④ 気持ちの変化を確かめる</li>
+        </ul>
+        <button class="primary-btn" data-go="situation">はじめる</button>
+        <p class="disclaimer">これは治療ではなく、CBT（認知行動療法）を体験するセルフヘルプです。つらさが強い・消えたい気持ちがある時は、無理せず専門家や相談窓口を頼ってください。</p>
+      </div>
+    </section>
+
+    <!-- ① 出来事 -->
+    <section class="screen" data-screen="situation">
+      <div class="card">
+        <span class="step-label">① 出来事</span>
+        <h2>何があった？</h2>
+        <p class="hint">気持ちが揺れた場面を、短く1〜2文で。</p>
+        <textarea id="situationInput" maxlength="500" rows="3" aria-label="出来事" placeholder="例：送ったメッセージに、半日たっても返信が来ない"></textarea>
+        <button class="primary-btn" data-next="situation">次へ</button>
+        <button class="text-btn" data-back="intro">← もどる</button>
+      </div>
+    </section>
+
+    <!-- ② 気持ち -->
+    <section class="screen" data-screen="mood">
+      <div class="card">
+        <span class="step-label">② 気持ち</span>
+        <h2>今、どんな気持ち？　どれくらい強い？</h2>
+        <p class="hint">近いものを選んでください（複数えらべます）。下のバーで全体の強さを。</p>
+        <div class="chips" id="moodChips"></div>
+        <div class="slider-row">
+          <input type="range" id="moodBefore" min="0" max="100" value="60" aria-label="気持ちの強さ" />
+          <output id="moodBeforeVal" class="slider-val">60%</output>
+        </div>
+        <button class="primary-btn" data-next="mood">次へ</button>
+        <button class="text-btn" data-back="situation">← もどる</button>
+      </div>
+    </section>
+
+    <!-- ③ 自動思考 -->
+    <section class="screen" data-screen="thought">
+      <div class="card">
+        <span class="step-label">③ 浮かんだ考え</span>
+        <h2>その時、頭にパッと浮かんだ言葉は？</h2>
+        <p class="hint">正しいかどうかは気にせず、浮かんだままで大丈夫。</p>
+        <textarea id="thoughtInput" maxlength="500" rows="3" aria-label="浮かんだ考え" placeholder="例：嫌われたんだ。私はいつも見捨てられる"></textarea>
+        <button class="primary-btn" data-next="thought">考えのクセを見てみる</button>
+        <button class="text-btn" data-back="mood">← もどる</button>
+      </div>
+    </section>
+
+    <!-- ④ 歪み -->
+    <section class="screen" data-screen="distortion">
+      <div class="card">
+        <span class="step-label">④ 考えのクセ</span>
+        <h2>この考えに、こんなクセが隠れているかも</h2>
+        <p class="hint">当てはまりそうなものを1つ選んで（ピンと来なければ「スキップ」でOK）。</p>
+        <div id="distortionList" class="distortion-list">
+          <div class="loading">AIが見ています…</div>
+        </div>
+        <button class="text-btn" data-next="distortion-skip">どれもピンと来ない</button>
+      </div>
+    </section>
+
+    <!-- ⑤ ソクラテス式の問い -->
+    <section class="screen" data-screen="socratic">
+      <div class="card">
+        <span class="step-label">⑤ 見方を広げる</span>
+        <div class="qcounter" id="qCounter">問い 1 / 3</div>
+        <p class="question" id="questionText">…</p>
+        <textarea id="answerInput" maxlength="500" rows="3" aria-label="問いへの答え" placeholder="思いつくまま、書いてみてください"></textarea>
+        <button class="primary-btn" id="answerNextBtn">次の問いへ</button>
+      </div>
+    </section>
+
+    <!-- ⑥ バランス思考 -->
+    <section class="screen" data-screen="balance">
+      <div class="card">
+        <span class="step-label">⑥ バランスの取れた考え</span>
+        <h2>ここまでをふまえて、<br>今はどう考えられそう？</h2>
+        <p class="hint">無理に前向きにしなくて大丈夫。「事実に近い、納得できる考え」を自分の言葉で。</p>
+        <div class="recap" id="balanceRecap"></div>
+        <textarea id="balanceInput" maxlength="500" rows="4" aria-label="バランスの取れた考え" placeholder="例：忙しいだけかもしれない。返信が遅い＝嫌われた、とは限らない"></textarea>
+        <button class="primary-btn" data-next="balance">気持ちを確かめる</button>
+      </div>
+    </section>
+
+    <!-- ⑦ 結果 -->
+    <section class="screen" data-screen="result">
+      <div class="card">
+        <span class="step-label">⑦ 変化</span>
+        <h2>気持ちは、今どれくらい？</h2>
+        <div class="slider-row">
+          <input type="range" id="moodAfter" min="0" max="100" value="50" aria-label="今の気持ちの強さ" />
+          <output id="moodAfterVal" class="slider-val">50%</output>
+        </div>
+        <button class="primary-btn" id="seeResultBtn">結果を見る</button>
+
+        <div id="resultCard" hidden>
+          <div class="gauge">
+            <div class="gauge-row"><span>はじめ</span><div class="bar"><div class="fill before" id="fillBefore"></div></div><b id="numBefore">60%</b></div>
+            <div class="gauge-row"><span>いま</span><div class="bar"><div class="fill after" id="fillAfter"></div></div><b id="numAfter">40%</b></div>
+          </div>
+          <p class="delta" id="deltaText"></p>
+          <p class="ai-encourage" id="aiEncourage"></p>
+          <div class="learn" id="learnBox"></div>
+          <div class="actions">
+            <button class="primary-btn" id="shareBtn">変化を画像で残す</button>
+            <button class="text-btn" id="againBtn">もう一度やる</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 危機オーバーレイ -->
+  <div class="crisis-overlay" id="crisisOverlay" hidden>
+    <div class="crisis-card">
+      <h2>少し、立ち止まろう</h2>
+      <p>つらい気持ちが強いのかもしれません。ここから先はAIに任せず、人の力を借りてほしいです。あなたは一人じゃありません。</p>
+      <ul class="crisis-links">
+        <li><strong>いのちの電話</strong>　0570-783-556（10〜22時）</li>
+        <li><strong>よりそいホットライン</strong>　0120-279-338（24時間）</li>
+        <li>緊急時は <strong>119 / 110</strong></li>
+      </ul>
+      <button class="text-btn" id="crisisCloseBtn">閉じる</button>
+    </div>
+  </div>
+
+  <canvas id="shareCanvas" width="1080" height="1080" hidden></canvas>
+  <script src="app.js"></script>
+</body>
+</html>

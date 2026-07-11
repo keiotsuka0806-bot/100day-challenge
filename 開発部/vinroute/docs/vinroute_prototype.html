@@ -1,0 +1,2725 @@
+<meta charset="utf-8">
+<style>
+  :root{
+    --vine:#3f7d4e; --earth:#c98a5e; --wine:#7a1f3d; --gold:#e3b23c;
+    --cream:#f6efe2; --ink:#3a2a22;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;color:var(--ink);background:#1d2b22;overflow:hidden}
+  #app{position:relative;width:100%;height:100vh}
+
+  /* アバター選択 */
+  #select{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 25%, #2f5740, #1d2b22 70%);gap:16px;padding:24px;text-align:center;overflow:auto}
+  #select h1{font-size:34px;margin:0;letter-spacing:.04em;color:var(--cream)}
+  #select h1 .v{color:var(--gold)}
+  #select p{margin:0;color:#cdbfa6;font-size:14px}
+  .avatars{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:720px;margin-top:6px}
+  .av{width:128px;background:var(--cream);border:3px solid transparent;border-radius:16px;padding:10px 8px;cursor:pointer;
+    transition:transform .12s, border-color .12s, box-shadow .12s;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+  .av:hover{transform:translateY(-4px)}
+  .av.sel{border-color:var(--gold);box-shadow:0 0 0 4px rgba(227,178,60,.3),0 6px 0 rgba(0,0,0,.25)}
+  .av.taken{opacity:.4;cursor:not-allowed;filter:grayscale(.7)}
+  .av svg{display:block;margin:0 auto}
+  .av .nm{font-weight:700;font-size:13px;margin-top:4px}
+  .av .ds{font-size:10.5px;color:#8a7763;line-height:1.3;margin-top:2px}
+  .namebox{margin-top:4px}
+  .namebox input{padding:9px 12px;border-radius:10px;border:2px solid #b9a986;font-size:15px;width:220px;background:var(--cream)}
+  .go{margin-top:4px;background:var(--wine);color:#fff;border:none;padding:13px 30px;border-radius:12px;font-size:16px;font-weight:700;
+    cursor:pointer;box-shadow:0 5px 0 #561328;transition:transform .08s}
+  .go:hover{transform:translateY(-2px)}
+  .go:active{transform:translateY(3px);box-shadow:0 2px 0 #561328}
+  .go:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ゲーム */
+  #game{position:relative;width:100%;height:100vh;display:none}
+  canvas{display:block;width:100%;height:100%}
+  .hud{position:absolute;left:14px;top:14px;display:flex;flex-direction:column;gap:6px;font-size:13px;max-width:260px}
+  .chips{display:flex;flex-direction:column;gap:4px}
+  .pchip{display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:rgba(246,239,226,.92);border-radius:9px;padding:4px 9px;box-shadow:0 2px 8px rgba(0,0,0,.22);border:2px solid transparent;font-size:12px}
+  .pchip.active{border-color:var(--gold);background:#fff}
+  .pchip .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .pchip .pn{font-weight:700;color:#3a2a22;white-space:nowrap}
+  .pchip .pn small{font-size:9px;color:#8a7763;margin-left:2px}
+  .pchip .pv{font-weight:800;color:var(--wine);margin-left:auto}
+  .pchip .pv::before{content:"★";font-size:10px;color:var(--gold);margin-right:2px}
+  .pchip .pres{width:100%;font-size:12px;letter-spacing:.5px;color:#5e4d3e;margin-top:2px}
+  .pcard{background:rgba(246,239,226,.94);border-radius:14px;padding:9px 13px;box-shadow:0 4px 14px rgba(0,0,0,.3);border:3px solid transparent;min-width:160px;transition:border-color .2s,transform .2s}
+  .pcard.active{border-color:var(--gold);transform:scale(1.03)}
+  .pcard .who{font-weight:700;font-size:15px;display:flex;align-items:center;gap:7px}
+  .pcard .dot{width:12px;height:12px;border-radius:50%}
+  .pcard .row{margin-top:4px;color:#5e4d3e}
+  .pcard .res{margin-top:3px;font-size:14px;letter-spacing:1px}
+  .pcard .turn{font-size:11px;color:var(--wine);font-weight:700;margin-top:3px}
+  .seasonBar{background:rgba(122,31,61,.92);color:var(--cream);border-radius:10px;padding:5px 11px;font-weight:700;font-size:13px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+  .movesLeft{font-weight:800;font-size:14px;color:var(--wine);text-align:center;min-height:18px}
+  .actionLog{position:absolute;right:14px;bottom:100px;width:210px;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+  .actionLog .le{background:rgba(246,239,226,.92);border-radius:8px;padding:6px 10px;font-size:12px;color:#3a2a22;box-shadow:0 2px 8px rgba(0,0,0,.2);animation:logIn .2s}
+  @keyframes logIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+  /* モーダル共通 */
+  .modal{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,14,10,.55);padding:20px}
+  .modal>*,.bmTitle,.qzTitle,.rsTitle{max-width:340px}
+  #buildModal,#quizModal,#resultModal{flex-direction:column;gap:0}
+  .bmTitle,.qzTitle,.rsTitle{font-size:19px;font-weight:800;color:#3a2a22;background:var(--cream);padding:14px 18px;border-radius:14px 14px 0 0;width:300px;text-align:center}
+  .bmRes{background:#efe6d4;color:#6a5843;font-size:14px;padding:6px;width:300px;text-align:center;letter-spacing:1px}
+  .bmBtn{width:300px;background:var(--cream);border:none;border-top:1px solid #e2d5bd;padding:12px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+  .bmBtn b{font-size:15px;color:#3a2a22}.bmBtn span{font-size:13px;color:var(--wine);font-weight:700}.bmBtn small{color:#8a7763;font-size:12px}
+  .bmBtn:hover:not([disabled]){background:#fff}
+  .bmBtn.done{opacity:.6}.bmBtn[disabled]{opacity:.4;cursor:not-allowed}
+  .bmClose,.qzNext,.rsClose{width:300px;background:var(--gold);border:none;padding:13px;font-weight:800;font-size:15px;cursor:pointer;border-radius:0 0 14px 14px;color:#3a2a22}
+  .bmWarp{width:300px;background:#7a1f3d;color:#fff;border:none;padding:12px 16px;font-weight:800;font-size:14px;cursor:pointer;border-top:1px solid #e2d5bd}
+  .bmWarp:hover{filter:brightness(1.15)}
+  .bmBtn.reinvest b{color:#2a6a3a}.bmBtn.reinvest{background:#eef7ef}
+  .qzQ{background:var(--cream);padding:6px 18px 14px;width:300px;text-align:center;font-size:15px;color:#3a2a22}
+  .qzOpt{width:300px;background:var(--cream);border:none;border-top:1px solid #e2d5bd;padding:13px 16px;text-align:left;cursor:pointer;font-size:15px;color:#3a2a22}
+  .qzOpt:hover:not([disabled]){background:#fff}.qzOpt.ok{background:#bfe0c0;font-weight:700}.qzOpt.ng{background:#e8b4b0}
+  .qzR{width:300px;padding:8px;text-align:center;font-weight:800}.qzR.ok{background:#bfe0c0;color:#2a6a3a}.qzR.ng{background:#e8b4b0;color:#7a2020}
+  .qzExp{width:300px;background:var(--cream);padding:12px 18px;font-size:13px;color:#6a5843;line-height:1.5}
+  .rsRow{width:300px;background:var(--cream);border-top:1px solid #e2d5bd;padding:11px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rsRow.win{background:#f7ecc9}.rsRank{font-weight:800;color:var(--wine)}.rsName{font-weight:700;flex:1}.rsVal{font-weight:800}
+  .rsRow small{width:100%;color:#8a7763;font-size:12px}
+  /* シネマティックな結末 */
+  #resultModal{background:rgba(10,6,4,.94)}
+  .edStage{width:100%;max-width:400px;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .edFade{color:#f0e3c8;font-size:20px;font-weight:700;text-align:center;animation:edFadeIn 1.5s ease-out;padding:20px}
+  @keyframes edFadeIn{0%{opacity:0}40%{opacity:1}100%{opacity:1}}
+  .edSpot{text-align:center;color:#fff;animation:edPop .6s cubic-bezier(.2,1.4,.4,1);padding:20px}
+  .edCrown{font-size:64px;animation:edBob 1.5s ease-in-out infinite}
+  @keyframes edBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .edWinLabel{color:var(--gold);font-weight:800;font-size:16px;letter-spacing:3px;margin-top:8px}
+  .edWinName{font-size:34px;font-weight:900;color:#fff;margin:6px 0;text-shadow:0 0 20px rgba(227,178,60,.8)}
+  .edWinAssets{font-size:18px;color:#f0e3c8}.edWinAssets b{color:var(--gold);font-size:24px}
+  .edWinDesc{margin-top:12px;color:#cbb89a;font-size:13px}
+  @keyframes edPop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+  .edScroll{position:absolute;top:100%;width:100%;max-width:360px;text-align:center;color:#f0e3c8}
+  @keyframes edRoll{0%{top:100%}100%{top:-180%}}
+  .edBigTitle{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:20px}
+  .edSection{font-size:15px;font-weight:800;color:#e3b23c;margin:22px 0 10px;letter-spacing:2px}
+  .edRankRow{background:rgba(246,239,226,.1);border-radius:10px;padding:10px;margin:6px 0;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+  .edRankRow.win{background:rgba(227,178,60,.25);border:1px solid var(--gold)}
+  .edRk{font-weight:800;color:var(--gold)}.edNm{font-weight:700;color:#fff;flex:1;text-align:left}.edTot{font-weight:800;color:#f0e3c8}
+  .edBrk{width:100%;font-size:11px;color:#a89a80;text-align:left}
+  .edAward{background:rgba(246,239,226,.08);border-radius:8px;padding:9px;margin:5px 0;font-size:13px}
+  .edAward span{color:#e3b23c;font-weight:700;margin-right:6px}.edAward b{color:#fff}
+  .edMemo{color:#cbb89a;font-size:13px;line-height:2;margin:10px 0}
+  .edThanks{font-size:18px;font-weight:800;color:var(--gold);margin:24px 0}
+  .edScroll .rsClose{margin:20px auto 60px;max-width:200px;border-radius:10px}
+  .edbCard{background:rgba(246,239,226,.1);border-radius:12px;padding:14px;margin:12px 0;text-align:left}
+  .edbName{font-weight:800;font-size:16px;color:#fff;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+  .edbTotal{font-size:13px;color:var(--gold);font-weight:800}
+  .edbRow{display:flex;justify-content:space-between;font-size:12px;color:#e8dcc4;padding:3px 0}
+  .edbRow.sub{color:#c9b896;padding-left:10px;font-size:11px}
+  .edbRowHead{font-size:11px;color:#e3b23c;font-weight:700;margin-top:6px;border-top:1px solid rgba(227,178,60,.3);padding-top:5px}
+  .edResults{text-align:center;color:#f0e3c8;animation:edFadeIn 1s ease-out}
+  .edFinalList{margin:18px auto 4px;max-width:280px}
+  .edFinalRow{display:flex;align-items:center;gap:8px;padding:7px 12px;margin:5px 0;background:rgba(246,239,226,.1);border-radius:9px;font-size:13px}
+  .edFinalRow.win{background:rgba(227,178,60,.22);border:1px solid var(--gold)}
+  .efMedal{font-size:15px;width:26px}
+  .efName{flex:1;text-align:left;font-weight:700;color:#fff}
+  .efTot{font-weight:800;color:var(--gold)}
+  .edBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .rsClose.alt{background:rgba(246,239,226,.2);color:#f0e3c8}
+  .shareCard{background:linear-gradient(160deg,#4a1526,#7a1f3d);border:2px solid var(--gold);border-radius:20px;padding:24px 22px;width:330px;text-align:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .scTitle{font-size:26px;font-weight:900;color:var(--gold);letter-spacing:1px}
+  .scSub{font-size:11px;color:#e8cba8;margin:4px 0 16px}
+  .scCrown{font-size:24px;font-weight:900;margin-top:6px;text-shadow:0 0 18px rgba(227,178,60,.7)}
+  .scWinTotal{font-size:14px;color:var(--gold);font-weight:800;margin-bottom:14px}
+  .scRows{text-align:left;margin:10px 0}
+  .scRow{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:4px 0;background:rgba(255,255,255,.08);border-radius:9px;font-size:12px}
+  .scRow.win{background:rgba(227,178,60,.25);border:1px solid var(--gold)}
+  .scMedal{font-size:15px;width:24px}
+  .scName{flex:1;font-weight:700}
+  .scTotal{font-weight:900;color:var(--gold)}
+  .scFactor{font-size:10px;color:#d8c4a8;width:64px;text-align:right}
+  .scFooter{font-size:10px;color:#cbb89a;margin-top:14px;border-top:1px solid rgba(227,178,60,.3);padding-top:10px}
+  .scHint{font-size:11px;color:#cbb89a;margin-top:12px;text-align:center}
+  /* 資源スロット */
+  .slotBox{background:var(--cream);border-radius:18px;padding:22px 26px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);width:250px}
+  .slotTitle{font-weight:800;font-size:18px;color:#3a2a22;margin-bottom:12px}
+  .ppGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+  .ppBtn{background:var(--gold);border:none;border-radius:10px;padding:16px 0;font-size:22px;font-weight:900;color:#3a2a22;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .ppBtn:hover{background:#f0c94a}
+  .slotReel{font-size:64px;height:80px;line-height:80px;background:#fff;border-radius:12px;border:3px solid var(--gold);margin-bottom:14px}
+  .slotStop{width:100%;background:var(--wine);color:#fff;border:none;padding:13px;font-weight:800;font-size:16px;border-radius:10px;cursor:pointer}
+  .slotStop:hover{filter:brightness(1.1)}
+  .slotHint{margin-top:10px;font-size:13px;color:#6a5843;font-weight:700}
+  .mkBox{background:var(--cream);border-radius:18px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);width:270px}
+  .mkTitle{font-weight:800;font-size:18px;color:#3a2a22;margin-bottom:6px}
+  .mkRes{font-size:14px;color:#6a5843;margin-bottom:12px;letter-spacing:1px}
+  .mkBtn{width:100%;background:#fff;border:2px solid #e2d5bd;border-radius:10px;padding:12px;margin:6px 0;font-weight:700;font-size:15px;color:#3a2a22;cursor:pointer;display:flex;justify-content:space-between}
+  .mkBtn span{color:var(--wine)}.mkBtn:hover:not([disabled]){border-color:var(--gold)}.mkBtn[disabled]{opacity:.4;cursor:not-allowed}
+  .mkClose{width:100%;background:var(--gold);border:none;border-radius:10px;padding:12px;margin-top:8px;font-weight:800;cursor:pointer;color:#3a2a22}
+  .mkBtn.card{background:#f3ecfb;border-color:#c9a9e9}
+  .mkCardDesc{font-size:12px;color:#8a7763;margin:2px 0 4px}
+  .saleBox{background:var(--cream);border-radius:18px;padding:20px;width:320px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .saleTitle{font-weight:800;font-size:18px;color:#3a2a22;text-align:center}
+  .saleSub{font-size:12px;color:#8a7763;text-align:center;margin:6px 0 8px}
+  .saleStats{display:flex;justify-content:space-between;gap:6px;background:#efe6d4;border-radius:8px;padding:6px 10px;font-size:11px;color:#5e4d3e;font-weight:700;margin-bottom:8px;flex-wrap:wrap}
+  .saleRow{display:flex;align-items:center;gap:8px;padding:8px;border-top:1px solid #e2d5bd;font-size:13px}
+  .saleRow.sold{opacity:.6}
+  .saleRow .sn{flex:1;color:#3a2a22;font-weight:600}
+  .saleRow .sv{color:#8a7763;font-size:12px}
+  .saleRow .sbtn{background:var(--gold);border:none;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;color:#3a2a22;font-size:12px}
+  .saleRow .sdone{color:var(--wine);font-weight:700;font-size:12px}
+  .saleClose{width:100%;margin-top:12px;background:var(--wine);color:#fff;border:none;border-radius:10px;padding:12px;font-weight:800;cursor:pointer}
+  .cityBox{background:var(--cream);border-radius:18px;padding:20px;width:340px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .cityTitle{font-weight:800;font-size:18px;color:#3a2a22;text-align:center}
+  .cityRes{font-size:13px;color:#6a5843;text-align:center;margin:4px 0 8px;font-weight:700}
+  .citySec{font-weight:800;font-size:13px;color:var(--wine);margin:12px 0 6px;border-bottom:1px solid #e2d5bd;padding-bottom:3px}
+  .cityEmpty{font-size:12px;color:#a89a80;padding:6px;text-align:center}
+  .cityRow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+  .cityRow .cn{flex:1;color:#3a2a22;font-weight:600}.cityRow .cn small{display:block;color:#8a7763;font-weight:400;font-size:10px}
+  .cbtn{background:var(--gold);border:none;border-radius:7px;padding:6px 9px;font-weight:700;font-size:11px;cursor:pointer;color:#3a2a22;white-space:nowrap}
+  .cbtn.list{background:#7a1f3d;color:#fff;margin-left:4px}
+  .cbtn.buy{background:#2a6a3a;color:#fff}
+  .cbtn:disabled{opacity:.4;cursor:not-allowed}
+  .cbtns{display:flex}
+  .cityClose{width:100%;margin-top:14px;background:var(--gold);color:#3a2a22;border:none;border-radius:10px;padding:12px;font-weight:800;cursor:pointer}
+  .auctItem{font-size:17px;font-weight:800;color:#3a2a22;text-align:center;margin:14px 0 6px}
+  .auctInfo{font-size:13px;color:var(--wine);text-align:center;font-weight:700;margin-bottom:8px}
+  .auctYou{font-size:13px;color:#6a5843;text-align:center;margin:8px 0;font-weight:700}
+  .bidBtn{width:100%;margin:6px 0;padding:12px;font-size:15px}
+  /* 評論家 */
+  .criticBox{background:var(--cream);border-radius:18px;padding:24px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);width:260px;animation:criticIn .3s}
+  @keyframes criticIn{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:none}}
+  .criticFace{font-size:64px;animation:criticBob 1s ease-in-out infinite}
+  @keyframes criticBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .criticName{font-weight:800;color:#8e44ad;font-size:15px;margin:6px 0}
+  .criticLine{background:#fff;border-radius:12px;padding:12px;font-size:15px;color:#3a2a22;font-style:italic;margin:10px 0}
+  .criticEff{color:var(--wine);font-weight:800;font-size:15px;margin-bottom:14px}
+  .criticOk{width:100%;background:#8e44ad;color:#fff;border:none;padding:12px;font-weight:800;font-size:15px;border-radius:10px;cursor:pointer}
+  .criticBox.chaos{background:linear-gradient(160deg,#3a1020,#6a1030);animation:chaosShake .4s}
+  .criticBox.chaos .criticName{color:#ff6b6b}.criticBox.chaos .criticLine{background:rgba(255,255,255,.12);color:#ffdede}
+  .criticBox.dmg{width:280px}
+  .criticVictim{font-size:13px;color:#8a7763;margin-top:4px}
+  .criticBigMsg{font-size:20px;font-weight:800;color:var(--wine);background:#fff;border-radius:12px;padding:16px 12px;margin:10px 0 4px;line-height:1.35}
+  .criticBox.chaos .criticBigMsg{background:rgba(255,255,255,.15);color:#ffe0e0}
+  .criticBox.harmless .criticName{color:#2a6a3a}
+  .criticBox.harmless .criticBigMsg{color:#2a6a3a}
+  .criticSlotLine{background:#fff;border:3px solid #8e44ad;border-radius:12px;padding:14px 12px;font-size:16px;color:#3a2a22;font-style:italic;margin:10px 0;min-height:24px;line-height:24px}
+  .criticSlotEff{color:var(--wine);font-weight:800;font-size:15px;margin-bottom:14px;min-height:18px}
+  @keyframes chaosShake{0%,100%{transform:none}20%{transform:translateX(-8px) rotate(-1deg)}40%{transform:translateX(8px) rotate(1deg)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  /* ヴィンテージ発表 */
+  .vtBox{background:linear-gradient(160deg,#fbf3e0,#f0e3c8);border-radius:20px;padding:26px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,.45);width:290px;animation:vtIn .4s}
+  @keyframes vtIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+  .vtYear{font-size:34px;font-weight:900;color:var(--wine);letter-spacing:1px}
+  .vtSub{font-size:13px;color:#8a7763;margin-bottom:16px}
+  .vtGreat,.vtPoor{border-radius:12px;padding:12px;margin:8px 0;font-weight:700;font-size:15px;color:#3a2a22;display:flex;flex-direction:column;gap:3px}
+  .vtGreat{background:#fdeec2;border:2px solid var(--gold)}
+  .vtPoor{background:#dfe6ea;border:2px solid #9fb0bb}
+  .vtGreat small,.vtPoor small{font-weight:600;font-size:11px;color:#6a5843}
+  .vtOk{width:100%;margin-top:14px;background:var(--wine);color:#fff;border:none;padding:13px;font-weight:800;font-size:15px;border-radius:10px;cursor:pointer}
+  /* カード */
+  .cardBox{background:var(--cream);border-radius:18px;padding:22px;text-align:center;box-shadow:0 12px 34px rgba(0,0,0,.45);width:270px;animation:vtIn .35s}
+  .cardTitle{font-weight:800;font-size:17px;color:#3a2a22;margin-bottom:14px}
+  .cardFace{background:linear-gradient(160deg,#fff,#f2e8d2);border:3px solid var(--gold);border-radius:14px;padding:18px;margin-bottom:14px}
+  .cardIcon{font-size:52px}.cardName{font-weight:800;font-size:18px;color:var(--wine);margin-top:6px}.cardDesc{font-size:13px;color:#6a5843;margin-top:4px}
+  .cardReelName{background:linear-gradient(160deg,#fff,#f2e8d2);border:3px solid var(--gold);border-radius:14px;padding:22px 12px;font-weight:800;font-size:24px;color:var(--wine);margin-bottom:8px;min-height:34px;line-height:34px}
+  .cardReelDesc{font-size:13px;color:#6a5843;margin-bottom:14px;min-height:18px}
+  .cardOk{width:100%;background:var(--gold);color:#3a2a22;border:none;padding:13px;font-weight:800;font-size:15px;border-radius:10px;cursor:pointer}
+  .warpList{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;max-height:200px;overflow:auto}
+  .warpBtn{background:#fff;border:2px solid #e2d5bd;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;color:#3a2a22;font-weight:700}
+  .warpBtn:hover{border-color:var(--gold)}
+  .handBar{background:rgba(58,42,34,.92);border-radius:12px;padding:8px 10px;margin-top:4px}
+  .handLabel{color:var(--cream);font-size:11px;margin-bottom:5px;opacity:.8}
+  .handCards{display:flex;flex-wrap:wrap;gap:5px}
+  .handCard{background:var(--cream);border:2px solid var(--gold);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;color:#3a2a22;cursor:pointer;display:flex;align-items:center;gap:3px}
+  .handCard span{font-size:16px}.handCard:hover{background:#fff;transform:translateY(-2px)}
+  .diceWrap{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .dieBig{background:rgba(246,239,226,.94);border-radius:14px;padding:8px 16px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .btn{background:var(--gold);border:none;padding:12px 22px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:0 4px 0 #a87f1e;color:#3a2a22;transition:transform .08s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a87f1e}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn.ov{background:#6a8fbf;box-shadow:0 4px 0 #4a6a96;color:#fff;font-size:13px;padding:9px 16px}
+  /* モード選択 */
+  #modeSelect{position:absolute;inset:0;z-index:32;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 25%, #2f5740, #1d2b22 70%);gap:18px;padding:24px;text-align:center}
+  #modeSelect h1{font-size:40px;margin:0;letter-spacing:.04em;color:var(--cream)}
+  #modeSelect h1 .v{color:var(--gold)}
+  #modeSelect p{margin:0;color:#cdbfa6;font-size:15px}
+  .modeBtns{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  .mbtn{background:var(--cream);border:3px solid transparent;border-radius:18px;padding:24px 28px;cursor:pointer;min-width:170px;
+    box-shadow:0 6px 0 rgba(0,0,0,.25);transition:transform .12s,border-color .12s}
+  .mbtn:hover{transform:translateY(-5px);border-color:var(--gold)}
+  .mbtn .ic{font-size:34px}
+  .mbtn .mt{font-size:19px;font-weight:800;color:var(--wine);margin-top:8px}
+  .mbtn .ms{font-size:12px;color:#8a7763;margin-top:3px}
+  /* 人数選択 */
+  #countSelect{position:absolute;inset:0;z-index:31;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 25%, #2f5740, #1d2b22 70%);gap:18px;padding:24px;text-align:center}
+  #countSelect h1{font-size:38px;margin:0;letter-spacing:.04em;color:var(--cream)}
+  #countSelect h1 .v{color:var(--gold)}
+  #countSelect p{margin:0;color:#cdbfa6;font-size:15px}
+  .countBtns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:520px;margin-top:8px}
+  .cbtn{background:var(--cream);border:3px solid transparent;border-radius:16px;padding:18px 22px;cursor:pointer;min-width:120px;
+    box-shadow:0 6px 0 rgba(0,0,0,.25);transition:transform .12s}
+  .cbtn:hover{transform:translateY(-4px);border-color:var(--gold)}
+  .cbtn .big{font-size:30px;font-weight:800;color:var(--wine)}
+  .cbtn .sm{font-size:12px;color:#8a7763;margin-top:4px}
+  /* アバターオーバーレイ層（地図上に確実にSVGで表示） */
+  #avatarLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+  .legend{position:absolute;right:12px;bottom:12px;background:rgba(246,239,226,.92);border-radius:10px;padding:8px 10px;font-size:11px;color:#3a2a22;box-shadow:0 2px 10px rgba(0,0,0,.25);z-index:6}
+  .legend .lgTitle{font-weight:800;font-size:11px;margin-bottom:4px;color:#7a1f3d}
+  .legend .lgRow{display:flex;align-items:center;gap:6px;margin:2px 0}
+  .legend .lgDot{width:11px;height:11px;border-radius:50%;border:1.5px solid #fff;flex:none}
+  .legend .lgSq{width:10px;height:10px;border:1.5px solid #fff;flex:none}
+  .criticSprite{position:absolute;pointer-events:none;font-size:26px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+  .criticSprite .csBody{position:relative}
+  .criticSprite .csHat{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:16px}
+  .mapAvatar{position:absolute;transform:translate(-50%,-100%);will-change:left,top}
+  .mapAvatar .nameTag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-size:11px;font-weight:700;color:#3a2a22;background:rgba(255,255,255,.9);padding:1px 6px;border-radius:8px}
+  .mapAvatar.npc .nameTag{color:#5a4d6a}
+  .toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(58,42,34,.94);color:var(--cream);
+    padding:11px 22px;border-radius:30px;font-size:15px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .toast.show{opacity:1}
+  .pickHint{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);background:var(--wine);color:#fff;
+    padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:opacity .2s}
+  .pickHint.show{opacity:1}
+</style>
+
+<div id="app">
+  <!-- ステップ0: モード選択 -->
+  <div id="modeSelect">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p>遊び方を選ぼう</p>
+    <div class="modeBtns">
+      <div class="mbtn" id="modeSolo">
+        <div class="ic">🧑‍🦰🆚🤖</div>
+        <div class="mt">一人で遊ぶ</div>
+        <div class="ms">NPCと対戦</div>
+      </div>
+      <div class="mbtn" id="modeFriends">
+        <div class="ic">🧑‍🤝‍🧑</div>
+        <div class="mt">友達と遊ぶ</div>
+        <div class="ms">2〜4人で対戦</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ステップ1: 人数選択 -->
+  <div id="countSelect" style="display:none">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p id="countTitle">何人で遊ぶ？</p>
+    <div class="countBtns" id="countBtns"></div>
+  </div>
+
+  <!-- ステップ2: アバター選択 -->
+  <div id="select" style="display:none">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p>あなたの相棒を選ぼう。</p>
+    <div class="avatars" id="avatars"></div>
+    <div class="namebox"><input id="pname" placeholder="名前を入力" maxlength="8"></div>
+    <button class="go" id="goBtn" disabled>旅に出る →</button>
+  </div>
+
+  <div id="game">
+    <canvas id="cv"></canvas>
+    <div id="avatarLayer"></div>
+    <div class="hud" id="hud"></div>
+    <div class="legend" id="legend">
+      <div class="lgTitle">産地の色</div>
+      <div class="lgRow"><span class="lgDot" style="background:#b0314f"></span>赤ワイン</div>
+      <div class="lgRow"><span class="lgDot" style="background:#7fb04a"></span>白ワイン</div>
+      <div class="lgRow"><span class="lgDot" style="background:#e3b23c"></span>泡（シャンパーニュ等）</div>
+      <div class="lgRow"><span class="lgDot" style="background:#e07b9a"></span>ロゼ</div>
+      <div class="lgRow"><span class="lgSq" style="background:#6b7785"></span>都市（市場）</div>
+    </div>
+    <div class="diceWrap">
+      <div class="dieBig">🎲 <span id="dieFace">—</span></div>
+      <div class="movesLeft" id="movesLeft"></div>
+      <button class="btn" id="rollBtn">サイコロを振る</button>
+      <button class="btn ov" id="ovBtn">🗺 全体マップ</button>
+    </div>
+    <div class="pickHint" id="pickHint">分かれ道だ！進む先をクリック / 矢印キーでも選べます</div>
+    <div class="toast" id="toast"></div>
+    <div class="actionLog" id="actionLog"></div>
+    <div class="modal" id="buildModal"></div>
+    <div class="modal" id="quizModal"></div>
+    <div class="modal" id="slotModal"></div>
+    <div class="modal" id="criticModal"></div>
+    <div class="modal" id="vintageModal"></div>
+    <div class="modal" id="cardModal"></div>
+    <div class="modal" id="marketModal"></div>
+    <div class="modal" id="fundModal"></div>
+    <div class="modal" id="saleModal"></div>
+    <div class="modal" id="cityModal"></div>
+    <div class="modal" id="resultModal"></div>
+  </div>
+</div>
+
+<script>
+/* ============ 2Dちびアバター：どう森風（2.5頭身・点目・丸み・親しみやすさ） ============ */
+const PALETTE=[
+ {id:0,name:"ロザリー",desc:"陽気なソムリエ",skin:"#fad2ad",hair:"#d65a4a",cloth:"#e8746b",accent:"#fff1d8",face:"sommelier"},
+ {id:1,name:"ヴィクトル",desc:"無口な醸造家",skin:"#f0c098",hair:"#5a4334",cloth:"#5a86c2",accent:"#7a5a3c",face:"winemaker"},
+ {id:2,name:"アメリ",desc:"若手バイヤー",skin:"#fbd9bd",hair:"#8aa4c8",cloth:"#5cb672",accent:"#37506b",face:"buyer"},
+ {id:3,name:"バジル",desc:"放浪の評論家",skin:"#e6b088",hair:"#e2e2e2",cloth:"#7a6a90",accent:"#cda33f",face:"critic"},
+ {id:4,name:"クレア",desc:"畑の管理人",skin:"#f7c79e",hair:"#e07b2e",cloth:"#b06fd6",accent:"#7a9ad0",face:"farmer"},
+ {id:5,name:"ティモ",desc:"樽職人見習い",skin:"#eeb085",hair:"#6a5038",cloth:"#ea8c3e",accent:"#caa05a",face:"cooper"},
+];
+const OUT="#43342a"; // 柔らかい茶系アウトライン（黒より優しい＝可愛い）
+
+// 髪（後ろ）
+function hairBack(a){
+ switch(a.face){
+  case"sommelier": return `<path d="M20 34 q-6 30 4 44 q-4 -24 4 -42Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2"/><path d="M60 34 q6 30 -4 44 q4 -24 -4 -42Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2"/>`;
+  case"farmer": return `<path d="M22 36 q-5 22 3 34 q-3 -20 2 -34Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2"/><path d="M58 36 q5 22 -3 34 q3 -20 -2 -34Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2"/>`;
+  default: return ``;
+ }
+}
+// 髪（前）
+function hairFront(a){
+ switch(a.face){
+  case"sommelier": return `<path d="M19 36 q1 -22 21 -22 q20 0 21 22 q-7 -9 -21 -9 q-14 0 -21 9Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  case"winemaker": return `<path d="M19 36 q-1 -23 21 -23 q22 0 21 23 q-4 -10 -9 -11 l-2 7 l-3 -7 l-2 7 l-3 -7 l-2 7 l-3 -7 q-7 1 -13 11Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  case"buyer": return `<path d="M19 35 q0 -22 21 -22 q21 0 21 22 q-7 -10 -16 -10 q-3 6 -9 7 q-3 -1 -5 0 q-6 -1 -12 3Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  case"critic": return `<path d="M19 33 q2 -20 21 -20 q19 0 21 20 q-10 -7 -21 -6 q-11 -1 -21 6Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  case"farmer": return `<path d="M19 36 q0 -22 21 -22 q21 0 21 22 q-6 -10 -15 -10 l-3 6 l-3 -6 q-14 0 -21 10Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  case"cooper": return `<path d="M19 37 q0 -24 21 -24 q21 0 21 24 q-7 -12 -21 -12 q-14 0 -21 12Z" fill="${a.hair}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+ }
+}
+// 顔（点目＋小さい口＝どう森の可愛さの核）
+function features(a){
+ // 共通の点目（離れ気味・大きめの黒点・ハイライト）
+ const eyes=`<ellipse cx="31" cy="40" rx="3.2" ry="4" fill="#3a2a22"/><circle cx="32.2" cy="38.6" r="1.1" fill="#fff"/>
+  <ellipse cx="49" cy="40" rx="3.2" ry="4" fill="#3a2a22"/><circle cx="50.2" cy="38.6" r="1.1" fill="#fff"/>`;
+ const blush=`<ellipse cx="24" cy="46" rx="3.6" ry="2.4" fill="#f5a89a" opacity=".75"/><ellipse cx="56" cy="46" rx="3.6" ry="2.4" fill="#f5a89a" opacity=".75"/>`;
+ switch(a.face){
+  case"sommelier": return `${eyes}${blush}<path d="M35 47 q5 5 10 0" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  case"winemaker": return `${eyes}<path d="M27 35 q4 -1.5 7 0 M46 35 q4 -1.5 7 0" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M37 48 h6" stroke="${OUT}" stroke-width="2" stroke-linecap="round"/><path d="M33 33 q-2 5 1 8 M47 33 q2 5 -1 8" stroke="${a.hair}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  case"buyer": return `<circle cx="31" cy="40" r="5.4" fill="#fff" stroke="${OUT}" stroke-width="1.8"/><circle cx="49" cy="40" r="5.4" fill="#fff" stroke="${OUT}" stroke-width="1.8"/><path d="M36.4 40 h7.2" stroke="${OUT}" stroke-width="1.8"/><ellipse cx="31" cy="40.4" rx="2.4" ry="3" fill="#3a2a22"/><ellipse cx="49" cy="40.4" rx="2.4" ry="3" fill="#3a2a22"/><path d="M34 48 q6 5 12 0" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  case"critic": return `<ellipse cx="31" cy="40" rx="3" ry="3.8" fill="#3a2a22"/><circle cx="49" cy="40" r="6" fill="rgba(255,255,255,.3)" stroke="${a.accent}" stroke-width="2"/><ellipse cx="49" cy="40" rx="3" ry="3.8" fill="#3a2a22"/><path d="M49 46 l2 7" stroke="${a.accent}" stroke-width="1.6"/><path d="M26 34 l8 2 M54 34 l-8 2" stroke="${OUT}" stroke-width="2" stroke-linecap="round"/><path d="M36 49 q5 -2 9 0" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  case"farmer": return `${eyes}<circle cx="26" cy="46" r="0.9" fill="#cf9266"/><circle cx="29" cy="48" r="0.9" fill="#cf9266"/><circle cx="51" cy="46" r="0.9" fill="#cf9266"/><circle cx="54" cy="48" r="0.9" fill="#cf9266"/><path d="M34 47 q6 6 12 0" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  case"cooper": return `${eyes}<path d="M27 35 q4 -1 7 1 M46 36 q4 -2 7 -1" stroke="${OUT}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 47 q6 6 12 0 q-6 2 -12 0Z" fill="#fff" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+ }
+}
+// 帽子
+function headwear(a){
+ switch(a.face){
+  case"farmer": return `<ellipse cx="40" cy="18" rx="27" ry="7.5" fill="#e6c873" stroke="${OUT}" stroke-width="2"/><path d="M26 16 q14 -12 28 0 q-2 -2 -14 -2 q-12 0 -14 2Z" fill="#ecd488" stroke="${OUT}" stroke-width="2"/><path d="M24 17 h32" stroke="#c2a24e" stroke-width="2.5"/>`;
+  case"cooper": return `<path d="M18 22 q22 -11 44 0 l0 3 q-22 -7 -44 0Z" fill="#cf4436" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+  default: return ``;
+ }
+}
+// 服＋手足（ちび体型：丸い胴・短い手足）
+function bodyParts(a){
+ // 脚（短い・靴つき）
+ const legs=`<rect x="31" y="92" width="7" height="13" rx="3.5" fill="${a.skin}" stroke="${OUT}" stroke-width="2"/><rect x="42" y="92" width="7" height="13" rx="3.5" fill="${a.skin}" stroke="${OUT}" stroke-width="2"/>
+  <ellipse cx="33" cy="106" rx="6" ry="3.5" fill="#5a4632" stroke="${OUT}" stroke-width="2"/><ellipse cx="47" cy="106" rx="6" ry="3.5" fill="#5a4632" stroke="${OUT}" stroke-width="2"/>`;
+ // 腕（短い・手は丸）
+ const arms=`<rect x="17" y="74" width="7" height="16" rx="3.5" fill="${a.cloth}" stroke="${OUT}" stroke-width="2"/><circle cx="20.5" cy="91" r="4" fill="${a.skin}" stroke="${OUT}" stroke-width="2"/>
+  <rect x="56" y="74" width="7" height="16" rx="3.5" fill="${a.cloth}" stroke="${OUT}" stroke-width="2"/><circle cx="59.5" cy="91" r="4" fill="${a.skin}" stroke="${OUT}" stroke-width="2"/>`;
+ // 胴（丸い・ぷっくり）
+ let torso=`<path d="M23 78 q0 -12 17 -12 q17 0 17 12 l1 18 q-18 6 -36 0Z" fill="${a.cloth}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+ let ex="";
+ switch(a.face){
+  case"sommelier": ex=`<rect x="31" y="70" width="18" height="26" rx="4" fill="#3a3a3a" stroke="${OUT}" stroke-width="1.8"/><path d="M36 69 l4 3.5 l4 -3.5 l-1.5 5 h-5Z" fill="#7a1f3d" stroke="${OUT}" stroke-width="1.3"/>`; break;
+  case"winemaker": ex=`<path d="M23 84 q17 6 34 0 l1 12 q-18 6 -36 0Z" fill="${a.accent}" stroke="${OUT}" stroke-width="1.8"/><rect x="31" y="66" width="3.5" height="18" fill="${a.accent}"/><rect x="45" y="66" width="3.5" height="18" fill="${a.accent}"/>`; break;
+  case"buyer": ex=`<path d="M40 66 l-4 6 h8Z" fill="#fff" stroke="${OUT}" stroke-width="1.3"/><rect x="38.3" y="70" width="3.4" height="18" fill="${a.accent}"/>`; break;
+  case"critic": ex=`<path d="M33 67 l7 9 l-5 0Z" fill="#5a4a6a" stroke="${OUT}" stroke-width="1.3"/><path d="M47 67 l-7 9 l5 0Z" fill="#5a4a6a" stroke="${OUT}" stroke-width="1.3"/><rect x="38" y="67" width="4" height="28" fill="#4a3a5a"/>`; break;
+  case"farmer": ex=`<path d="M23 82 q17 6 34 0 l1 14 q-18 6 -36 0Z" fill="${a.accent}" stroke="${OUT}" stroke-width="1.8"/><rect x="31" y="66" width="3.5" height="17" fill="${a.accent}"/><rect x="45" y="66" width="3.5" height="17" fill="${a.accent}"/><rect x="34" y="85" width="12" height="7" rx="2" fill="#5a78ab" stroke="${OUT}" stroke-width="1.3"/>`; break;
+  case"cooper": ex=`<path d="M32 70 h16 l-1.5 26 h-13Z" fill="#8a5a32" stroke="${OUT}" stroke-width="1.8"/><path d="M35 70 l5 -4 l5 4Z" fill="#6a4424" stroke="${OUT}" stroke-width="1.3"/>`; break;
+ }
+ return legs+arms+torso+ex;
+}
+
+// 全身ちびアバター（2.5頭身）
+function avatarSVG(a,size=104){
+ return `<svg width="${size*0.82}" height="${size}" viewBox="0 0 80 114">
+  <ellipse cx="40" cy="110" rx="19" ry="3.5" fill="rgba(0,0,0,.12)"/>
+  ${hairBack(a)}
+  ${bodyParts(a)}
+  <rect x="35" y="58" width="10" height="11" rx="4" fill="${a.skin}" stroke="${OUT}" stroke-width="2"/>
+  <ellipse cx="40" cy="40" rx="24" ry="23" fill="${a.skin}" stroke="${OUT}" stroke-width="2.2"/>
+  <path d="M18 41 q-3.5 0 -3.5 3.5 q0 3.5 3.5 3.5Z" fill="${a.skin}" stroke="${OUT}" stroke-width="1.8"/>
+  <path d="M62 41 q3.5 0 3.5 3.5 q0 3.5 -3.5 3.5Z" fill="${a.skin}" stroke="${OUT}" stroke-width="1.8"/>
+  ${hairFront(a)}
+  ${features(a)}
+  ${headwear(a)}
+ </svg>`;
+}
+
+/* ステップ0: モード選択（一人で遊ぶ=NPC戦 / 友達と遊ぶ=人間のみ） */
+let soloMode=false, numPlayers=2;
+document.getElementById("modeSolo").onclick=()=>{
+ soloMode=true;
+ document.getElementById("modeSelect").style.display="none";
+ document.getElementById("countTitle").textContent="あなたを含めて何人で戦う？（NPCと対戦）";
+ buildCountButtons([2,3,4],"人");
+ document.getElementById("countSelect").style.display="flex";
+};
+document.getElementById("modeFriends").onclick=()=>{
+ soloMode=false;
+ document.getElementById("modeSelect").style.display="none";
+ document.getElementById("countTitle").textContent="何人で遊ぶ？（全員プレイヤー）";
+ buildCountButtons([2,3,4],"人");
+ document.getElementById("countSelect").style.display="flex";
+};
+
+/* ステップ1: 人数選択 */
+const cWrap=document.getElementById("countBtns");
+function buildCountButtons(nums,unit){
+ cWrap.innerHTML="";
+ nums.forEach(n=>{
+  const b=document.createElement("div");b.className="cbtn";
+  const sub=soloMode?`あなた + NPC${n-1}`:`プレイヤー${n}人`;
+  b.innerHTML=`<div class="big">${n}</div><div class="sm">${sub}</div>`;
+  b.onclick=()=>{ numPlayers=n;
+   document.getElementById("countSelect").style.display="none";
+   document.getElementById("select").style.display="flex";
+   startSelection(); };
+  cWrap.appendChild(b);
+ });
+}
+
+/* ステップ2: アバター選択（友達モードは全員ぶん順に選ぶ） */
+let chosen=null;
+let humanPicks=[];      // 確定した人間プレイヤーの {palette, name}
+let pickIndex=0;        // 今何人目を選んでいるか（0始まり）
+let usedIds=new Set();  // 既に選ばれたキャラ
+const avWrap=document.getElementById("avatars");
+const selTitle=document.querySelector("#select p");
+function buildAvatarGrid(){
+ avWrap.innerHTML="";
+ PALETTE.forEach(a=>{
+  const taken=usedIds.has(a.id);
+  const d=document.createElement("div");
+  d.className="av"+(taken?" taken":"");
+  d.dataset.id=a.id;
+  d.innerHTML=avatarSVG(a,96)+`<div class="nm">${a.name}</div><div class="ds">${taken?'選択済み':a.desc}</div>`;
+  if(!taken) d.onclick=()=>{document.querySelectorAll(".av").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");chosen=a;if(!nameInput.value)nameInput.value=a.name;checkReady();};
+  avWrap.appendChild(d);
+ });
+}
+function humanCount(){ return soloMode ? 1 : numPlayers; }
+function refreshSelectTitle(){
+ const total=humanCount();
+ if(total===1){ selTitle.textContent="あなたの相棒を選ぼう。"; }
+ else { selTitle.textContent=`プレイヤー${pickIndex+1} のキャラを選ぼう（${pickIndex+1}/${total}人目）`; }
+ goBtn.textContent = (pickIndex+1>=total) ? "旅に出る →" : "次のプレイヤーへ →";
+}
+function startSelection(){
+ humanPicks=[]; pickIndex=0; usedIds=new Set(); chosen=null;
+ nameInput.value="";
+ buildAvatarGrid(); refreshSelectTitle(); checkReady();
+}
+const nameInput=document.getElementById("pname"), goBtn=document.getElementById("goBtn");
+nameInput.oninput=checkReady;
+function checkReady(){goBtn.disabled=!(chosen&&nameInput.value.trim());}
+goBtn.onclick=()=>{
+ // 現在の選択を確定
+ humanPicks.push({palette:chosen, name:nameInput.value.trim()});
+ usedIds.add(chosen.id);
+ const total=humanCount();
+ if(pickIndex+1<total){
+  // 次の人間プレイヤーの選択へ
+  pickIndex++; chosen=null; nameInput.value="";
+  buildAvatarGrid(); refreshSelectTitle(); checkReady();
+ }else{
+  startGame();
+ }
+};
+document.getElementById("ovBtn").onclick=()=>setOverview(!overview);
+
+/* ================= 盤面：全マスが意味を持つ連続トラック ================= */
+/* フランスの地形に沿って産地を配置。各産地間を「すごろくマス」で埋める。 */
+/* マス種類: region/bonus/penalty/quiz/critic/weather */
+/* ===== 実際のフランス本土の輪郭（主要海岸・国境点の実緯度経度） ===== */
+const FR_LATLON=[
+ [51.05,2.55],[50.95,1.85],[50.73,1.60],[50.10,1.55],[49.70,0.20],[49.50,0.10],
+ [49.45,-1.10],[49.72,-1.94],[49.30,-1.60],[48.85,-1.55],
+ [48.65,-2.02],[48.85,-3.55],[48.73,-4.78],[48.33,-4.78],[48.03,-4.33],[47.80,-4.37],
+ [47.53,-3.10],[47.28,-2.55],[47.22,-1.95],
+ [46.50,-1.78],[46.30,-1.10],[45.95,-1.25],[45.57,-1.18],[45.13,-1.25],
+ [44.65,-1.25],[43.68,-1.45],[43.39,-1.78],
+ [42.80,-1.40],[42.70,0.65],[42.50,1.45],[42.43,2.65],[42.45,3.17],
+ [43.20,3.00],[43.35,3.70],[43.40,4.85],[43.55,5.35],
+ [43.12,5.95],[43.08,6.65],[43.55,7.13],[43.75,7.53],
+ [44.15,7.00],[44.85,6.95],[45.45,6.80],[45.92,7.04],
+ [46.40,6.10],[46.95,6.80],[47.45,7.55],
+ [48.00,7.58],[48.75,8.10],[49.00,8.23],
+ [49.46,8.20],[49.55,6.35],[49.79,5.90],[50.17,5.83],[50.35,4.20],[50.50,4.05],
+ [50.78,3.15],[51.05,2.55]
+];
+const CORSICA_LATLON=[
+ [43.00,9.40],[42.70,9.55],[42.35,9.55],[41.92,9.40],[41.55,9.28],[41.37,9.20],
+ [41.58,8.78],[42.00,8.55],[42.35,8.55],[42.65,8.70],[43.00,9.40]
+];
+const FR_BBOX={minLon:-4.9,maxLon:9.8,minLat:41.2,maxLat:51.2};
+function ll2logic(lat,lon){
+ const x=(lon-FR_BBOX.minLon)/(FR_BBOX.maxLon-FR_BBOX.minLon)*100;
+ const y=(FR_BBOX.maxLat-lat)/(FR_BBOX.maxLat-FR_BBOX.minLat)*100;
+ return [x,y];
+}
+const FRANCE=FR_LATLON.map(p=>ll2logic(p[0],p[1]));
+const CORSICA=CORSICA_LATLON.map(p=>ll2logic(p[0],p[1]));
+
+/* 産地を実際の緯度経度で配置 */
+const REGION_LL={
+ paris:    {name:"パリ",        group:"city",   value:0,  lat:48.85, lon:2.35,  mark:"eiffel"},
+ champ:    {name:"シャンパーニュ",group:"sparkle",value:30, lat:49.04, lon:4.02,  mark:"sparkle"},
+ alsace:   {name:"アルザス",     group:"white",  value:25, lat:48.32, lon:7.44,  mark:"halftimber"},
+ loire:    {name:"ロワール",     group:"white",  value:20, lat:47.39, lon:0.69,  mark:"chateau"},
+ chablis:  {name:"シャブリ",     group:"white",  value:25, lat:47.81, lon:3.80,  mark:"vines"},
+ bourgogne:{name:"ブルゴーニュ", group:"red",    value:35, lat:47.32, lon:5.04,  mark:"abbey"},
+ jura:     {name:"ジュラ",       group:"white",  value:22, lat:46.87, lon:5.79,  mark:"mountain"},
+ beaujo:   {name:"ボジョレー",   group:"red",    value:20, lat:46.00, lon:4.72,  mark:"vines"},
+ lyon:     {name:"リヨン",       group:"city",   value:0,  lat:45.76, lon:4.84,  mark:"city"},
+ rhone:    {name:"ローヌ",       group:"red",    value:28, lat:44.13, lon:4.81,  mark:"papalpalace"},
+ provence: {name:"プロヴァンス", group:"rose",   value:26, lat:43.53, lon:5.45,  mark:"lavender"},
+ languedoc:{name:"ラングドック", group:"red",    value:22, lat:43.61, lon:3.88,  mark:"vines"},
+ bordeaux: {name:"ボルドー",     group:"red",    value:35, lat:44.84, lon:-0.58, mark:"winecity"},
+ cognac:   {name:"コニャック",   group:"white",  value:24, lat:45.70, lon:-0.33, mark:"barrel"},
+ sancerre: {name:"サンセール",   group:"white",  value:23, lat:47.33, lon:2.84,  mark:"vines"},    // ロワール上流
+ muscadet: {name:"ミュスカデ",   group:"white",  value:20, lat:47.985,lon:-1.51, mark:"vines"},    // ロワール河口(ナント)
+ tavel:    {name:"タヴェル",     group:"rose",   value:24, lat:44.01, lon:4.70,  mark:"lavender"}, // ローヌのロゼ
+ savoie:   {name:"サヴォワ",     group:"white",  value:22, lat:45.57, lon:5.92,  mark:"mountain"}, // アルプス寄り
+ bourges:  {name:"ブールジュ",   group:"city",   value:0,  lat:47.08, lon:2.40,  mark:"city"},   // 中央
+ clermont: {name:"クレルモン",   group:"city",   value:0,  lat:45.78, lon:3.08,  mark:"volcano"}, // 中央高地
+ toulouse: {name:"トゥールーズ", group:"city",   value:0,  lat:43.60, lon:1.44,  mark:"city"},   // 南西
+ cahors:   {name:"カオール",     group:"red",    value:24, lat:44.45, lon:1.44,  mark:"vines"},    // 南西の濃い赤
+ madiran:  {name:"マディラン",   group:"red",    value:23, lat:43.55, lon:-0.05, mark:"vines"},    // 南西ピレネー寄り
+ banyuls:  {name:"バニュルス",   group:"red",    value:26, lat:42.48, lon:3.13,  mark:"vines"},    // 地中海岸・甘口/赤
+ gaillac:  {name:"ガイヤック",   group:"white",  value:21, lat:43.90, lon:1.90,  mark:"vines"},    // 南西の白
+ marseille:{name:"マルセイユ",   group:"city",   value:0,  lat:43.30, lon:5.37,  mark:"city"},   // 南東の港
+ nantes:   {name:"ナント",       group:"city",   value:0,  lat:47.22, lon:-1.55, mark:"city"},   // 西の港
+ strasbourg:{name:"ストラスブール",group:"city",  value:0,  lat:48.57, lon:7.75,  mark:"city"},   // 北東
+ dijon:    {name:"ディジョン",   group:"city",   value:0,  lat:47.32, lon:5.04,  mark:"city"},   // ブルゴーニュの中心
+};
+const REGIONS={};
+for(const k in REGION_LL){const r=REGION_LL[k];const[x,y]=ll2logic(r.lat,r.lon);
+ REGIONS[k]={name:r.name,group:r.group,value:r.value,x,y,mark:r.mark};}
+/* 経路：産地→産地。各区間を steps マスに分割し、すべてのマスにイベントを敷く（桃鉄風に密に） */
+const LINKS=[
+ {a:"paris",b:"champ",steps:5},
+ {a:"paris",b:"loire",steps:6},
+ {a:"champ",b:"alsace",steps:6},
+ {a:"champ",b:"chablis",steps:6},
+ {a:"loire",b:"chablis",steps:7},
+ {a:"chablis",b:"bourgogne",steps:5},
+ {a:"alsace",b:"jura",steps:6},
+ {a:"jura",b:"bourgogne",steps:5},
+ {a:"bourgogne",b:"beaujo",steps:4},
+ {a:"beaujo",b:"lyon",steps:2},
+ {a:"lyon",b:"rhone",steps:5},
+ {a:"rhone",b:"provence",steps:5},
+ {a:"rhone",b:"languedoc",steps:6},
+ {a:"languedoc",b:"bordeaux",steps:8},
+ {a:"loire",b:"cognac",steps:6},
+ {a:"cognac",b:"bordeaux",steps:4},
+ // 中央を通す新ルート（盤面を埋める）
+ {a:"paris",b:"bourges",steps:5},
+ {a:"bourges",b:"chablis",steps:4},
+ {a:"bourges",b:"clermont",steps:5},
+ {a:"clermont",b:"lyon",steps:5},
+ {a:"clermont",b:"cognac",steps:5},
+ {a:"clermont",b:"languedoc",steps:6},
+ {a:"bordeaux",b:"toulouse",steps:6},
+ {a:"toulouse",b:"languedoc",steps:5},
+ {a:"loire",b:"bourges",steps:4},
+ // 追加産地を接続
+ {a:"loire",b:"muscadet",steps:3},      // ロワール河口
+ {a:"bourges",b:"sancerre",steps:3},    // ロワール上流
+ {a:"sancerre",b:"loire",steps:4},
+ {a:"rhone",b:"tavel",steps:2},         // ローヌのロゼ
+ {a:"lyon",b:"savoie",steps:4},         // アルプス寄り
+ {a:"savoie",b:"jura",steps:4},
+ // 孤立産地に2本目以降の道を足す（行き止まり解消）
+ {a:"alsace",b:"bourgogne",steps:7},    // アルザス→ブルゴーニュ（第2ルート）
+ {a:"provence",b:"tavel",steps:3},      // プロヴァンス→タヴェル
+ {a:"provence",b:"languedoc",steps:6},  // プロヴァンス→ラングドック（海岸線）
+ {a:"muscadet",b:"cognac",steps:6},     // ミュスカデ→コニャック（大西洋岸）
+ {a:"savoie",b:"beaujo",steps:5},       // サヴォワ→ボジョレー
+ {a:"tavel",b:"languedoc",steps:5},     // タヴェル→ラングドック
+ {a:"sancerre",b:"clermont",steps:5},   // サンセール→クレルモン（中央）
+ // 南西・南部の新産地を接続（下部の密度を上げる）
+ {a:"toulouse",b:"cahors",steps:4},     // トゥールーズ→カオール
+ {a:"cahors",b:"bordeaux",steps:5},     // カオール→ボルドー
+ {a:"toulouse",b:"gaillac",steps:3},    // トゥールーズ→ガイヤック
+ {a:"gaillac",b:"cahors",steps:3},      // ガイヤック→カオール
+ {a:"toulouse",b:"madiran",steps:5},    // トゥールーズ→マディラン
+ {a:"madiran",b:"bordeaux",steps:6},    // マディラン→ボルドー（大西洋岸）
+ {a:"languedoc",b:"banyuls",steps:5},   // ラングドック→バニュルス（地中海岸）
+ {a:"banyuls",b:"toulouse",steps:7},    // バニュルス→トゥールーズ
+ {a:"cahors",b:"clermont",steps:6},     // カオール→クレルモン（中央へ）
+ // 新しい都市を接続（市場ハブ＋分岐）
+ {a:"marseille",b:"provence",steps:3},  // マルセイユ→プロヴァンス
+ {a:"marseille",b:"tavel",steps:4},     // マルセイユ→タヴェル
+ {a:"nantes",b:"muscadet",steps:2},     // ナント→ミュスカデ（すぐ近く）
+ {a:"nantes",b:"loire",steps:4},        // ナント→ロワール
+ {a:"strasbourg",b:"alsace",steps:2},   // ストラスブール→アルザス
+ {a:"strasbourg",b:"champ",steps:6},    // ストラスブール→シャンパーニュ
+ {a:"dijon",b:"bourgogne",steps:2},     // ディジョン→ブルゴーニュ
+ {a:"dijon",b:"chablis",steps:4},       // ディジョン→シャブリ
+ {a:"dijon",b:"jura",steps:4},          // ディジョン→ジュラ
+];
+const GROUP_COLOR={start:"#f6efe2",sparkle:"#e3b23c",white:"#cfd98a",red:"#7a1f3d",rose:"#e89bb0",city:"#bcc4cc"};
+/* マスの種類と色（産地以外も全部意味あり） */
+const KIND={
+ bonus:{c:"#16c65a",s:"🃏",label:"カード",t:"🃏 カードマス",act:()=>{}},
+ penalty:{c:"#ff2d2d",s:"🧐",label:"評論家",t:"🧐 評論家ダメージ",act:()=>{}},
+ quiz:{c:"#1f7bff",s:"?",label:"クイズ",t:"🔵 ソムリエクイズ",act:()=>{}},
+ critic:{c:"#b026ff",s:"🏪",label:"市場",t:"🏪 市場マス",act:()=>{}},
+ weather:{c:"#00d0e0",s:"🎰",label:"資源",t:"🎰 資源スロット",act:()=>{}},
+ fund:{c:"#ffc400",s:"💰",label:"資金",t:"💰 資金ルーレット",act:()=>{}},
+};
+const KIND_KEYS=["bonus","penalty","quiz","critic","weather","fund"];
+
+/* ノード（マス）を構築：桃鉄式グリッドルート（格子にスナップ・縦横直線・重なりなし） */
+let CELLS={}, cellArr=[];
+const GRID=3.0; // 格子間隔（細かくして分岐増＆産地のズレ減）
+function makeCell(id,x,y,type,payload){const c={id,x,y,type,payload,next:[]};CELLS[id]=c;cellArr.push(c);return c;}
+function snap(v){return Math.round(v/GRID)*GRID;}
+function gridKey(gx,gy){return `G_${Math.round(gx/GRID)}_${Math.round(gy/GRID)}`;}
+function buildBoard(){
+ CELLS={};cellArr.length=0;
+ let seed=7;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+ const regionCellId={};
+ const occupied=new Set();
+ for(const k in REGIONS){const r=REGIONS[k];
+  let gx=snap(r.x), gy=snap(r.y);
+  let tries=0;
+  while(occupied.has(gridKey(gx,gy)) && tries<8){ gx+=GRID; tries++; }
+  occupied.add(gridKey(gx,gy));
+  const id="R_"+k; makeCell(id,gx,gy,"region",k); regionCellId[k]=id;
+  REGIONS[k].x=gx; REGIONS[k].y=gy;
+ }
+ const gridCells={};
+ for(const k in REGIONS){const id=regionCellId[k];const c=CELLS[id];gridCells[gridKey(c.x,c.y)]=id;}
+ function getOrMakeGridCell(gx,gy){
+  const key=gridKey(gx,gy);
+  if(gridCells[key]) return gridCells[key];
+  const kind=KIND_KEYS[Math.floor(rnd()*KIND_KEYS.length)];
+  const id=`C_${Math.round(gx/GRID)}_${Math.round(gy/GRID)}`;
+  makeCell(id,gx,gy,kind); gridCells[key]=id; return id;
+ }
+ // 産地間を階段状(複数の曲がり)で結ぶ → 交差点が増えて分岐が多くなる
+ LINKS.forEach((lk)=>{
+  const A=CELLS[regionCellId[lk.a]], B=CELLS[regionCellId[lk.b]];
+  routeStaircase(A.x,A.y,B.x,B.y,getOrMakeGridCell,rnd);
+ });
+ // メッシュ化：既存マスの隣接格子にマスがあれば道でつなぐ（網の目＝分岐増）
+ meshConnect(gridCells);
+ ensureRegionConnectivity(regionCellId, gridCells);
+}
+/* 階段状ルート：横1歩・縦1歩を交互に繰り返してBへ。曲がりが増え交差点が生まれる */
+function routeStaircase(ax,ay,bx,by,getCell,rnd){
+ let gx=Math.round(ax/GRID), gy=Math.round(ay/GRID);
+ const gbx=Math.round(bx/GRID), gby=Math.round(by/GRID);
+ const ids=[getCell(gx*GRID,gy*GRID)];
+ let guard=0;
+ while((gx!==gbx||gy!==gby) && guard++<200){
+  // 残り距離に応じて、横か縦をランダムに1歩（階段状）
+  const dx=gbx-gx, dy=gby-gy;
+  let moveX;
+  if(dx===0) moveX=false; else if(dy===0) moveX=true; else moveX=(rnd()<0.5);
+  if(moveX) gx+=Math.sign(dx); else gy+=Math.sign(dy);
+  ids.push(getCell(gx*GRID,gy*GRID));
+ }
+ for(let i=0;i<ids.length-1;i++){ if(ids[i]!==ids[i+1]) connect(CELLS[ids[i]],CELLS[ids[i+1]]); }
+}
+/* メッシュ接続：隣接する格子マス同士を確率的に道でつなぐ（分岐の網を作る） */
+function meshConnect(gridCells){
+ let seed=31;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+ const keys=Object.keys(gridCells);
+ // パス1：控えめに基本の網を作る（密集を避け 0.32）
+ keys.forEach(key=>{
+  const id=gridCells[key];const c=CELLS[id];
+  const gx=Math.round(c.x/GRID), gy=Math.round(c.y/GRID);
+  [[1,0],[0,1]].forEach(d=>{
+   const nk=`G_${gx+d[0]}_${gy+d[1]}`;
+   if(gridCells[nk] && rnd()<0.32){ connect(c, CELLS[gridCells[nk]]); }
+  });
+ });
+ // パス2：分岐が少ない所（一本道）だけに分岐を1つ足す
+ keys.forEach(key=>{
+  const id=gridCells[key];const c=CELLS[id];
+  if(c.next.length>=3) return;            // すでに分岐がある所は触らない
+  if(c.next.length===2 && rnd()<0.5) return; // 一本道でも半分はそのまま（分岐を作りすぎない）
+  const gx=Math.round(c.x/GRID), gy=Math.round(c.y/GRID);
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+  for(const d of dirs){
+   if(c.next.length>=3) break;
+   const nk=`G_${gx+d[0]}_${gy+d[1]}`;
+   const nid=gridCells[nk];
+   if(nid && !c.next.includes(nid) && CELLS[nid].next.length<3){
+    if(rnd()<0.5){ connect(c, CELLS[nid]); }
+   }
+  }
+ });
+ // パス3：分岐が過剰なマス（4方向以上）を、連結を壊さない範囲で間引く
+ pruneOverBranched(rnd);
+}
+/* 4方向以上に分岐したマスから、余分な道を1本ずつ外す（連結が保たれる場合のみ） */
+function pruneOverBranched(rnd){
+ cellArr.forEach(c=>{
+  while(c.next.length>=4){
+   // 外す候補：相手も3本以上持っていて、外しても両者が孤立しない道
+   let removed=false;
+   const cand=c.next.slice().sort(()=>rnd()-0.5);
+   for(const nid of cand){
+    const n=CELLS[nid];
+    if(n.next.length<=2) continue;        // 相手が細い道なら残す（連結維持）
+    if(c.type==="region"||n.type==="region") continue; // 産地に直結する道は残す
+    // 一旦外して連結を確認
+    disconnect(c,n);
+    if(stillConnected(c,n)){ removed=true; break; }
+    else { connect(c,n); } // 切れるなら戻す
+   }
+   if(!removed) break; // これ以上安全に外せない
+  }
+ });
+}
+function disconnect(a,b){ a.next=a.next.filter(x=>x!==b.id); b.next=b.next.filter(x=>x!==a.id); }
+/* aからbへ（外した後でも）到達できるか＝連結が保たれているか */
+function stillConnected(a,b){
+ const seen={[a.id]:1};const q=[a.id];
+ while(q.length){ const id=q.shift(); if(id===b.id) return true; (CELLS[id].next||[]).forEach(n=>{if(!seen[n]){seen[n]=1;q.push(n);}}); }
+ return false;
+}
+function connect(a,b){ if(!a||!b)return; if(!a.next.includes(b.id))a.next.push(b.id); if(!b.next.includes(a.id))b.next.push(a.id); }
+/* 各産地マスが最低2方向につながるよう、足りなければ近くのマスへ道を足す（孤立解消） */
+function ensureRegionConnectivity(regionCellId, gridCells){
+ const MIN=2;
+ for(const k in regionCellId){
+  const c=CELLS[regionCellId[k]];
+  if(k==="paris") continue;
+  let guard=0;
+  while(c.next.length<MIN && guard++<12){
+   // 最も近い「まだ接続していない」マスを探してつなぐ
+   let best=null,bd=Infinity;
+   cellArr.forEach(o=>{
+    if(o.id===c.id) return;
+    if(c.next.includes(o.id)) return;
+    const d=Math.hypot(o.x-c.x,o.y-c.y);
+    if(d<bd){ bd=d; best=o; }
+   });
+   if(!best) break;
+   connect(c,best);
+  }
+ }
+}
+
+/* ================= ゲーム状態 ================= */
+/* ================= マルチプレイヤー状態 ================= */
+let players=[], cur=0, owned={}, movesLeft=0, rolling=false, moving=false, awaitingPick=false, pickOptions=[];
+// 重量級：シーズン・ターン管理（暫定値・設定化）
+const CONFIG={ turnsPerSeason:7, totalSeasons:5,
+  cost:{ vineyard:{money:5}, winery_std:{grapes:3,money:5}, winery_prem:{grapes:1,barrels:2,money:8} },
+  produce:{ vineyardGrapes:2, stdWineValue:10, premWineValue:25, tastingFee:3 },
+  bonus:{ monopoly:30, geoSet:40, typeSet:50, regionColl:8, regionCompleteBonus:40, vintageColl:6 },
+  reinvest:{ winery_std:{grapes:2,money:4}, winery_prem:{grapes:1,barrels:1,money:6}, maxLevel:3 } };
+let season=1, turnInSeason=0, turnCount=0;
+// 産地→タイプ/地理セットの対応（設計書5.5より）
+const REGION_TYPE={champ:"泡",alsace:"白",chablis:"白",bourgogne:"赤",jura:"白",beaujo:"赤",rhone:"赤",provence:"ロゼ",languedoc:"赤",bordeaux:"赤",cognac:"白",loire:"白",sancerre:"白",muscadet:"白",tavel:"ロゼ",savoie:"白",cahors:"赤",madiran:"赤",banyuls:"赤",gaillac:"白"};
+const TYPE_SETS={ "赤":["bordeaux","bourgogne","beaujo","rhone","languedoc","cahors","madiran","banyuls"], "白":["alsace","chablis","loire","sancerre","muscadet","jura","savoie","cognac","gaillac"], "泡":["champ","savoie"], "ロゼ":["provence","tavel"] };
+const GEO_SETS={ "北東":["champ","alsace"], "ブルゴーニュ圏":["chablis","bourgogne","jura","beaujo","savoie"], "ロワール圏":["loire","sancerre","muscadet"], "南部":["rhone","tavel","provence","languedoc","banyuls"], "南西":["bordeaux","cognac","cahors","madiran","gaillac"] };
+// 各プレイヤー: {...palette, pname, value, posCell, cameFrom, img, imgReady}
+function curP(){return players[cur];}
+
+function startGame(){
+ buildBoard();
+ const used=new Set();
+ players=[];
+ // 人間プレイヤー（友達モードは全員ぶん、ソロは1人）
+ humanPicks.forEach(hp=>{ used.add(hp.palette.id); players.push(makePlayer(hp.palette, hp.name||hp.palette.name, false)); });
+ // ソロモードならNPCを (numPlayers-1) 体追加
+ if(soloMode){
+  const npcNames=["ボブ","クロエ","ダニエル","エヴァ"];
+  for(let i=1;i<numPlayers;i++){
+   const pick=PALETTE.find(a=>!used.has(a.id)); used.add(pick.id);
+   players.push(makePlayer(pick, "NPC "+npcNames[i-1], true));
+  }
+ }
+ cur=0; owned={}; season=1; turnInSeason=0;
+ document.getElementById("select").style.display="none";
+ document.getElementById("game").style.display="block";
+ buildAvatarElements();
+ rollVintage();  // 第1シーズンの天候
+ resize(); renderHUD(); requestAnimationFrame(loop);
+ announceVintage();
+ maybeNpcTurn();
+}
+function makePlayer(a,name,isNpc){
+ return {...a, pname:name, isNpc:!!isNpc, value:0, count:0, posCell:"R_paris", cameFrom:null,
+   dlx:CELLS["R_paris"].x, dly:CELLS["R_paris"].y, el:null,
+   // 重量級：資源・資産・ワイン
+   grapes:2, barrels:1, money:10,   // 初期資源（暫定）
+   assets:{},   // { 産地key: {vineyard:true, winery_std:true, winery_prem:true} }
+   produced:{}, // 産地key -> Set(生産したタイプ)。タイプセット判定用
+   wines:[],    // 生産したワイン {type:'std'|'prem', region, vintage, value}
+   hand:[],     // 手札カード（カードマスで獲得）
+   bonusLog:{ monopoly:0, geoSet:0, typeColl:0, regionColl:0, vintageColl:0, spotlight:0 }, // ボーナス内訳
+   parkerDelta:0 // パーカーポイントによるプレミアムワイン価値の累計変動（基準比）
+ };
+}
+/* ボーナスを加算しつつ内訳に記録 */
+function addBonus(p, cat, amt){ p.value+=amt; if(p.bonusLog && cat in p.bonusLog) p.bonusLog[cat]+=amt; }
+/* 地図上アバターをDOM要素(SVG)として生成 → Image読込失敗による不一致が原理的に起きない */
+function buildAvatarElements(){
+ const layer=document.getElementById("avatarLayer");
+ layer.innerHTML="";
+ players.forEach((p,i)=>{
+  const div=document.createElement("div");
+  div.className="mapAvatar"+(p.isNpc?" npc":"");
+  // 選択カードと“同一の”avatarSVGを使う＝絶対に一致する
+  div.innerHTML=`<div class="nameTag">${p.pname}</div>`+avatarSVG(p,54);
+  layer.appendChild(div);
+  p.el=div;
+ });
+ // 評論家の追従スプライト（憑いている人の後ろをついて回る）
+ const cel=document.createElement("div");
+ cel.className="criticSprite"; cel.id="criticSprite";
+ cel.innerHTML=`<div class="csBody">🧐</div><div class="csHat">🎩</div>`;
+ cel.style.display="none";
+ layer.appendChild(cel);
+ criticSpriteEl=cel;
+}
+let criticSpriteEl=null;
+
+/* ================= Canvas + カメラ（クロースアップ追従 / 引きの全体マップ） ================= */
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+let W=0,H=0,DPR=Math.min(devicePixelRatio||1,2);
+function resize(){const g=document.getElementById("game");W=g.clientWidth;H=g.clientHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+addEventListener("resize",()=>{if(document.getElementById("game").style.display==="block")resize();});
+
+/* カメラ：cam.x/cam.y = 画面中心に来る論理座標, cam.zoom = 拡大率 */
+let drawPos={x:0,y:0,lx:46,ly:24,init:false}; // updateCameraより前に宣言（TDZ回避）
+let cam={x:46,y:24,zoom:2.6,tx:46,ty:24,tzoom:2.6};
+let overview=false; // true=引きの全体マップ
+let panX=0, panY=0;      // 手動ドラッグのオフセット（論理単位）
+let userPanned=false;    // ユーザーが手動で動かしたか（一時的に追従を止める）
+const CLOSE_ZOOM=2.6, OVER_ZOOM=0.85;
+const BASE=()=>Math.min(W,H)/100; // 論理1単位の基準px
+function P(x,y){const s=BASE()*cam.zoom;return [ W/2+(x-cam.x)*s, H/2+(y-cam.y)*s ];}
+function invP(px,py){const s=BASE()*cam.zoom;return [ (px-W/2)/s+cam.x, (py-H/2)/s+cam.y ];}
+function setOverview(on){
+ overview=on; userPanned=false; panX=0; panY=0;
+ if(on){ cam.tx=48; cam.ty=52; cam.tzoom=OVER_ZOOM; }
+ else  { cam.tzoom=CLOSE_ZOOM; }
+ const b=document.getElementById("ovBtn");
+ if(b) b.textContent = on ? "▲ クロースアップ" : "🗺 全体マップ";
+}
+function updateCamera(){
+ if(!overview && !userPanned){ const p=curP(); if(p){cam.tx=p.dlx+panX; cam.ty=p.dly+panY;} cam.tzoom=CLOSE_ZOOM; }
+ else if(overview && !userPanned){ cam.tx=48+panX; cam.ty=52+panY; }
+ cam.x+=(cam.tx-cam.x)*0.18; cam.y+=(cam.ty-cam.y)*0.18; cam.zoom+=(cam.tzoom-cam.zoom)*0.12;
+}
+
+/* フランス本土シルエット */
+let drawPos2_removed=null;
+function loop(){updateCamera();ctx.clearRect(0,0,W,H);drawTerrain();drawLandmarks();drawTracks();drawCells();drawSpotlightArrow();drawAllPlayers();requestAnimationFrame(loop);}
+/* 分岐時：注目産地に一番近づく選択肢へ控えめな矢印を出す */
+function drawSpotlightArrow(){
+ const best=bestPickToward(); if(!best) return;
+ const c=CELLS[best]; if(!c) return;
+ const z=cam.zoom;
+ const p=curP(); const from=CELLS[p.posCell]; if(!from) return;
+ const[fx,fy]=P(from.x,from.y);
+ const[bx,by]=P(c.x,c.y);
+ let dx=bx-fx, dy=by-fy; const len=Math.hypot(dx,dy)||1; dx/=len; dy/=len;
+ const pulse=(Math.sin(performance.now()/500)+1)/2;
+ const cx=bx, cy=by;
+ const L=10*z;      // 控えめな長さ
+ const Wd=6*z;      // 控えめな矢じり幅
+ const tipx=cx+dx*L*0.6, tipy=cy+dy*L*0.6;
+ const backx=cx-dx*L*0.4, backy=cy-dy*L*0.4;
+ const px=-dy, py=dx;
+ ctx.save();
+ ctx.lineJoin="round";
+ ctx.globalAlpha=0.55+pulse*0.25;   // 半透明で主張を抑える
+ ctx.fillStyle="#e3b23c";
+ arrowShape(tipx,tipy,backx,backy,px,py,Wd,L,z);
+ ctx.fill();
+ ctx.restore();
+}
+/* 矢印の輪郭を作る（tip=先端, back=根元, (px,py)=垂直方向） */
+function arrowShape(tipx,tipy,backx,backy,px,py,Wd,L,z){
+ const headBaseX=tipx-(tipx-backx)*0.5, headBaseY=tipy-(tipy-backy)*0.5; // 矢じりの付け根
+ const shaftW=Wd*0.4;
+ ctx.beginPath();
+ // 先端
+ ctx.moveTo(tipx,tipy);
+ // 矢じり右
+ ctx.lineTo(headBaseX+px*Wd*0.5, headBaseY+py*Wd*0.5);
+ ctx.lineTo(headBaseX+px*shaftW*0.5, headBaseY+py*shaftW*0.5);
+ // 軸右→根元
+ ctx.lineTo(backx+px*shaftW*0.5, backy+py*shaftW*0.5);
+ ctx.lineTo(backx-px*shaftW*0.5, backy-py*shaftW*0.5);
+ // 軸左→矢じり左
+ ctx.lineTo(headBaseX-px*shaftW*0.5, headBaseY-py*shaftW*0.5);
+ ctx.lineTo(headBaseX-px*Wd*0.5, headBaseY-py*Wd*0.5);
+ ctx.closePath();
+}
+
+/* ===== 地理ヘルパー（標高・内外判定・座標変換） ===== */
+// 点が多角形の内側か（ray casting）
+function pointInPoly(x,y,poly){
+ let inside=false;
+ for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+  if(((yi>y)!==(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside;
+ }
+ return inside;
+}
+// 標高推定：アルプス(南東)・ピレネー(南)・ジュラ・中央高地を山がちに
+function elevationAt(lat,lon){
+ let e=0;
+ e+=Math.max(0,1-Math.hypot(lat-45.3,lon-6.6)/3.2);   // アルプス
+ e+=Math.max(0,1-Math.hypot(lat-42.8,lon-1.0)/2.8)*0.9;// ピレネー
+ e+=Math.max(0,1-Math.hypot(lat-46.6,lon-6.0)/1.6)*0.7;// ジュラ
+ e+=Math.max(0,1-Math.hypot(lat-45.0,lon-3.2)/2.4)*0.6;// 中央高地
+ return Math.min(1,e);
+}
+function logic2ll(x,y){
+ const lon=FR_BBOX.minLon+(x/100)*(FR_BBOX.maxLon-FR_BBOX.minLon);
+ const lat=FR_BBOX.maxLat-(y/100)*(FR_BBOX.maxLat-FR_BBOX.minLat);
+ return [lat,lon];
+}
+/* ===== 連続地形：タイル格子をやめ、標高グラデ＋等高線＋散布オブジェクトで画像風に ===== */
+/* ===== 地形：オフスクリーンに一度だけ描画してキャッシュ（軽量化）。滑らかなグラデ＋等高線＋地理配置 ===== */
+let terrainCanvas=null, TERR_RES=1600; // オフスクリーン解像度(論理100→1600px)
+const L2C = TERR_RES/100; // 論理→キャッシュpx
+
+function smoothElev(gx,gy){ // 標高を少しぼかして滑らかに
+ const[lat,lon]=logic2ll(gx,gy);return elevationAt(lat,lon);
+}
+/* 標高→陸の色（連続グラデ：低地の緑から高山の岩へ滑らかに補間） */
+function landColorGrad(e){
+ // 制御点
+ const stops=[[0.00,[150,210,120]],[0.18,[168,205,110]],[0.36,[190,200,135]],
+              [0.55,[196,178,128]],[0.72,[176,150,110]],[0.88,[200,188,168]],[1.0,[235,235,238]]];
+ for(let i=0;i<stops.length-1;i++){if(e<=stops[i+1][0]){const t=(e-stops[i][0])/(stops[i+1][0]-stops[i][0]);
+  const a=stops[i][1],b=stops[i+1][1];return `rgb(${a[0]+(b[0]-a[0])*t|0},${a[1]+(b[1]-a[1])*t|0},${a[2]+(b[2]-a[2])*t|0})`;}}
+ return "rgb(235,235,238)";
+}
+function buildTerrainCanvas(){
+ terrainCanvas=document.createElement("canvas");
+ terrainCanvas.width=TERR_RES;terrainCanvas.height=TERR_RES;
+ const c=terrainCanvas.getContext("2d");
+ const lc=(x,y)=>[x*L2C,y*L2C]; // 論理→キャッシュpx
+ // 陸地クリップ
+ c.save();
+ c.beginPath();FRANCE.forEach((p,i)=>{const[x,y]=lc(p[0],p[1]);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();
+ CORSICA.forEach((p,i)=>{const[x,y]=lc(p[0],p[1]);i?c.lineTo(x,y):c.moveTo(x,y);});
+ c.fillStyle="#96d272";c.fill();c.clip();
+ // 標高グラデ（滑らかに：細かいセル＋少し重ねてブレンド）
+ const step=0.8;
+ for(let gy=0;gy<=100;gy+=step){for(let gx=0;gx<=100;gx+=step){
+  const e=smoothElev(gx,gy);const[x,y]=lc(gx,gy);
+  c.fillStyle=landColorGrad(e);c.fillRect(x-1,y-1,step*L2C+2,step*L2C+2);
+ }}
+ // 等高線（標高に連動）
+ const levels=[0.3,0.42,0.54,0.66,0.78];
+ levels.forEach((lv,li)=>{
+  c.strokeStyle=`rgba(95,75,50,${0.18+li*0.06})`;c.lineWidth=1.2;
+  const st=0.9;
+  for(let gy=0;gy<100;gy+=st){for(let gx=0;gx<100;gx+=st){
+   const a=smoothElev(gx,gy),b=smoothElev(gx+st,gy),d=smoothElev(gx,gy+st),e2=smoothElev(gx+st,gy+st);
+   const pts=[];const edge=(va,vb,xa,ya,xb,yb)=>{if((va<lv)!==(vb<lv)){const t=(lv-va)/(vb-va);pts.push([xa+(xb-xa)*t,ya+(yb-ya)*t]);}};
+   edge(a,b,gx,gy,gx+st,gy);edge(b,e2,gx+st,gy,gx+st,gy+st);edge(e2,d,gx+st,gy+st,gx,gy+st);edge(d,a,gx,gy+st,gx,gy);
+   if(pts.length>=2){const[x1,y1]=lc(pts[0][0],pts[0][1]);const[x2,y2]=lc(pts[1][0],pts[1][1]);c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
+  }}
+ });
+ // 川
+ c.strokeStyle="#8ec5e8";c.lineWidth=3.4;c.lineCap="round";c.lineJoin="round";
+ const rivers=[[[58,50],[60,40],[55,32],[46,24],[38,18],[30,14]],[[58,60],[52,52],[46,44],[40,40],[30,40],[20,42]],
+  [[62,58],[62,66],[64,74],[66,82],[72,88],[78,90]],[[40,92],[32,84],[26,76],[22,68],[16,62]]];
+ rivers.forEach(rv=>{c.beginPath();rv.forEach((p,i)=>{const[x,y]=lc(p[0],p[1]);if(i===0)c.moveTo(x,y);else{const[px,py]=lc(rv[i-1][0],rv[i-1][1]);c.quadraticCurveTo((px+x)/2+(i%2?4:-4)*L2C,(py+y)/2,x,y);}});c.stroke();});
+ // 地理に沿ったオブジェクト配置（山→木と岩、丘→森、平野→畑と集落、川沿い→集落）
+ placeObjectsGeo(c,lc);
+ c.restore();
+ // 海岸線
+ c.beginPath();FRANCE.forEach((p,i)=>{const[x,y]=lc(p[0],p[1]);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();c.strokeStyle="#5f8f44";c.lineWidth=3;c.stroke();
+ c.beginPath();CORSICA.forEach((p,i)=>{const[x,y]=lc(p[0],p[1]);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();c.stroke();
+}
+/* 地理に沿ったオブジェクト配置：標高と川で種類と密度を決める */
+function placeObjectsGeo(c,lc){
+ let seed=99;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+ const objs=[];
+ const step=4.0; // 間隔を広げて疎に
+ for(let gy=0;gy<100;gy+=step){for(let gx=0;gx<100;gx+=step){
+  if(!pointInPoly(gx,gy,FRANCE)&&!pointInPoly(gx,gy,CORSICA))continue;
+  const e=smoothElev(gx,gy);
+  const jx=gx+(rnd()-0.5)*step*0.8, jy=gy+(rnd()-0.5)*step*0.8;
+  const r=rnd();
+  // ほとんどの区画は何も置かず、余白を残す（うるさくしない）
+  let type=null;
+  if(e>0.55){ if(r<0.30)type="mountainpeak"; }          // 高山はまばらに雪峰だけ
+  else if(e>0.35){ if(r<0.22)type="tree"; }             // 山地はたまに木
+  else { // 平野・丘陵はまばらに木/畑/集落
+   if(r<0.10)type="tree"; else if(r<0.16)type="field"; else if(r<0.20)type="house";
+  }
+  if(type)objs.push({x:jx,y:jy,type,e,sd:Math.floor(r*9999)});
+ }}
+ objs.sort((a,b)=>a.y-b.y);
+ objs.forEach(o=>{const[x,y]=lc(o.x,o.y);drawObjectC(c,o.type,x,y,o.sd);});
+}
+/* オフスクリーン用オブジェクト描画（キャッシュ解像度基準・固定サイズ） */
+function drawObjectC(c,type,x,y,sd){
+ let s=sd;const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
+ const U=L2C; // 1論理単位のpx
+ switch(type){
+  case"tree":{const r=1.5*U*(0.8+rnd()*0.4);
+   c.fillStyle="rgba(0,0,0,.10)";c.beginPath();c.ellipse(x,y+r*0.5,r*0.8,r*0.3,0,0,7);c.fill();
+   c.fillStyle="#7a5230";c.fillRect(x-r*0.13,y-r*0.1,r*0.26,r*0.7);
+   c.fillStyle="#3f8a4e";c.beginPath();c.arc(x,y-r*0.5,r,0,7);c.fill();
+   c.fillStyle="#56a566";c.beginPath();c.arc(x-r*0.3,y-r*0.75,r*0.55,0,7);c.fill();break;}
+  case"bush":{const r=1.0*U;c.fillStyle="#5fa257";c.beginPath();c.arc(x,y,r,0,7);c.arc(x+r*0.7,y,r*0.8,0,7);c.arc(x-r*0.7,y,r*0.8,0,7);c.fill();break;}
+  case"house":{const w=2.4*U,hh=2.0*U;
+   c.fillStyle="rgba(0,0,0,.10)";c.fillRect(x-w/2+U*0.1,y+hh*0.5,w,U*0.2);
+   c.fillStyle=["#f0e2c8","#e6d6bc","#dde0ea"][Math.floor(rnd()*3)];c.fillRect(x-w/2,y-hh/2,w,hh);
+   c.strokeStyle="#9a8a6a";c.lineWidth=U*0.1;c.strokeRect(x-w/2,y-hh/2,w,hh);
+   c.fillStyle=["#c0392b","#8a4a3a","#5a6a8a"][Math.floor(rnd()*3)];c.beginPath();c.moveTo(x-w/2-U*0.2,y-hh/2);c.lineTo(x,y-hh/2-hh*0.55);c.lineTo(x+w/2+U*0.2,y-hh/2);c.closePath();c.fill();break;}
+  case"field":{const w=3.4*U,hh=2.4*U;c.save();c.translate(x,y);c.rotate((rnd()-0.5)*0.4);
+   c.fillStyle=rnd()<0.5?"#dcc96a":"#c9da74";c.fillRect(-w/2,-hh/2,w,hh);
+   c.strokeStyle="rgba(140,120,60,.4)";c.lineWidth=U*0.08;for(let i=1;i<5;i++){const lx=-w/2+(i/5)*w;c.beginPath();c.moveTo(lx,-hh/2);c.lineTo(lx,hh/2);c.stroke();}c.restore();break;}
+  case"rock":{const r=1.2*U;c.fillStyle="#9a9286";c.beginPath();c.moveTo(x-r,y+r*0.5);c.lineTo(x-r*0.3,y-r);c.lineTo(x+r*0.6,y-r*0.4);c.lineTo(x+r,y+r*0.5);c.closePath();c.fill();
+   c.fillStyle="rgba(255,255,255,.65)";c.beginPath();c.moveTo(x-r*0.3,y-r);c.lineTo(x-r*0.05,y-r*0.45);c.lineTo(x+r*0.25,y-r*0.5);c.closePath();c.fill();break;}
+  case"mountainpeak":{const r=2.4*U;c.fillStyle="rgba(0,0,0,.08)";c.beginPath();c.ellipse(x,y+r*0.4,r*0.9,r*0.25,0,0,7);c.fill();
+   c.fillStyle="#9a8f7e";c.beginPath();c.moveTo(x-r,y+r*0.4);c.lineTo(x-r*0.2,y-r*0.7);c.lineTo(x+r*0.3,y-r*0.1);c.lineTo(x+r*0.7,y-r);c.lineTo(x+r,y+r*0.4);c.closePath();c.fill();
+   c.fillStyle="#fff";c.beginPath();c.moveTo(x+r*0.7,y-r);c.lineTo(x+r*0.45,y-r*0.55);c.lineTo(x+r*0.95,y-r*0.55);c.closePath();c.fill();
+   c.beginPath();c.moveTo(x-r*0.2,y-r*0.7);c.lineTo(x-r*0.42,y-r*0.35);c.lineTo(x,y-r*0.35);c.closePath();c.fill();break;}
+ }
+}
+
+function drawTerrain(){
+ if(!terrainCanvas)buildTerrainCanvas();
+ // 海
+ ctx.fillStyle="#7fc4e8";ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle="rgba(255,255,255,.07)";ctx.lineWidth=2;
+ for(let i=0;i<14;i++){ctx.beginPath();for(let x=0;x<W;x+=28){const y=i*52+24+Math.sin(x/40+i)*4;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+ // キャッシュ地形を現在のカメラ変換でblit
+ const[ox,oy]=P(0,0);const s=BASE()*cam.zoom/L2C;
+ ctx.save();ctx.imageSmoothingEnabled=true;
+ ctx.translate(ox,oy);ctx.scale(s,s);ctx.drawImage(terrainCanvas,0,0);ctx.restore();
+ // 海域名
+ ctx.fillStyle="rgba(255,255,255,.7)";ctx.font=`italic ${Math.max(11,8*cam.zoom)}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+ let a=P(8,52);ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(-Math.PI/2);ctx.fillText("大西洋",0,0);ctx.restore();
+ let b=P(64,90);ctx.fillText("地中海",b[0],b[1]);
+}
+function traceFrance(poly){ctx.beginPath();poly.forEach((p,i)=>{const[x,y]=P(p[0],p[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();}
+
+
+
+/* 川（地形の上に） */
+function drawRivers(){
+ ctx.strokeStyle="#8ec5e8";ctx.lineWidth=3*cam.zoom;ctx.lineCap="round";ctx.lineJoin="round";
+ const rivers=[
+  [[58,50],[60,40],[55,32],[46,24],[38,18],[30,14]],   // セーヌ
+  [[58,60],[52,52],[46,44],[40,40],[30,40],[20,42]],   // ロワール
+  [[62,58],[62,66],[64,74],[66,82],[72,88],[78,90]],   // ローヌ
+  [[40,92],[32,84],[26,76],[22,68],[16,62]],           // ガロンヌ
+ ];
+ rivers.forEach(rv=>{ctx.beginPath();rv.forEach((p,i)=>{const[x,y]=P(p[0],p[1]);
+   if(i===0){ctx.moveTo(x,y);}else{const[px,py]=P(rv[i-1][0],rv[i-1][1]);ctx.quadraticCurveTo((px+x)/2+(i%2?6:-6),(py+y)/2,x,y);}});ctx.stroke();});
+}
+
+
+/* 各地域の名所をミニイラストで（パリ=エッフェル塔など） */
+function drawLandmarks(){
+ const z=cam.zoom;
+ for(const k in REGIONS){const r=REGIONS[k];const[x,y]=P(r.x,r.y);
+  // 産地マスの少し上に名所を描く
+  drawMark(r.mark, x, y-26*z, z);
+ }
+}
+function drawMark(type,x,y,z){
+ ctx.save();ctx.translate(x,y);ctx.scale(z,z);ctx.lineWidth=1.2;ctx.lineJoin="round";
+ const O="#4a3f38";
+ switch(type){
+  case"eiffel": // エッフェル塔
+   ctx.fillStyle="#9a7b50";ctx.strokeStyle=O;
+   ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(-2,-8);ctx.lineTo(-1,-14);ctx.lineTo(0,-17);ctx.lineTo(1,-14);ctx.lineTo(2,-8);ctx.lineTo(5,0);ctx.lineTo(2.5,0);ctx.lineTo(1.3,-8);ctx.lineTo(-1.3,-8);ctx.lineTo(-2.5,0);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.beginPath();ctx.moveTo(-3.2,-5);ctx.lineTo(3.2,-5);ctx.stroke();ctx.beginPath();ctx.moveTo(-1.8,-10);ctx.lineTo(1.8,-10);ctx.stroke();break;
+  case"cathedral": // 大聖堂（ランス）
+   ctx.fillStyle="#cbb890";ctx.strokeStyle=O;ctx.fillRect(-6,-12,12,12);ctx.strokeRect(-6,-12,12,12);
+   ctx.beginPath();ctx.moveTo(-6,-12);ctx.lineTo(-4,-17);ctx.lineTo(-2,-12);ctx.fill();ctx.stroke();
+   ctx.beginPath();ctx.moveTo(2,-12);ctx.lineTo(4,-17);ctx.lineTo(6,-12);ctx.fill();ctx.stroke();
+   ctx.fillStyle="#8a6a3a";ctx.beginPath();ctx.arc(0,-5,2.5,Math.PI,0);ctx.fill();break;
+  case"sparkle": // シャンパーニュ：泡の立つボトル
+   ctx.fillStyle="#3a6a3a";ctx.strokeStyle=O;ctx.beginPath();ctx.moveTo(-2,-2);ctx.lineTo(-2,-10);ctx.lineTo(-1,-13);ctx.lineTo(1,-13);ctx.lineTo(2,-10);ctx.lineTo(2,-2);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.fillStyle="#e3b23c";ctx.fillRect(-2,-9,4,3);
+   ctx.fillStyle="#fff";[[-4,-15],[3,-16],[-1,-18],[5,-13]].forEach(b=>{ctx.beginPath();ctx.arc(b[0],b[1],1.1,0,7);ctx.fill();});break;
+  case"chateau": // ロワールの城
+   ctx.fillStyle="#dcd2c0";ctx.strokeStyle=O;ctx.fillRect(-7,-10,14,10);ctx.strokeRect(-7,-10,14,10);
+   [-7,-1,5].forEach(bx=>{ctx.fillStyle="#cbbfa8";ctx.fillRect(bx,-15,3,6);ctx.strokeRect(bx,-15,3,6);
+    ctx.fillStyle="#8a6a3a";ctx.beginPath();ctx.moveTo(bx-0.5,-15);ctx.lineTo(bx+1.5,-19);ctx.lineTo(bx+3.5,-15);ctx.fill();});break;
+  case"halftimber": // アルザスの木組みの家
+   ctx.fillStyle="#f0e2c8";ctx.strokeStyle=O;ctx.fillRect(-6,-9,12,9);ctx.strokeRect(-6,-9,12,9);
+   ctx.fillStyle="#b5502f";ctx.beginPath();ctx.moveTo(-7,-9);ctx.lineTo(0,-16);ctx.lineTo(7,-9);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.strokeStyle="#8a5a3a";ctx.beginPath();ctx.moveTo(-6,-4);ctx.lineTo(6,-4);ctx.moveTo(0,-9);ctx.lineTo(0,0);ctx.stroke();break;
+  case"abbey": // ブルゴーニュの修道院
+   ctx.fillStyle="#d8c9a8";ctx.strokeStyle=O;ctx.fillRect(-8,-9,16,9);ctx.strokeRect(-8,-9,16,9);
+   ctx.beginPath();ctx.arc(-4,-3,2,Math.PI,0);ctx.arc(0,-3,2,Math.PI,0);ctx.arc(4,-3,2,Math.PI,0);ctx.stroke();
+   ctx.fillStyle="#a07a4a";ctx.beginPath();ctx.moveTo(-8,-9);ctx.lineTo(0,-14);ctx.lineTo(8,-9);ctx.fill();ctx.stroke();break;
+  case"papalpalace": // アヴィニョン教皇庁
+   ctx.fillStyle="#e0d2b0";ctx.strokeStyle=O;ctx.fillRect(-8,-13,16,13);ctx.strokeRect(-8,-13,16,13);
+   ctx.fillStyle="#cdbf9a";ctx.fillRect(-8,-18,4,5);ctx.strokeRect(-8,-18,4,5);ctx.fillRect(4,-18,4,5);ctx.strokeRect(4,-18,4,5);break;
+  case"mountain": // ジュラ山脈
+   ctx.fillStyle="#a9bfa0";ctx.strokeStyle=O;ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(-3,-12);ctx.lineTo(1,-6);ctx.lineTo(5,-14);ctx.lineTo(10,0);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(-3,-12);ctx.lineTo(-5,-8);ctx.lineTo(-1,-8);ctx.closePath();ctx.moveTo(5,-14);ctx.lineTo(3,-10);ctx.lineTo(7,-10);ctx.closePath();ctx.fill();break;
+  case"lavender": // プロヴァンスのラベンダー
+   ctx.strokeStyle="#7d5fb0";ctx.lineWidth=1.6;for(let i=-6;i<=6;i+=3){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,-9);ctx.stroke();ctx.fillStyle="#9b78d0";ctx.beginPath();ctx.ellipse(i,-11,1.6,3,0,0,7);ctx.fill();}break;
+  case"winecity": // ボルドーの街並み
+   ctx.fillStyle="#d9cbb0";ctx.strokeStyle=O;[-8,-3,2,7].forEach((bx,i)=>{const h=8+(i%2)*4;ctx.fillRect(bx,-h,4,h);ctx.strokeRect(bx,-h,4,h);});break;
+  case"barrel": // コニャックの樽
+   ctx.fillStyle="#a8693f";ctx.strokeStyle=O;ctx.beginPath();ctx.ellipse(0,-6,7,8,0,0,7);ctx.fill();ctx.stroke();
+   ctx.strokeStyle="#6a4424";ctx.beginPath();ctx.moveTo(-7,-9);ctx.lineTo(7,-9);ctx.moveTo(-7,-3);ctx.lineTo(7,-3);ctx.stroke();break;
+  case"city": // 大都市（高層ビル群＝リヨン）
+   ctx.fillStyle="#c2c8d0";ctx.strokeStyle=O;[-7,-2,3,8].forEach((bx,i)=>{const hh=10+((i*5)%7);ctx.fillRect(bx,-hh,4,hh);ctx.strokeRect(bx,-hh,4,hh);
+    ctx.fillStyle="#8fb8d8";for(let r2=-hh+2;r2<-2;r2+=3){ctx.fillRect(bx+0.6,r2,2.8,1.4);}ctx.fillStyle="#c2c8d0";});break;
+  case"volcano": // クレルモン（オーヴェルニュの火山）
+   ctx.fillStyle="#7a6a5a";ctx.strokeStyle=O;ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(-3,-11);ctx.lineTo(3,-11);ctx.lineTo(9,0);ctx.closePath();ctx.fill();ctx.stroke();
+   ctx.fillStyle="#5a4a3a";ctx.beginPath();ctx.moveTo(-3,-11);ctx.lineTo(3,-11);ctx.lineTo(2,-8);ctx.lineTo(-2,-8);ctx.closePath();ctx.fill();
+   ctx.fillStyle="#4a8a5a";ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(-6,-5);ctx.lineTo(-3,0);ctx.closePath();ctx.moveTo(9,0);ctx.lineTo(6,-5);ctx.lineTo(3,0);ctx.closePath();ctx.fill();break;
+  case"vines": default: // ぶどう畑
+   ctx.strokeStyle="#5a8a4a";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-8);ctx.stroke();
+   ctx.fillStyle="#7d3c8a";[[-2,-8],[2,-8],[0,-11],[-2,-12],[2,-12]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],1.6,0,7);ctx.fill();});break;
+ }
+ ctx.restore();
+}
+
+function drawTracks(){
+ ctx.lineCap="round";ctx.lineJoin="round";const z=cam.zoom;
+ const roadW=7*z; // マス(縁込み)と同じ大きさ
+ // 道の縁取り
+ cellArr.forEach(c=>{c.next.forEach(nid=>{const n=CELLS[nid];if(c.id<nid){const[ax,ay]=P(c.x,c.y),[bx,by]=P(n.x,n.y);
+  ctx.strokeStyle="#c9a86a";ctx.lineWidth=roadW+2*z;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+ }}); });
+ // 道の本体（歩く道・淡い土色）
+ cellArr.forEach(c=>{c.next.forEach(nid=>{const n=CELLS[nid];if(c.id<nid){const[ax,ay]=P(c.x,c.y),[bx,by]=P(n.x,n.y);
+  ctx.strokeStyle="#ecdcb4";ctx.lineWidth=roadW;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+ }}); });
+}
+
+function drawCells(){
+ const z=cam.zoom;
+ const roadW=7*z;              // 道幅（全幅）＝マス縁込みの外径
+ const bw=1.2*z;               // 白縁の太さ
+ const S=roadW/2 - bw/2;       // マス本体の半辺（縁を含めた外径が道幅と一致）
+ cellArr.forEach(c=>{
+  if(c.type==="region")return;
+  const[x,y]=P(c.x,c.y);const k=KIND[c.type];
+  // 影
+  ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(x-S,y-S+1.5,S*2,S*2);
+  // 四角いマス本体（アイコンなし・色だけ）縁込みで道幅と同じ大きさ
+  ctx.fillStyle=k.c;ctx.strokeStyle="#fff";ctx.lineWidth=bw;
+  ctx.fillRect(x-S,y-S,S*2,S*2);ctx.strokeRect(x-S,y-S,S*2,S*2);
+  if(awaitingPick&&pickOptions.includes(c.id)){ctx.strokeStyle="#7a1f3d";ctx.lineWidth=2*z;const p=(2+Math.sin(performance.now()/200)*2)*z*0.5;ctx.strokeRect(x-S-3-p,y-S-3-p,(S+3+p)*2,(S+3+p)*2);}
+ });
+ for(const k in REGIONS){const r=REGIONS[k];const[x,y]=P(r.x,r.y);const id="R_"+k;const ownIdx=owned[k];const owned_=(ownIdx!==undefined&&ownIdx!==null);const start=(k==="paris");const z=cam.zoom;
+  const rad=8.5*z; // 産地マーカーの半径（平面はめ込み・道中マスより少し大きい）
+  // 注目産地：光る輪＋⭐（一番乗りがまだ）
+  if(k===spotlightRegion && spotlightWonBy===null){
+   const pulse=(Math.sin(performance.now()/300)+1)/2;
+   ctx.save();
+   ctx.strokeStyle=`rgba(227,178,60,${0.4+pulse*0.5})`;ctx.lineWidth=(3+pulse*2)*z;
+   ctx.beginPath();ctx.arc(x,y,rad+6+pulse*5,0,7);ctx.stroke();
+   ctx.fillStyle=`rgba(227,178,60,${0.12+pulse*0.12})`;ctx.beginPath();ctx.arc(x,y,rad+6+pulse*5,0,7);ctx.fill();
+   ctx.restore();
+   ctx.font=`${11*z}px serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+   const starY=y-rad-9*z-pulse*3*z; ctx.fillText("⭐",x,starY);
+   ctx.font=`bold ${6*z}px sans-serif`;ctx.fillStyle="#b8860b";ctx.strokeStyle="#fff";ctx.lineWidth=2.5;
+   ctx.strokeText("注目産地",x,starY-8*z);ctx.fillText("注目産地",x,starY-8*z);
+  }
+  const isCity=(r.group==="city");
+  const col=owned_?players[ownIdx].cloth:(start?"#e8746b":isCity?"#6b7785":r.group==="sparkle"?"#e3b23c":r.group==="red"?"#b0314f":r.group==="rose"?"#e07b9a":"#7fb04a");
+  // 影（平面なので薄く下に）
+  ctx.fillStyle="rgba(0,0,0,.15)";ctx.beginPath();ctx.ellipse(x,y+rad*0.35,rad,rad*0.55,0,0,7);ctx.fill();
+  ctx.fillStyle=col;ctx.strokeStyle="#fff";ctx.lineWidth=1.8*z;
+  if(isCity){
+   // 都市：平面の四角いはめ込み（道中マスと同じ大きさ）
+   const s=3.5*z - 0.6*z;  // 道中マスの半辺（roadW/2 - bw/2 相当）
+   ctx.beginPath();ctx.rect(x-s,y-s,s*2,s*2);ctx.fill();ctx.stroke();
+   ctx.font=`${s*1.6}px serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText("🏙",x,y);
+  }else{
+   // 産地：平面の丸いはめ込み
+   ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();ctx.stroke();
+   ctx.font=`${rad*0.95}px serif`;ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText(start?"★":(owned_?"✓":"🍇"),x,y);
+  }
+  ctx.font=`bold ${6.5*z}px sans-serif`;ctx.fillStyle=isCity?"#4a5560":"#3a2a22";ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=3;ctx.textBaseline="middle";ctx.textAlign="center";
+  const labelY = y + (isCity?4.5*z:rad+5*z);
+  ctx.strokeText(r.name,x,labelY);ctx.fillText(r.name,x,labelY);
+  if(awaitingPick&&pickOptions.includes(id)){ctx.strokeStyle="#7a1f3d";ctx.lineWidth=2.5*z;const p=(2+Math.sin(performance.now()/200)*2)*z*0.5;ctx.beginPath();ctx.arc(x,y,rad+4+p,0,7);ctx.stroke();}
+ }
+}
+function hex(cx,cy,r){ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();}
+/* 発展都市の市街地ブロック（決定的な疑似ランダムで街区を描く） */
+function drawCity(lx,ly,size){
+ const[cx,cy]=P(lx,ly);const z=cam.zoom;const span=(8+size*5)*z;
+ let seed=Math.floor(lx*131+ly*977);const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+ const cols=["#d8d2cc","#e7d3d8","#d2d6dd","#e0dad2"]; // グレー/淡ピンク/淡青の街区
+ const n=8+size*8;
+ for(let i=0;i<n;i++){
+  const bx=cx+(rnd()-0.5)*span*2, by=cy+(rnd()-0.5)*span*1.4;
+  const w=(2.5+rnd()*3)*z, h=(2.5+rnd()*3)*z;
+  ctx.fillStyle=cols[Math.floor(rnd()*cols.length)];
+  ctx.fillRect(bx,by,w,h);
+  ctx.strokeStyle="rgba(160,150,150,.4)";ctx.lineWidth=0.5;ctx.strokeRect(bx,by,w,h);
+ }
+}
+
+/* ================= 全プレイヤー描画 ================= */
+function drawAllPlayers(){
+ const z=cam.zoom;
+ players.forEach((p,i)=>{
+  const c=CELLS[p.posCell];
+  p.dlx+=(c.x-p.dlx)*0.18; p.dly+=(c.y-p.dly)*0.18;
+  const[sx,sy]=P(p.dlx,p.dly);
+  const isCur=(i===cur);
+  const bob=(isCur&&moving)?Math.abs(Math.sin(performance.now()/80))*5*z*0.5:0;
+  // 影だけCanvasに描く
+  ctx.fillStyle="rgba(0,0,0,.2)";ctx.beginPath();ctx.ellipse(sx,sy+6*z,8*z,3*z,0,0,7);ctx.fill();
+  // アバター本体はDOM要素を移動（確実にSVGが出る）
+  if(p.el){
+   const scale=z/2.0; // ズームに応じてサイズ追従
+   p.el.style.left=sx+"px";
+   p.el.style.top=(sy+4*z-bob)+"px";
+   p.el.style.transform=`translate(-50%,-100%) scale(${scale})`;
+   p.el.style.zIndex=isCur?20:10;
+   p.el.style.opacity=isCur?1:0.9;
+   p.el.style.filter=isCur?"drop-shadow(0 0 4px rgba(227,178,60,.9))":"none";
+  }
+  // 評論家が憑いている人の位置を控えておく
+  if(i===criticOn){ criticFollowX=sx; criticFollowY=sy; criticFollowZ=z; }
+ });
+ // 評論家スプライトを、憑いている人の斜め後ろにゆらゆら追従させる
+ if(criticSpriteEl){
+  if(criticOn!==null && criticFollowX!==null){
+   const t=performance.now()/400;
+   const ox=(-18+Math.sin(t)*4)*criticFollowZ*0.5;
+   const oy=(-10+Math.cos(t*1.3)*4)*criticFollowZ*0.5;
+   criticSpriteEl.style.display="block";
+   criticSpriteEl.style.left=(criticFollowX+ox)+"px";
+   criticSpriteEl.style.top=(criticFollowY+oy)+"px";
+   criticSpriteEl.style.transform=`translate(-50%,-100%) scale(${criticFollowZ/2.2})`;
+   criticSpriteEl.style.zIndex=25;
+  } else {
+   criticSpriteEl.style.display="none";
+  }
+ }
+}
+let criticFollowX=null,criticFollowY=null,criticFollowZ=1;
+
+/* ================= すごろく移動＆手番 ================= */
+const rollBtn=document.getElementById("rollBtn");
+rollBtn.onclick=roll;
+/* モーダルが1つでも開いているか */
+function anyModalOpen(){
+ const ids=["buildModal","criticModal","vintageModal","marketModal","fundModal","saleModal","cityModal","cardModal","quizModal","resultModal"];
+ return ids.some(id=>{ const m=document.getElementById(id); return m && m.style.display==="flex"; });
+}
+/* 手詰まり検出：人間の手番なのにフラグが固まって振れない状態を、クリックで復帰させる */
+function tryRecoverStuck(){
+ if(curP().isNpc) return false;
+ const stuck = rolling||moving||awaitingPick||movesLeft>0;
+ if(!stuck) return false;
+ if(anyModalOpen()){
+  // モーダルが開いているのにフラグも固まっている → 取り残されたモーダルの可能性。
+  // 2回目のクリックで強制的に閉じてリセット（保険）
+  if(_recoverArmed){ closeAllModals(); rolling=false; moving=false; awaitingPick=false; pickOptions=[]; movesLeft=0; _recoverArmed=false; toast("↻ 進行を再開しました"); return true; }
+  _recoverArmed=true; toast("固まっていたら もう一度サイコロを押してください");
+  return true; // 一旦待つ
+ }
+ // モーダルが無いのに振れない → フラグをリセット
+ rolling=false; moving=false; awaitingPick=false; pickOptions=[];
+ const ph=document.getElementById("pickHint"); if(ph)ph.classList.remove("show");
+ if(movesLeft>0){ movesLeft=0; }
+ toast("↻ 進行を再開しました");
+ return true;
+}
+let _recoverArmed=false;
+function closeAllModals(){
+ ["buildModal","criticModal","vintageModal","marketModal","fundModal","saleModal","cityModal","cardModal","quizModal"].forEach(id=>{ const m=document.getElementById(id); if(m)m.style.display="none"; });
+}
+function roll(){
+ // 固まっていたら復帰を試みる（人間のみ）
+ if((rolling||moving||awaitingPick||movesLeft>0)){
+  if(!curP().isNpc){ tryRecoverStuck(); }
+  if(rolling||moving||awaitingPick||movesLeft>0) return;
+ }
+ _recoverArmed=false;
+ if(!curP().isNpc && rollBtn.disabled){ rollBtn.disabled=false; }
+ if(overview)setOverview(false);
+ recenter();
+ // ぴったりカード：好きな目を選ぶ（人間）。NPCは目的地に近づく目を自動選択
+ if(pinpointNext){
+  pinpointNext=false;
+  if(curP().isNpc){ startMoveWith(3+Math.floor(Math.random()*4)); return; }  // NPCは3〜6
+  showPinpointPicker();
+  return;
+ }
+ rolling=true;rollBtn.disabled=true;
+ // 先に出目を確定させる（表示と実際の進む数を一致させる）
+ let v=1+Math.floor(Math.random()*6);
+ if(pendingDice2){ v+=1+Math.floor(Math.random()*6); pendingDice2=false; }  // 倍速：2個
+ if(forcedDie){ v=forcedDie; forcedDie=0; }  // 評論家：強制1など
+ const boost=pendingBonus;
+ const total=v+boost;
+ let flick=0;const iv=setInterval(()=>{
+  // アニメ中はパラパラ乱数、最後に確定値で止める
+  document.getElementById("dieFace").textContent=1+Math.floor(Math.random()*6);
+  if(++flick>9){clearInterval(iv);
+   document.getElementById("dieFace").textContent=total;  // 確定値（急行込み）で着地
+   rolling=false; movesLeft=total;
+   if(boost){ toast(`🚄 ${v}＋急行${boost}＝${total} 進む！`); pendingBonus=0; }
+   else toast(`🎲 ${curP().pname} に ${v} が出た！`);
+   updateMoves();setTimeout(stepOnce,500);}
+ },70);
+}
+/* ぴったりカード：1〜6を選ぶUI */
+function showPinpointPicker(){
+ rollBtn.disabled=true;
+ const modal=document.getElementById("fundModal"); if(!modal){ startMoveWith(6); return; }
+ modal.style.display="flex";
+ let btns='';
+ for(let n=1;n<=6;n++){ btns+=`<button class="ppBtn" data-n="${n}">${n}</button>`; }
+ modal.innerHTML=`<div class="slotBox"><div class="slotTitle">🎯 好きな目を選ぶ</div>
+   <div class="ppGrid">${btns}</div>
+   <div class="slotHint">出したい目をタップ</div></div>`;
+ modal.querySelectorAll(".ppBtn").forEach(b=>b.onclick=()=>{ modal.style.display="none"; startMoveWith(+b.dataset.n); });
+}
+/* 指定した目で移動を開始（急行ボーナスも加算） */
+function startMoveWith(v){
+ const boost=pendingBonus; const total=v+boost;
+ document.getElementById("dieFace").textContent=total;
+ rolling=false; movesLeft=total;
+ if(boost){ toast(`🎯 ${v}＋急行${boost}＝${total} 進む！`); pendingBonus=0; }
+ else toast(`🎯 ${curP().pname} は ${v} を選んだ！`);
+ updateMoves(); setTimeout(stepOnce,400);
+}
+function stepOnce(){
+ if(movesLeft<=0){landAction();return;}
+ const p=curP();
+ const opts=CELLS[p.posCell].next.filter(id=>id!==p.cameFrom);
+ const choices=opts.length?opts:CELLS[p.posCell].next;
+ if(choices.length===1){advanceTo(choices[0]);}
+ else if(p.isNpc){ setTimeout(()=>advanceTo(npcChoose(choices)),450); }
+ else{offerPick(choices);}
+}
+function offerPick(opts){awaitingPick=true;pickOptions=opts;document.getElementById("pickHint").classList.add("show");}
+
+/* ===== ドラッグでパン＋クリックで分岐選択 ===== */
+let dragging=false, dragMoved=false, dragStart={x:0,y:0}, camStart={x:0,y:0};
+cv.addEventListener("pointerdown",ev=>{
+ dragging=true; dragMoved=false;
+ dragStart={x:ev.clientX,y:ev.clientY}; camStart={x:cam.x,y:cam.y};
+ cv.setPointerCapture(ev.pointerId);
+});
+cv.addEventListener("pointermove",ev=>{
+ if(!dragging)return;
+ const dx=ev.clientX-dragStart.x, dy=ev.clientY-dragStart.y;
+ if(Math.abs(dx)>4||Math.abs(dy)>4) dragMoved=true;
+ if(dragMoved){
+  userPanned=true;
+  const s=BASE()*cam.zoom;
+  cam.x=camStart.x-dx/s; cam.y=camStart.y-dy/s;
+  cam.tx=cam.x; cam.ty=cam.y;
+ }
+});
+cv.addEventListener("pointerup",ev=>{
+ if(!dragging)return; dragging=false;
+ const r=cv.getBoundingClientRect();const mx=ev.clientX-r.left,my=ev.clientY-r.top;
+ if(!dragMoved && awaitingPick){
+  const hit=16*cam.zoom;
+  for(const id of pickOptions){const c=CELLS[id];const[x,y]=P(c.x,c.y);if(Math.hypot(mx-x,my-y)<hit){
+   pickChoice(id);return;}}
+ }
+});
+cv.style.cursor="grab";
+cv.addEventListener("pointerdown",()=>cv.style.cursor="grabbing");
+cv.addEventListener("pointerup",()=>cv.style.cursor="grab");
+
+/* 手動パンをリセットして現在プレイヤーに戻る（ロール時・ターン交代時に呼ぶ） */
+function recenter(){ userPanned=false; panX=0; panY=0; }
+
+function pickChoice(id){
+ awaitingPick=false;pickOptions=[];document.getElementById("pickHint").classList.remove("show");
+ recenter(); advanceTo(id);
+}
+
+/* ===== 矢印キーで分岐選択（PC版） ===== */
+window.addEventListener("keydown",ev=>{
+ if(!awaitingPick||pickOptions.length===0)return;
+ const dirs={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+ if(!dirs[ev.key])return;
+ ev.preventDefault();
+ const p=curP();const from=CELLS[p.posCell];const[d0,d1]=dirs[ev.key];
+ // 進行方向に最も合致する候補を選ぶ
+ let best=null,bestScore=-Infinity;
+ for(const id of pickOptions){const c=CELLS[id];
+  const vx=c.x-from.x, vy=c.y-from.y; const len=Math.hypot(vx,vy)||1;
+  const score=(vx/len)*d0+(vy/len)*d1;
+  if(score>bestScore){bestScore=score;best=id;}
+ }
+ if(best!==null) pickChoice(best);
+});
+function advanceTo(id){
+ const p=curP();
+ p.cameFrom=p.posCell;p.posCell=id;moving=true;movesLeft--;updateMoves();
+ maybePassCritic();  // 移動の各マスで接触判定（すれ違い・通過も含む）
+ setTimeout(()=>{moving=false;
+  if(movesLeft>0){stepOnce();}else{landAction();}
+ },360);
+}
+/* 止まったマスのアクション */
+function landAction(){
+ const p=curP();const c=CELLS[p.posCell];
+ maybePassCritic();  // 接触で評論家がなすりつく
+ if(c.type==="region"){
+  const k=c.payload,r=REGIONS[k];
+  if(r.group==="city"){ openCityMarket(k,p); }
+  else {
+   // 産地に到着：確保＋資産建設
+   if(owned[k]===undefined||owned[k]===null){ owned[k]=cur; p.value+=r.value; p.count++; toast(`✨ ${r.name} を確保！ +${r.value}`); }
+   // 注目産地の一番乗りチェック（＋評論家発動）
+   checkSpotlight(k,p);
+   // 他人のワイナリーがあれば試飲料を支払う
+   payTastingFee(k,p);
+   if(p.isNpc){ npcBuild(k,p); finishTurn(); }
+   else { openBuildMenu(k); }  // 人間はメニューで建設を選ぶ（finishTurnはメニュー閉で）
+  }
+ }else{
+  // 道中マス：資源イベント（アニメ有りのものは finishTurn を各自で呼ぶ）
+  resourceCell(c.type,p);
+ }
+}
+/* 道中マスの資源イベント */
+function resourceCell(type,p){
+ switch(type){
+  case"weather": showResourceSlot(p); return;               // 水色＝資源スロット
+  case"quiz": openQuiz(p); return;                          // 青＝クイズ
+  case"critic": openMarket(p); return;                      // 紫＝市場マス
+  case"bonus": drawCard(p); return;                         // 緑＝カードマス
+  case"penalty": showCritic(p); return;                     // 赤＝評論家ダメージ（スロット）
+  case"fund": showFundRoulette(p); return;                  // 黄＝資金ルーレット
+  default: toast("・・・"); finishTurn();
+ }
+}
+/* 他人のワイナリーに止まったら試飲料（評価が高いほど高い） */
+function payTastingFee(k,p){
+ players.forEach((o,i)=>{ if(i!==cur && o.assets[k]&&o.assets[k].winery_prem){
+  const rating=o.assets[k].rating||85;
+  const fee=Math.round(CONFIG.produce.tastingFee*ratingFeeMult(rating));
+  p.money=Math.max(0,p.money-fee); o.money+=fee;
+  toast(`🍷 ${o.pname} のワイナリー（評価${rating}）で試飲料 ${fee}を支払い`);
+ }});
+}
+/* ターン終了処理（シーズン進行を挟む） */
+function finishTurn(){
+ const p=curP(); p.cameFrom=null; renderHUD();
+ setTimeout(nextTurn,900);
+}
+function nextTurn(){
+ cur=(cur+1)%players.length;
+ // 全員が1手番終えたらターンカウント（＝1周）
+ if(cur===0){
+  turnInSeason++;
+  if(turnInSeason>=CONFIG.turnsPerSeason){
+   // シーズン終了処理（ワイン生産＋売却モーダル）を待ってから次へ
+   endSeason(()=>{
+    if(season>CONFIG.totalSeasons){ endGame(); return; }
+    afterSeasonContinue();
+   });
+   return;
+  }
+ }
+ afterSeasonContinue();
+}
+/* シーズン処理後（またはシーズンをまたがない通常時）のターン継続 */
+function afterSeasonContinue(){
+ criticPassedThisTurn=false;  // 新しい手番で なすりつけ判定をリセット
+ // 評論家が憑いているプレイヤーのターン開始時に酷評ダメージ（演出を見せてから手番へ）
+ if(criticOn===cur){
+  applyCriticDrain(()=>{ continueTurn(); });
+  return;
+ }
+ continueTurn();
+}
+function continueTurn(){
+ // 1回休みの処理
+ if(curP().skipNext){ curP().skipNext=false; if(curP().skipTwice){ curP().skipTwice=false; curP().skipNext=true; } renderHUD(); toast(`💤 ${curP().pname} は1回休み`); setTimeout(nextTurn,1000); return; }
+ renderHUD();
+ toast(`▶ ${curP().pname} のターン（第${season}シーズン）`);
+ document.getElementById("dieFace").textContent="—";
+ maybeNpcTurn();
+}
+/* シーズン終了：各プレイヤーの資産が資源とワインを産出。完了後 onComplete */
+function endSeason(onComplete){
+ const newWinesByPlayer=[];
+ players.forEach((p,pi)=>{
+  if(!p.produced) p.produced={}; // 産地key -> Set of タイプ
+  const newWines=[];
+  for(const k in p.assets){
+   const a=p.assets[k];
+   if(a.vineyard) p.grapes+=CONFIG.produce.vineyardGrapes;
+   if(a.winery_std){ // 量産ワイン：生産レベルぶん生産（ぶどう1/本）
+    const lv=a.winery_std_lv||1;
+    for(let n=0;n<lv;n++){ if(p.grapes>=1){ p.grapes-=1; const v=CONFIG.produce.stdWineValue;
+     const w={type:'std',region:k,value:v}; p.wines.push(w); p.value+=v; newWines.push(w);
+     recordProduced(p,k,REGION_TYPE[k]); } }
+   }
+   if(a.winery_prem){ // プレミアム：評価（パーカーポイント）で価値が変動。生産レベルぶん生産
+    a.rating=computeRating(p,k,a);
+    const mult=vintageMultiplier(k);
+    const ratingMult=ratingToMult(a.rating);
+    const baseV=Math.round(CONFIG.produce.premWineValue*mult); // 評価100点想定(＝等倍)の基準値
+    const v=Math.round(CONFIG.produce.premWineValue*mult*ratingMult);
+    const lv=a.winery_prem_lv||1;
+    for(let n=0;n<lv;n++){
+     const w={type:'prem',region:k,vintage:seasonYear(),value:v,rating:a.rating};
+     p.wines.push(w); p.value+=v; newWines.push(w);
+     p.parkerDelta += (v-baseV); // パーカーポイントによる基準比の変動を累計
+    }
+    recordProduced(p,k,REGION_TYPE[k]);
+    for(const st in TYPE_SETS){ if(st!==REGION_TYPE[k] && TYPE_SETS[st].includes(k)){ recordProduced(p,k,st); } }
+   }
+  }
+  checkSets(p); // 生産後にセット判定
+  newWinesByPlayer[pi]=newWines;
+ });
+ season++; turnInSeason=0;
+ if(season<=CONFIG.totalSeasons){ rollVintage(); maybeBigCritic(); }
+ // 売る/持つの選択（人間プレイヤーのみモーダル。NPCは自動）→ 完了後にヴィンテージ発表→onComplete
+ handleWineSales(newWinesByPlayer, ()=>{
+  if(season<=CONFIG.totalSeasons){ announceVintage(); }
+  if(onComplete) onComplete();
+ });
+}
+/* 売値：保有価値の70%で即現金化（持てば総資産に満額、売れば即資金だが割引） */
+const SELL_RATE=0.7;
+function sellPrice(w){ return Math.round(w.value*SELL_RATE); }
+/* 各プレイヤーの新ワインについて売る/持つを決める */
+function handleWineSales(newWinesByPlayer, done){
+ // NPCは自動判断：量産ワインは売って資金化、プレミアムは持つ（コレクション）
+ players.forEach((p,pi)=>{
+  if(!p.isNpc) return;
+  (newWinesByPlayer[pi]||[]).forEach(w=>{ if(w.type==='std' && Math.random()<0.6){ sellWine(p,w); } });
+ });
+ // 人間プレイヤーを順に処理
+ const humans=players.map((p,i)=>({p,i})).filter(e=>!e.p.isNpc && (newWinesByPlayer[e.i]||[]).length>0);
+ let hi=0;
+ function nextHuman(){
+  if(hi>=humans.length){ done(); return; }
+  const {p,i}=humans[hi++];
+  openWineSaleModal(p, newWinesByPlayer[i], nextHuman);
+ }
+ nextHuman();
+}
+/* ワインを売る：保有から外し、価値を引いて資金を得る */
+function sellWine(p,w){
+ const idx=p.wines.indexOf(w); if(idx<0) return;
+ p.wines.splice(idx,1); p.value-=w.value; const price=sellPrice(w); p.money+=price;
+ return price;
+}
+/* ===== プレイヤー間ワイン市場（都市で売買） ===== */
+let wineMarket=[]; // 出品中ワイン {w, sellerIdx, price}
+/* ワインを都市市場に出品（保有から外れ、売れると出品者に代金） */
+function listWine(p,pIdx,w){
+ const idx=p.wines.indexOf(w); if(idx<0) return;
+ p.wines.splice(idx,1); p.value-=w.value;
+ const price=Math.round(w.value*0.9); // 出品価格は価値の90%（市場卸の70%より有利＝人に売る方が得）
+ wineMarket.push({w,sellerIdx:pIdx,price});
+}
+/* 都市の市場を開く：自分のワインを売る／出品する＋他人の出品を買う */
+function openCityMarket(cityKey,p){
+ const pIdx=cur;
+ if(p.isNpc){ // NPC：買える出品があり資金があれば1本買う。手持ちが多ければ1本出品
+  const buyable=wineMarket.filter(m=>m.sellerIdx!==pIdx && p.money>=m.price);
+  if(buyable.length){ const m=buyable[0]; buyCityWine(p,pIdx,m); }
+  else if(p.wines.length>3){ listWine(p,pIdx,p.wines[p.wines.length-1]); }
+  finishTurn(); return;
+ }
+ const modal=document.getElementById("cityModal"); if(!modal){ p.money+=3; finishTurn(); return; }
+ modal.style.display="flex";
+ const render=()=>{
+  const forSale=wineMarket.filter(m=>m.sellerIdx!==pIdx);
+  let html=`<div class="cityBox"><div class="cityTitle">🏙 ${REGIONS[cityKey].name} の市場</div>
+    <div class="cityRes">💰${p.money}　保有ワイン${p.wines.length}本</div>`;
+  // 買う：他プレイヤーの出品
+  html+=`<div class="citySec">🛒 出品中のワイン（買う）</div>`;
+  if(forSale.length===0){ html+=`<div class="cityEmpty">今は出品がありません</div>`; }
+  else forSale.forEach((m,i)=>{
+   const w=m.w; const nm=w.type==='prem'?`${w.vintage}年 ${REGIONS[w.region].name}（評価${w.rating||'-'}）`:`${REGIONS[w.region].name} 量産`;
+   const gi=wineMarket.indexOf(m);
+   html+=`<div class="cityRow"><span class="cn">${w.type==='prem'?'⭐':'🍷'} ${nm}<small>出品：${players[m.sellerIdx].pname}</small></span>
+     <button class="cbtn buy" data-gi="${gi}" ${p.money<m.price?'disabled':''}>買う 💰${m.price}</button></div>`;
+  });
+  // 売る／出品する：自分のワイン
+  html+=`<div class="citySec">🍷 自分のワイン（売る・出品）</div>`;
+  if(p.wines.length===0){ html+=`<div class="cityEmpty">売れるワインがありません</div>`; }
+  else p.wines.forEach((w,i)=>{
+   const nm=w.type==='prem'?`${w.vintage}年 ${REGIONS[w.region].name}`:`${REGIONS[w.region].name} 量産`;
+   html+=`<div class="cityRow"><span class="cn">${w.type==='prem'?'⭐':'🍷'} ${nm} <small>価値${w.value}</small></span>
+     <span class="cbtns"><button class="cbtn" data-sell="${i}">卸す +${sellPrice(w)}</button><button class="cbtn list" data-auction="${i}">競売 開始${Math.round(w.value*0.9)}</button></span></div>`;
+  });
+  html+=`<button class="cityClose">市場を出る →</button></div>`;
+  modal.innerHTML=html;
+  modal.querySelectorAll(".cbtn.buy:not([disabled])").forEach(b=>b.onclick=()=>{ buyCityWine(p,pIdx,wineMarket[+b.dataset.gi]); renderHUD(); render(); });
+  modal.querySelectorAll(".cbtn[data-sell]").forEach(b=>b.onclick=()=>{ const price=sellWine(p,p.wines[+b.dataset.sell]); toast(`💰 卸した +${price}`); renderHUD(); render(); });
+  modal.querySelectorAll(".cbtn[data-auction]").forEach(b=>b.onclick=()=>{ startAuction(p,pIdx,p.wines[+b.dataset.auction],()=>render()); });
+  modal.querySelector(".cityClose").onclick=()=>{ modal.style.display="none"; finishTurn(); };
+ };
+ render();
+}
+/* ===== オークション：出品した瞬間、全員が入札。最高額で落札 ===== */
+function startAuction(seller,sellerIdx,w,onDone){
+ if(!w) return;
+ const startPrice=Math.round(w.value*0.9);
+ // 参加者：出品者以外の全員
+ const bidders=players.map((p,i)=>({p,i})).filter(e=>e.i!==sellerIdx);
+ let highBid=startPrice-1;   // まだ誰も入札していない状態（開始価格で最初の入札が入る）
+ let highBidder=-1;
+ let firstBid=true;
+ // NPCが払ってよい上限（コレクション価値＋気まぐれ）
+ const npcCap=(pl)=>{ let base=w.value*(0.8+Math.random()*0.5); if(w.type==='prem')base*=1.1; return Math.min(pl.money, Math.round(base)); };
+ const order=bidders.slice();
+ let idx=0, passesInARow=0;
+ const modal=document.getElementById("cityModal");
+ const nm=w.type==='prem'?`${w.vintage}年 ${REGIONS[w.region].name}（評価${w.rating||'-'}）`:`${REGIONS[w.region].name} 量産`;
+ function finish(){
+  if(highBidder>=0){
+   const buyer=players[highBidder];
+   buyer.money-=highBid; buyer.wines.push(w); buyer.value+=w.value;
+   const si=seller.wines.indexOf(w); if(si>=0){ seller.wines.splice(si,1); seller.value-=w.value; }
+   seller.money+=highBid;
+   checkSets(buyer);  // 落札でコレクションが進むかも
+   toast(`🔨 落札！ ${buyer.pname} が ${nm} を ${highBid} で獲得`);
+  } else {
+   toast(`🔨 入札なし。${nm} は手元に残った`);
+  }
+  renderHUD();
+  modal.style.display="none";
+  if(onDone) setTimeout(onDone,300);
+ }
+ function step(){
+  // 全員が連続パス、または一巡して最高入札者以外が全員パスしたら終了
+  if(passesInARow>=order.length){ finish(); return; }
+  const {p,i}=order[idx%order.length]; idx++;
+  // 既に自分が最高入札者ならパス
+  if(i===highBidder){ passesInARow++; step(); return; }
+  const nextBid = firstBid ? startPrice : highBid+Math.max(2,Math.round(w.value*0.1));
+  if(p.isNpc){
+   const cap=npcCap(p);
+   if(cap>=nextBid && p.money>=nextBid){ highBid=nextBid; highBidder=i; firstBid=false; passesInARow=0; toast(`💬 ${p.pname} が ${nextBid} で入札`); }
+   else { passesInARow++; }
+   setTimeout(step,700);
+  } else {
+   // 人間：入札するかパスするか
+   showBidPrompt(p,nm,nextBid,highBid,highBidder,(bid)=>{
+    if(bid){ highBid=nextBid; highBidder=i; firstBid=false; passesInARow=0; }
+    else { passesInARow++; }
+    step();
+   });
+  }
+ }
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="cityBox"><div class="cityTitle">🔨 オークション開始</div>
+   <div class="auctItem">${w.type==='prem'?'⭐':'🍷'} ${nm}</div>
+   <div class="auctInfo">開始価格 ${startPrice}（価値 ${w.value}）</div>
+   <div class="cityEmpty">入札を募っています…</div></div>`;
+ setTimeout(step,900);
+}
+/* 人間プレイヤーへの入札プロンプト */
+function showBidPrompt(p,nm,nextBid,highBid,highBidder,cb){
+ const modal=document.getElementById("cityModal");
+ const leader = highBidder>=0?`現在の最高：${players[highBidder].pname} の ${highBid}`:'まだ入札なし';
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="cityBox"><div class="cityTitle">🔨 オークション</div>
+   <div class="auctItem">${nm}</div>
+   <div class="auctInfo">${leader}</div>
+   <div class="auctYou">${p.pname} の番　💰${p.money}</div>
+   <button class="cbtn list bidBtn" ${p.money<nextBid?'disabled':''}>${nextBid} で入札</button>
+   <button class="cityClose passBtn">パスする</button></div>`;
+ const bidBtn=modal.querySelector(".bidBtn"); if(bidBtn) bidBtn.onclick=()=>cb(true);
+ modal.querySelector(".passBtn").onclick=()=>cb(false);
+}
+function buyCityWine(p,pIdx,m){
+ if(!m) return; const gi=wineMarket.indexOf(m); if(gi<0) return;
+ if(p.money<m.price) return;
+ p.money-=m.price; p.wines.push(m.w); p.value+=m.w.value;
+ players[m.sellerIdx].money+=m.price;
+ wineMarket.splice(gi,1);
+ checkSets(p);  // 買ってコレクションが進むかも
+ toast(`🛒 ワインを購入！ ${players[m.sellerIdx].pname} に ${m.price}`);
+ renderHUD();
+}
+/* 売る/持つ選択モーダル */
+function openWineSaleModal(p, newWines, done){
+ if(!newWines || newWines.length===0){ done(); return; }
+ const modal=document.getElementById("saleModal"); if(!modal){ done(); return; }
+ modal.style.display="flex";
+ const render=()=>{
+  // 保有数の集計
+  const heldTotal=p.wines.length;
+  const heldPrem=p.wines.filter(w=>w.type==='prem').length;
+  const heldStd=p.wines.filter(w=>w.type==='std').length;
+  const soldThis=newWines.filter(w=>w._sold).length;
+  const keepThis=newWines.filter(w=>!w._sold).length;
+  let html=`<div class="saleBox"><div class="saleTitle">🍷 ${p.pname}：今季のワイン</div>
+    <div class="saleSub">売れば即資金（価値の${Math.round(SELL_RATE*100)}%）。持てば総資産＆コレクションに満額。</div>
+    <div class="saleStats">
+      <span>保有 計${heldTotal}本（⭐${heldPrem}・🍷${heldStd}）</span>
+      <span>今季 持つ${keepThis}／売る${soldThis}</span>
+      <span>💰${p.money}</span>
+    </div>`;
+  newWines.forEach((w,idx)=>{
+   const name = w.type==='prem' ? `${w.vintage}年 ${REGIONS[w.region].name}（評価${w.rating}）` : `${REGIONS[w.region].name} 量産`;
+   const sold = w._sold;
+   html+=`<div class="saleRow ${sold?'sold':''}">
+     <span class="sn">${w.type==='prem'?'⭐':'🍷'} ${name}</span>
+     <span class="sv">価値${w.value}</span>
+     ${sold?`<span class="sdone">売却済 +${w._soldFor}</span>`:`<button class="sbtn" data-i="${idx}">売る（+${sellPrice(w)}）</button>`}
+   </div>`;
+  });
+  html+=`<button class="saleClose">残り${keepThis}本を持つ →</button></div>`;
+  modal.innerHTML=html;
+  modal.querySelectorAll(".sbtn").forEach(b=>b.onclick=()=>{
+   const w=newWines[+b.dataset.i]; if(w && !w._sold){ const price=sellWine(p,w); w._sold=true; w._soldFor=price; toast(`💰 ワインを売却 +${price}`); renderHUD(); render(); }
+  });
+  modal.querySelector(".saleClose").onclick=()=>{ modal.style.display="none"; renderHUD(); done(); };
+ };
+ render();
+}
+/* プレイヤーが産地kでタイプtのワインを造った記録 */
+function recordProduced(p,k,t){ if(!p.produced)p.produced={}; if(!p.produced[k])p.produced[k]=new Set(); p.produced[k].add(t); }
+/* 産地kでタイプtが生産されたか */
+function hasProduced(p,k,t){ return p.produced && p.produced[k] && p.produced[k].has(t); }
+
+/* ===== ワイナリー評価（パーカーポイント：条件＋運） ===== */
+function computeRating(p,k,a){
+ // 基礎80点。条件で加点、ランダムで±の振れ。
+ let score=80;
+ if(k===vintageGreat) score+=8;                       // 当たり年
+ if(k===vintagePoor) score-=6;                        // 不作年
+ if(a.vineyard) score+=3;                             // 自前のぶどう
+ if(a.vineyard&&a.winery_std&&a.winery_prem) score+=5; // 独占（垂直統合）
+ score+=Math.floor(Math.random()*11)-5;               // ±5の運の振れ
+ // 大物評論家が来ているシーズンはさらに大きく振れる
+ if(bigCriticActive) score+=Math.floor(Math.random()*17)-8;
+ return Math.max(60,Math.min(100,score));
+}
+/* 評価→価値倍率（90点=等倍、100点=1.2倍、60点=0.7倍）ゆるやかに */
+function ratingToMult(rating){ return 1 + (rating-90)*0.02; }
+/* 評価→試飲料倍率（高評価ほど訪問価値が高い） */
+function ratingFeeMult(rating){ return rating>=95?1.5 : rating>=85?1.2 : rating>=75?1.0 : 0.7; }
+let bigCriticActive=false;
+/* たまに大物評論家が突然登場（大きく評価が動くシーズン） */
+function maybeBigCritic(){
+ // 20%くらいの確率で大物評論家シーズン
+ bigCriticActive = Math.random()<0.2;
+ if(bigCriticActive){ announceBigCritic(); }
+}
+function announceBigCritic(){
+ const modal=document.getElementById("criticModal"); if(!modal) return;
+ const token=++criticModalToken;
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="criticBox">
+   <div class="criticFace">🎩</div>
+   <div class="criticName">大物評論家、来訪</div>
+   <div class="criticLine">「今季は私が全ワイナリーを評価する。心して待て」</div>
+   <div class="criticEff">今シーズンの評価は大きく変動する</div>
+   <button class="criticOk" id="bigCriticOk">来たか…</button>
+ </div>`;
+ const close=()=>{ if(criticModalToken===token) modal.style.display="none"; };
+ modal.querySelector("#bigCriticOk").onclick=close;
+ setTimeout(()=>{ if(criticModalToken===token && modal.style.display==="flex") close(); },3500);
+}
+/* ヴィンテージ：当たり年(該当産地×2)・並・不作(該当産地×0.5) */
+let vintageGreat=null, vintagePoor=null, nextVintageGreat=null;
+let spotlightRegion=null, spotlightWonBy=null;   // 注目産地とその一番乗り者
+let criticOn=null;                                // 評論家が憑いているプレイヤーindex
+function seasonYear(){ return 1980+season; } // 表示用の擬似年
+function vintageMultiplier(k){ if(k===vintageGreat)return 2; if(k===vintagePoor)return 0.5; return 1; }
+function rollVintage(){
+ const ks=Object.keys(REGION_TYPE);
+ // 事前に決めておいた「次の当たり年」があればそれを採用。無ければ抽選
+ vintageGreat = nextVintageGreat || ks[Math.floor(Math.random()*ks.length)];
+ let guard=0;
+ do{ vintagePoor=ks[Math.floor(Math.random()*ks.length)]; guard++; }while(vintagePoor===vintageGreat && guard<20);
+ // 次のシーズンの当たり年を今のうちに抽選（予知カード用）
+ nextVintageGreat=ks[Math.floor(Math.random()*ks.length)];
+ // 注目産地＝当たり年の産地。シーズンごとにレースをリセット
+ spotlightRegion=vintageGreat; spotlightWonBy=null;
+}
+function pickVintage(){ const ks=Object.keys(REGION_TYPE); return ks[Math.floor(Math.random()*ks.length)]; }
+/* 注目産地の一番乗り：ボーナス。評論家は一番乗り者を避けて首位に憑く */
+const SPOTLIGHT_BONUS=20;
+function checkSpotlight(k,p){
+ if(k!==spotlightRegion || spotlightWonBy!==null) return;
+ spotlightWonBy=cur;
+ addBonus(p,"spotlight",SPOTLIGHT_BONUS);
+ toast(`⭐ 注目産地 ${REGIONS[k].name} に一番乗り！ +${SPOTLIGHT_BONUS}`);
+ // 評論家は「一番乗り者を除いた首位」に憑く。人間の建設メニューと被らないよう、演出は予約して後で出す
+ attachCriticToLeader(cur, p.isNpc);
+}
+/* 評論家を首位プレイヤーに憑ける（総資産ベース、exemptIdxは対象外、announceNowで即演出か予約か） */
+let pendingCriticAnnounce=null;
+function attachCriticToLeader(exemptIdx, announceNow){
+ let leader=-1,max=-Infinity;
+ players.forEach((p,i)=>{ if(i===exemptIdx)return; const t=totalAssets(p); if(t>max){max=t;leader=i;} });
+ if(leader<0) return; // 対象がいなければ憑かない
+ criticOn=leader;
+ if(announceNow){ announceCriticAttach(players[leader]); }
+ else { pendingCriticAnnounce=leader; }  // 建設メニューを閉じた後に演出
+}
+/* 評論家憑依の発表演出 */
+function announceCriticAttach(lp){
+ const modal=document.getElementById("criticModal"); if(!modal){ toast(`🧐 評論家が ${lp.pname} に憑いた`); return; }
+ const token=++criticModalToken;
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="criticBox">
+   <div class="criticFace">🧐</div>
+   <div class="criticName">辛口評論家、現る</div>
+   <div class="criticLine">「首位の ${lp.pname} …お手並み拝見といこう」</div>
+   <div class="criticEff">憑いている間、毎ターン気まぐれな悪評を受ける（内容はさまざま）。接触で他人に移る</div>
+   <button class="criticOk" id="criticOk">ぐぬぬ…</button>
+ </div>`;
+ const close=()=>{ if(criticModalToken===token) modal.style.display="none"; };
+ modal.querySelector("#criticOk").onclick=close;
+ setTimeout(()=>{ if(criticModalToken===token && modal.style.display==="flex") close(); },3500);
+}
+/* 評論家が憑いている人は毎ターン価値ダウン */
+/* 評論家のダメージ：軽(高頻度)・中(中頻度)・大惨事(レア・全員巻き込み)
+   w=出現重み。special:'chaos'系は全員を巻き込む。 */
+const CRITIC_EFFECTS=[
+ // 軽い（高頻度）
+ {tier:"light",w:5,msg:"小言を言われた 価値-2",eff:{value:-2}},
+ {tier:"light",w:4,msg:"ぶどうにケチ ぶどう-1",eff:{grapes:-1}},
+ {tier:"light",w:4,msg:"樽に難癖 樽-1",eff:{barrels:-1}},
+ {tier:"light",w:3,msg:"「今日は…まあいい」無害",eff:{}},
+ // 中くらい（中頻度）
+ {tier:"mid",w:2,msg:"酷評された 価値-5",eff:{value:-5}},
+ {tier:"mid",w:2,msg:"「買い取れない」資金-4",eff:{money:-4}},
+ {tier:"mid",w:2,msg:"動揺で次のサイコロが1に…",special:"forceOne"},
+ {tier:"mid",w:1,msg:"呆れられて1回休み",special:"skip"},
+ // 大惨事（レア）：憑かれた首位を狙い撃つ系
+ {tier:"chaos",w:2,msg:"🔥世紀の酷評！価値-15",eff:{value:-15}},
+ {tier:"chaos",w:2,msg:"🔥全銘柄に酷評！ワイン価値まとめて下落",special:"slashWines"},
+ {tier:"chaos",w:1,msg:"🔥スキャンダル！資金-10・2回休み",special:"scandal"},
+ // 大惨事（レア）：全員巻き込み系（持ち物が多い人ほど痛い＝相対的にも効く）
+ {tier:"chaos",w:1,msg:"🔥市場大暴落！全員のワイン価値が2割下落",special:"allWinesSlash"},
+ {tier:"chaos",w:1,msg:"🔥病害が蔓延！全員ぶどう半減",special:"allGrapesHalf"},
+ {tier:"chaos",w:1,msg:"🔥増税！全員 資金の3割を徴収",special:"allMoneyTax"},
+];
+function pickCriticEffect(){ const pool=[]; CRITIC_EFFECTS.forEach((e,i)=>{ for(let n=0;n<(e.w||1);n++)pool.push(i); }); return CRITIC_EFFECTS[pool[Math.floor(Math.random()*pool.length)]]; }
+function applyCriticDrain(onDone){
+ if(criticOn===null){ if(onDone)onDone(); return; }
+ const p=players[criticOn];
+ const ce=pickCriticEffect();
+ const chaos=(ce.tier==="chaos");
+ const harmless=(!ce.eff||Object.keys(ce.eff).length===0)&&!ce.special;
+ // 通常効果（憑かれた本人へ）
+ if(ce.eff){ for(const k in ce.eff){ p[k]=Math.max(0,(p[k]||0)+ce.eff[k]); } }
+ // 特殊効果
+ if(ce.special==="forceOne"){ forcedDie=1; }
+ else if(ce.special==="skip"){ p.skipNext=true; }
+ else if(ce.special==="slashWines"){ // 保有ワインの価値をまとめて下落（首位のコレクションを直撃）
+  let lost=0; p.wines.forEach(w=>{ const cut=Math.max(1,Math.round(w.value*0.2)); w.value-=cut; lost+=cut; }); p.value=Math.max(0,p.value-lost);
+ }
+ else if(ce.special==="scandal"){ p.money=Math.max(0,p.money-10); p.skipNext=true; p.skipTwice=true; }
+ else if(ce.special==="allWinesSlash"){ // 全員：保有ワインの価値2割下落（多く持つ人ほど痛い）
+  players.forEach(o=>{ let lost=0; o.wines.forEach(w=>{ const cut=Math.max(1,Math.round(w.value*0.2)); w.value-=cut; lost+=cut; }); o.value=Math.max(0,o.value-lost); });
+ }
+ else if(ce.special==="allGrapesHalf"){ players.forEach(o=>o.grapes=Math.floor(o.grapes/2)); }
+ else if(ce.special==="allMoneyTax"){ players.forEach(o=>{ o.money=Math.max(0,o.money-Math.round(o.money*0.3)); }); }
+ renderHUD();
+ // 演出：常に中央に大きく表示（閉じたら onDone）
+ showCriticDamage(p,ce,chaos,harmless,onDone);
+}
+let forcedDie=0; // 次のサイコロを強制する値（0=通常）
+/* 憑依評論家の毎ターンダメージを中央に大きく表示。閉じると onDone を呼ぶ */
+function showCriticDamage(p,ce,chaos,harmless,onDone){
+ const modal=document.getElementById("criticModal"); if(!modal){ toast(`🧐 ${ce.msg}`); if(onDone)onDone(); return; }
+ const face = chaos?"😈":(harmless?"😏":"🧐");
+ const tierClass = chaos?"chaos":(harmless?"harmless":"");
+ const tierLabel = chaos?"評論家 大暴走！":(harmless?"評論家の気まぐれ":"評論家の酷評");
+ const token=++criticModalToken;  // このポップアップの識別（古いタイマーの誤爆を防ぐ）
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="criticBox dmg ${tierClass}">
+   <div class="criticFace">${face}</div>
+   <div class="criticName">${tierLabel}</div>
+   <div class="criticVictim">${p.pname} に…</div>
+   <div class="criticBigMsg">${ce.msg}</div>
+   <button class="criticOk" id="criticOk">${chaos?'ぎゃああ':(harmless?'ホッ…':'ぐぬぬ…')}</button>
+ </div>`;
+ let done=false;
+ const close=()=>{ if(done)return; done=true; if(criticModalToken===token) modal.style.display="none"; if(onDone)onDone(); };
+ modal.querySelector("#criticOk").onclick=close;
+ // 人間はボタンで閉じるまで待つ（自動で閉じない＝onDoneは必ずクリックで呼ばれる）。NPCのみ自動
+ if(p.isNpc){ setTimeout(()=>{ if(criticModalToken===token) close(); }, chaos?2600:1800); }
+}
+let criticModalToken=0;
+/* 大惨事の中央演出（旧・互換用） */
+function showCriticChaos(p,ce){ showCriticDamage(p,ce,true,false); }
+/* 評論家のなすりつけ：接触（同じマス）でも、すれ違い（通過中の交差）でも移る。
+   移動中プレイヤーが、評論家憑きの人の現在マスまたは直前マスに触れたら発動。1手番1回。 */
+let criticPassedThisTurn=false;
+function maybePassCritic(){
+ if(criticOn===null || criticPassedThisTurn) return;
+ const mover=curP(); const moverIdx=cur;
+ // 移動中プレイヤーが通ったマス（現在＝posCell、直前＝cameFrom）
+ const moverCells=[mover.posCell, mover.cameFrom].filter(Boolean);
+ // ケース1：移動しているのが評論家憑き本人 → 触れた相手に押し付ける
+ if(criticOn===moverIdx){
+  for(let i=0;i<players.length;i++){
+   if(i!==moverIdx && (players[i].posCell===mover.posCell)){
+    passCriticTo(i); return;
+   }
+  }
+  return;
+ }
+ // ケース2：移動しているのは別人で、評論家憑きの人のマスを通過/交差した → 移動した人に移る
+ const holder=players[criticOn];
+ if(moverCells.includes(holder.posCell)){
+  passCriticTo(moverIdx); return;
+ }
+}
+function passCriticTo(i){
+ criticOn=i; criticPassedThisTurn=true;
+ toast(`🧐 評論家が ${players[i].pname} に乗り移った！`); renderHUD();
+}
+/* シーズン開始時の天候発表（中央演出） */
+function announceVintage(){
+ const g=REGIONS[vintageGreat], b=REGIONS[vintagePoor];
+ const modal=document.getElementById("vintageModal"); if(!modal){ toast(`🍇 第${season}シーズン 当たり年:${g?g.name:''}`); return; }
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="vtBox">
+   <div class="vtYear">${seasonYear()}年</div>
+   <div class="vtSub">第 ${season} シーズンの天候</div>
+   <div class="vtGreat">⭐☀️ 注目＆当たり年：<b>${g?g.name:'—'}</b><small>一番乗りでボーナス！プレミアムは価値2倍！</small></div>
+   <div class="vtPoor">🌧 不作の年：<b>${b?b.name:'—'}</b><small>この産地のプレミアムは価値半減…</small></div>
+   <button class="vtOk" id="vtOk">シーズン開始 →</button>
+ </div>`;
+ const close=()=>{ modal.style.display="none"; };
+ modal.querySelector("#vtOk").onclick=close;
+ setTimeout(()=>{ if(modal.style.display==="flex") close(); }, 4000);
+}
+/* 現在がNPCなら自動でサイコロを振る。人間ならボタンを有効化 */
+function maybeNpcTurn(){
+ if(curP().isNpc){
+  rollBtn.disabled=true;
+  setTimeout(()=>roll(),700);
+ }else{
+  rollBtn.disabled=false;
+ }
+}
+/* NPCの分岐選択：未取得産地に最短で近づく方向を選ぶ（簡易BFS距離） */
+function npcChoose(choices){
+ const dist=bfsToNearestUnowned(curP().posCell);
+ let best=choices[0], bestD=Infinity;
+ for(const id of choices){
+  const d=dist[id]===undefined?999:dist[id];
+  if(d<bestD){bestD=d;best=id;}
+ }
+ return best;
+}
+function bfsToNearestUnowned(start){
+ // 各セルから「最寄りの未取得産地までの距離」を求めるため、未取得産地を起点に逆BFS
+ const dist={}; const q=[];
+ for(const k in REGIONS){ if(k!=="paris" && (owned[k]===undefined||owned[k]===null)){ const id="R_"+k; dist[id]=0; q.push(id);} }
+ while(q.length){ const id=q.shift(); for(const nx of CELLS[id].next){ if(dist[nx]===undefined){dist[nx]=dist[id]+1;q.push(nx);} } }
+ return dist;
+}
+/* 現在地から注目産地までの最短マス数（BFS）。届かなければnull */
+function distanceToSpotlight(){
+ if(!spotlightRegion) return null;
+ const goal="R_"+spotlightRegion; const start=curP().posCell;
+ if(!CELLS[goal]||!CELLS[start]) return null;
+ const dist={[start]:0}; const q=[start];
+ while(q.length){ const id=q.shift(); if(id===goal) return dist[id];
+  for(const nx of CELLS[id].next){ if(dist[nx]===undefined){dist[nx]=dist[id]+1;q.push(nx);} } }
+ return dist[goal]!==undefined?dist[goal]:null;
+}
+/* あるマスから注目産地までの最短距離（BFS） */
+function distFromCellToSpotlight(cellId){
+ if(!spotlightRegion) return Infinity;
+ const goal="R_"+spotlightRegion; if(!CELLS[goal]||!CELLS[cellId]) return Infinity;
+ const dist={[cellId]:0}; const q=[cellId];
+ while(q.length){ const id=q.shift(); if(id===goal) return dist[id];
+  for(const nx of CELLS[id].next){ if(dist[nx]===undefined){dist[nx]=dist[id]+1;q.push(nx);} } }
+ return Infinity;
+}
+/* 現在の分岐候補のうち、注目産地に最も近づく選択肢を返す（近道の矢印用） */
+function bestPickToward(){
+ if(!spotlightRegion || spotlightWonBy!==null || !awaitingPick || pickOptions.length===0) return null;
+ let best=null,bd=Infinity;
+ pickOptions.forEach(id=>{ const d=distFromCellToSpotlight(id); if(d<bd){bd=d;best=id;} });
+ return best;
+}
+
+/* ===== 資産建設メニュー（人間） ===== */
+function canAfford(p,cost){ return (!(cost.grapes)||p.grapes>=cost.grapes) && (!(cost.barrels)||p.barrels>=cost.barrels) && (!(cost.money)||p.money>=cost.money); }
+function payCost(p,cost){ if(cost.grapes)p.grapes-=cost.grapes; if(cost.barrels)p.barrels-=cost.barrels; if(cost.money)p.money-=cost.money; }
+function costText(cost){ const t=[]; if(cost.grapes)t.push(`🍇${cost.grapes}`); if(cost.barrels)t.push(`🛢${cost.barrels}`); if(cost.money)t.push(`💰${cost.money}`); return t.join(" "); }
+
+function openBuildMenu(k){ renderBuildMenu(k,false); }
+function renderBuildMenu(k,warped){
+ const p=curP(); const a=p.assets[k]||{};
+ const modal=document.getElementById("buildModal");
+ const opts=[
+  {id:"vineyard",name:"畑",desc:"毎シーズン ぶどう+2",cost:CONFIG.cost.vineyard,built:a.vineyard},
+  {id:"winery_std",name:"醸造所",desc:"毎シーズン 量産ワイン(価値10)",cost:CONFIG.cost.winery_std,built:a.winery_std},
+  {id:"winery_prem",name:"ワイナリー",desc:"プレミアムワイン(価値25)＋試飲料",cost:CONFIG.cost.winery_prem,built:a.winery_prem},
+ ];
+ const builtCount=opts.filter(o=>o.built).length;
+ let html=`<div class="bmTitle">${REGIONS[k].name} で建設</div>
+   <div class="bmRes">あなたの手持ち 🍇${p.grapes} 🛢${p.barrels} 💰${p.money}${builtCount===3?'　👑あなたは独占済み':''}</div>`;
+ opts.forEach(o=>{
+  const can=!o.built&&canAfford(p,o.cost);
+  const label = o.built ? '✓ 建設済み（あなた）' : (can ? costText(o.cost) : costText(o.cost)+'（資源不足）');
+  html+=`<button class="bmBtn ${o.built?'done':(can?'':'no')}" ${can?'':'disabled'} data-a="${o.id}" data-k="${k}">
+    <b>${o.name}</b> <span>${label}</span><small>${o.desc}</small></button>`;
+ });
+ // 増産投資：建設済みの醸造所/ワイナリーに再投資して生産レベルを上げる
+ [["winery_std","醸造所"],["winery_prem","ワイナリー"]].forEach(([aid,nm])=>{
+  if(!a[aid]) return;
+  const lv=a[aid+"_lv"]||1;
+  const rc=CONFIG.reinvest[aid];
+  if(lv>=CONFIG.reinvest.maxLevel){
+   html+=`<button class="bmBtn done" disabled><b>${nm}を増産</b> <span>Lv${lv}（最大）</span><small>毎シーズン${lv}本生産中</small></button>`;
+  }else{
+   const can=canAfford(p,rc);
+   html+=`<button class="bmBtn reinvest ${can?'':'no'}" ${can?'':'disabled'} data-reinvest="${aid}" data-k="${k}">
+     <b>${nm}を増産 Lv${lv}→${lv+1}</b> <span>${costText(rc)}${can?'':'（資源不足）'}</span><small>生産量が${lv}本→${lv+1}本に</small></button>`;
+  }
+ });
+ // まだ建てられるものがあるかで文言を変える
+ const anyBuildable=opts.some(o=>!o.built&&canAfford(p,o.cost));
+ // ワイナリー間ワープ：自分のワイナリーがあり、他にも所有ワイナリー産地があり、まだワープしていなければ
+ const hereHasWinery = a.winery_prem;  // ワイナリー(プレミアム)を建てた人だけの特権
+ const otherWineries = wineryRegionsOf(p).filter(rk=>rk!==k);
+ if(!warped && hereHasWinery && otherWineries.length>0){
+  html+=`<button class="bmWarp">🍷➡ 自分の別のワイナリーへ視察（1ターン1回）</button>`;
+ }
+ html+=`<button class="bmClose">${anyBuildable?'ここまでにして進む →':'進む →'}</button>`;
+ modal.innerHTML=html; modal.style.display="flex";
+ modal.querySelectorAll(".bmBtn:not([disabled])").forEach(b=>b.onclick=()=>{
+  if(b.dataset.reinvest){ reinvestWinery(p,b.dataset.k,b.dataset.reinvest); }
+  else { buildAsset(p,b.dataset.k,b.dataset.a); }
+  renderBuildMenu(k,warped);
+ });
+ const warpBtn=modal.querySelector(".bmWarp");
+ if(warpBtn) warpBtn.onclick=()=>openWineryWarp(p,k);
+ modal.querySelector(".bmClose").onclick=()=>closeBuildMenu();
+}
+/* プレイヤーが醸造所orワイナリーを持つ産地キーの一覧 */
+function wineryRegionsOf(p){ const r=[]; for(const k in p.assets){ const a=p.assets[k]; if(a.winery_prem)r.push(k); } return r; }
+/* ワイナリー間ワープ：飛び先を選ぶ */
+function openWineryWarp(p,fromK){
+ const dests=wineryRegionsOf(p).filter(rk=>rk!==fromK);
+ const modal=document.getElementById("buildModal");
+ let html=`<div class="bmTitle">🍷 視察に向かうワイナリー</div>
+   <div class="bmRes">自分のワイナリーがある産地へ飛べる</div>`;
+ dests.forEach(rk=>{
+  const a=p.assets[rk]; const tag=a.winery_prem?'ワイナリー':'醸造所';
+  const rating=a.winery_prem&&a.rating?`（評価${a.rating}）`:'';
+  html+=`<button class="bmBtn" data-k="${rk}"><b>${REGIONS[rk].name}</b> <span>${tag}${rating}</span><small>ここへワープして建設・視察</small></button>`;
+ });
+ html+=`<button class="bmClose">やめる（この産地に留まる）</button>`;
+ modal.innerHTML=html;
+ modal.querySelectorAll(".bmBtn").forEach(b=>b.onclick=()=>{
+  const rk=b.dataset.k; const id="R_"+rk;
+  p.posCell=id; p.dlx=CELLS[id].x; p.dly=CELLS[id].y;
+  toast(`🍷➡ ${REGIONS[rk].name} のワイナリーへ視察に来た`);
+  renderBuildMenu(rk,true); // 飛び先ではもうワープできない（1ターン1回）
+ });
+ modal.querySelector(".bmClose").onclick=()=>renderBuildMenu(fromK,false); // 元の産地に戻る（まだ飛んでいない）
+}
+function closeBuildMenu(){
+ document.getElementById("buildModal").style.display="none";
+ // 建設メニューを閉じた後に、保留していた評論家憑依の演出を出す
+ if(pendingCriticAnnounce!==null){ const idx=pendingCriticAnnounce; pendingCriticAnnounce=null; announceCriticAttach(players[idx]); }
+ finishTurn();
+}
+/* 増産投資：生産レベルを1上げる */
+function reinvestWinery(p,k,aid){
+ const rc=CONFIG.reinvest[aid]; if(!canAfford(p,rc))return;
+ const a=p.assets[k]; if(!a||!a[aid])return;
+ const lv=a[aid+"_lv"]||1; if(lv>=CONFIG.reinvest.maxLevel)return;
+ payCost(p,rc); a[aid+"_lv"]=lv+1;
+ toast(`📈 ${REGIONS[k].name} の${aid==='winery_std'?'醸造所':'ワイナリー'}を増産（Lv${lv+1}）！`);
+ renderHUD();
+}
+function buildAsset(p,k,aid){
+ const cost=CONFIG.cost[aid]; if(!canAfford(p,cost))return;
+ payCost(p,cost); if(!p.assets[k])p.assets[k]={}; p.assets[k][aid]=true;
+ toast(`🏗 ${REGIONS[k].name} に ${aid==='vineyard'?'畑':aid==='winery_std'?'醸造所':'ワイナリー'} を建設！`);
+ checkMonopoly(p,k); checkSets(p);
+ renderHUD();
+}
+/* 独占：1産地に3資産 */
+function checkMonopoly(p,k){
+ const a=p.assets[k]; if(a&&a.vineyard&&a.winery_std&&a.winery_prem&&!a._monopoly){
+  a._monopoly=true; addBonus(p,"monopoly",CONFIG.bonus.monopoly); toast(`👑 ${REGIONS[k].name} を独占！ +${CONFIG.bonus.monopoly}`);
+ }
+}
+/* コレクション判定：
+   - 地理セット＝各産地に畑を建てる（土地の制覇・従来通り）
+   - タイプコレクション＝手元に赤/白/泡/ロゼのワインを持つ（造っても買ってもOK）
+   - 産地コレクション＝手元に持つワインの産地の種類数（節目でボーナス）
+   - ヴィンテージコレクション＝手元に持つワインの当たり年の種類数
+   ワインを売ると手元から消え、コレクションからも外れる。 */
+function checkSets(p){
+ p._geoDone=p._geoDone||{}; p._typeDone=p._typeDone||{};
+ p._regionTiers=p._regionTiers||{}; p._vintTiers=p._vintTiers||{};
+ // 地理セット（畑の制覇）
+ for(const s in GEO_SETS){ if(!p._geoDone[s] && GEO_SETS[s].every(k=>p.assets[k]&&p.assets[k].vineyard)){ p._geoDone[s]=true; addBonus(p,"geoSet",CONFIG.bonus.geoSet); toast(`🗺 地理セット「${s}」完成！（畑を制覇）+${CONFIG.bonus.geoSet}`);} }
+ // 手元のワインからタイプ・産地・年を集計
+ const heldTypes=new Set(), heldRegions=new Set(), heldVintages=new Set();
+ p.wines.forEach(w=>{ const t=REGION_TYPE[w.region]; if(t)heldTypes.add(t); heldRegions.add(w.region); if(w.vintage)heldVintages.add(w.vintage); });
+ // タイプコレクション：4タイプ揃うごと（保有ベース）
+ for(const s in TYPE_SETS){ if(!p._typeDone[s] && heldTypes.has(s)){ /* 個別タイプ所持は記録のみ */ } }
+ if(!p._typeCollDone && heldTypes.size>=4){ p._typeCollDone=true; addBonus(p,"typeColl",CONFIG.bonus.typeSet); toast(`🍷 タイプコレクション完成！赤白泡ロゼを保有 +${CONFIG.bonus.typeSet}`); }
+ // 産地コレクション：5産地ごとに小ボーナス、全産地でコンプ大ボーナス
+ const totalRegions=Object.keys(REGION_TYPE).length;
+ [5,10].forEach(tier=>{ if(!p._regionTiers[tier] && heldRegions.size>=tier){ p._regionTiers[tier]=true; addBonus(p,"regionColl",CONFIG.bonus.regionColl); toast(`🗺 産地コレクション ${tier}産地達成！ +${CONFIG.bonus.regionColl}`);} });
+ if(!p._regionTiers.full && heldRegions.size>=totalRegions){ p._regionTiers.full=true; addBonus(p,"regionColl",CONFIG.bonus.regionCompleteBonus); toast(`🏆 全産地コンプリート！ +${CONFIG.bonus.regionCompleteBonus}`); }
+ // ヴィンテージコレクション：異なる当たり年3種・5種ごと
+ [3,5].forEach(tier=>{ if(!p._vintTiers[tier] && heldVintages.size>=tier){ p._vintTiers[tier]=true; addBonus(p,"vintageColl",CONFIG.bonus.vintageColl); toast(`📅 ヴィンテージコレクション ${tier}年代！ +${CONFIG.bonus.vintageColl}`);} });
+}
+/* NPCの建設：買えるものを優先度順に建てる */
+function npcBuild(k,p){
+ ["vineyard","winery_std","winery_prem"].forEach(aid=>{
+  const a=p.assets[k]||{}; if(!a[aid]&&canAfford(p,CONFIG.cost[aid])){ buildAsset(p,k,aid); }
+ });
+}
+
+/* ===== 資源スロット（止めたタイミングの資源が手に入る） ===== */
+const SLOT_RES=[
+ {k:"grapes",icon:"🍇",name:"ぶどう",min:1,max:5},
+ {k:"barrels",icon:"🛢",name:"樽",min:1,max:3},
+ {k:"money",icon:"💰",name:"資金",min:1,max:10},
+];
+function slotAmount(res){ return res.min + Math.floor(Math.random()*(res.max-res.min+1)); }
+/* ===== 市場マス（資金で資源を買う・シーズン変動レート） ===== */
+function marketRates(){
+ // 天候連動：当たり年は原料安、不作年は原料高。樽は基本割高。
+ const base={grapes:3,barrels:5};
+ // 不作の年はぶどう高騰、当たり年は安い（簡易）
+ let g=base.grapes, b=base.barrels;
+ if(vintagePoor){ g+=1; } if(vintageGreat){ g=Math.max(2,g-1); }
+ return {grapes:g,barrels:b};
+}
+function openMarket(p){
+ const r=marketRates();
+ // その日の掘り出し物カード（産地到着ごとに変わる）＋価格
+ if(marketCardOfDay===null || marketCardSeason!==season){ marketCardOfDay=drawCardKey(); marketCardSeason=season; }
+ const cardKey=marketCardOfDay; const cardCost=8;
+ if(p.isNpc){ // NPC：樽が乏しく資金があれば1つ買う
+  if(p.barrels<2 && p.money>=r.barrels){ p.money-=r.barrels; p.barrels++; toast(`🏪 ${p.pname} が樽を購入`); }
+  finishTurn(); return;
+ }
+ const modal=document.getElementById("marketModal");
+ modal.style.display="flex";
+ const render=()=>{
+  const cd=CARD_DEFS[cardKey];
+  modal.innerHTML=`<div class="mkBox">
+    <div class="mkTitle">🏪 市場（${seasonYear()}年の相場）</div>
+    <div class="mkRes">手持ち 🍇${p.grapes} 🛢${p.barrels} 💰${p.money}</div>
+    <button class="mkBtn" data-buy="grapes" ${p.money<r.grapes?'disabled':''}>🍇 ぶどうを買う <span>💰${r.grapes}</span></button>
+    <button class="mkBtn" data-buy="barrels" ${p.money<r.barrels?'disabled':''}>🛢 樽を買う <span>💰${r.barrels}</span></button>
+    <button class="mkBtn card" data-buy="card" ${p.money<cardCost?'disabled':''}>🃏 ${cd.name} <span>💰${cardCost}</span></button>
+    <div class="mkCardDesc">${cd.desc}</div>
+    <button class="mkClose">市場を出る →</button>`;
+  modal.querySelectorAll(".mkBtn:not([disabled])").forEach(b=>b.onclick=()=>{
+   const what=b.dataset.buy;
+   if(what==="card"){ p.money-=cardCost; p.hand.push(cardKey); toast(`🏪 「${CARD_DEFS[cardKey].name}」を購入`); marketCardOfDay=null; modal.style.display="none"; renderHUD(); finishTurn(); return; }
+   p.money-=r[what]; p[what]++; toast(`🏪 ${what==='grapes'?'ぶどう':'樽'}を購入`); renderHUD(); render();
+  });
+  modal.querySelector(".mkClose").onclick=()=>{ modal.style.display="none"; finishTurn(); };
+ };
+ render();
+}
+let marketCardOfDay=null, marketCardSeason=-1;
+/* ===== 資金ルーレット（黄マス） ===== */
+function showFundRoulette(p){
+ // 低額が出やすく、高額はレア（重み付き）。幅3〜20。
+ const amounts=[3,3,4,4,5,5,6,7,8,10,12,15,20];
+ if(p.isNpc){ const v=amounts[Math.floor(Math.random()*amounts.length)]; p.money+=v; toast(`💰 ${p.pname} 資金+${v}`); finishTurn(); return; }
+ const modal=document.getElementById("fundModal");
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="slotBox">
+   <div class="slotTitle">💰 資金ルーレット</div>
+   <div class="slotReel" id="fundReel">3</div>
+   <button class="slotStop" id="fundStop">ストップ！</button>
+   <div class="slotHint">止めた金額がもらえる</div>
+ </div>`;
+ let idx=0, spinning=true;
+ const reel=modal.querySelector("#fundReel");
+ const timer=setInterval(()=>{ if(!spinning)return; idx=(idx+1)%amounts.length; reel.textContent=amounts[idx]; },80);
+ modal.querySelector("#fundStop").onclick=doStop;
+ function doStop(){
+  if(!spinning)return; spinning=false; clearInterval(timer);
+  const v=amounts[idx]; p.money+=v; reel.textContent=v;
+  modal.querySelector(".slotHint").textContent=`資金 +${v} を獲得！`;
+  const btn=modal.querySelector("#fundStop"); btn.textContent="続ける →";
+  btn.onclick=()=>{ modal.style.display="none"; toast(`💰 資金+${v}`); renderHUD(); finishTurn(); };
+ }
+}
+
+function showResourceSlot(p){
+ const modal=document.getElementById("slotModal");
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="slotBox">
+   <div class="slotTitle">🎰 資源スロット</div>
+   <div class="slotReel" id="slotReel">🍇</div>
+   <button class="slotStop" id="slotStop">ストップ！</button>
+   <div class="slotHint">タイミングよく止めよう</div>
+ </div>`;
+ let idx=0, spinning=true;
+ const reel=modal.querySelector("#slotReel");
+ const timer=setInterval(()=>{ if(!spinning)return; idx=(idx+1)%SLOT_RES.length; reel.textContent=SLOT_RES[idx].icon; },90);
+ // NPCは自動で止める
+ if(p.isNpc){ setTimeout(()=>doStop(),600+Math.random()*500); }
+ modal.querySelector("#slotStop").onclick=doStop;
+ function doStop(){
+  if(!spinning)return; spinning=false; clearInterval(timer);
+  const res=SLOT_RES[idx];
+  const amt=slotAmount(res);
+  p[res.k]+=amt;
+  reel.textContent=res.icon;
+  modal.querySelector(".slotHint").textContent=`${res.name} +${amt} を獲得！`;
+  const stopBtn=modal.querySelector("#slotStop"); stopBtn.textContent="続ける →";
+  stopBtn.onclick=()=>{ modal.style.display="none"; toast(`🎰 ${res.name} +${amt}`); renderHUD(); finishTurn(); };
+  if(p.isNpc){ setTimeout(()=>{ modal.style.display="none"; toast(`🎰 ${p.pname}：${res.name}+${amt}`); renderHUD(); finishTurn(); },700); }
+ }
+}
+
+/* ===== 評論家の登場演出 ===== */
+const CRITIC_LINES=[
+ {t:"「この畑のぶどうは凡庸だ」",eff:{money:-2},msg:"資金-2"},
+ {t:"「熟成が足りん、話にならん」",eff:{grapes:-1},msg:"ぶどう-1"},
+ {t:"「樽の香りが強すぎる」",eff:{barrels:-1},msg:"樽-1"},
+ {t:"「まあ…悪くはない、が」",eff:{money:-1},msg:"資金-1"},
+ {t:"「この価格設定は許せん」",eff:{money:-3},msg:"資金-3"},
+ {t:"「収穫が雑だな」",eff:{grapes:-2},msg:"ぶどう-2"},
+ {t:"「今日は…見逃してやろう」",eff:{},msg:"無害！セーフ"},
+ {t:"「テロワールが泣いている」",eff:{value:-3},msg:"価値-3"},
+];
+function showCritic(p){
+ // 防御カードがセットされていれば無効化
+ if(p.defended){ p.defended=false; toast("🛡 防御！評論家を追い払った"); finishTurn(); return; }
+ const line=CRITIC_LINES[Math.floor(Math.random()*CRITIC_LINES.length)]; // 実際に喰らうダメージ（抽選済み）
+ const modal=document.getElementById("criticModal");
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="criticBox">
+   <div class="criticFace">🧐</div>
+   <div class="criticName">辛口評論家、登場</div>
+   <div class="criticSlotLine" id="critLine">…</div>
+   <div class="criticSlotEff" id="critEff">どんな評価が下る…？</div>
+   <button class="criticOk" id="critStop">ストップ！</button>
+ </div>`;
+ let idx=0, spinning=true;
+ const lineEl=modal.querySelector("#critLine"), effEl=modal.querySelector("#critEff");
+ const timer=setInterval(()=>{ if(!spinning)return; idx=(idx+1)%CRITIC_LINES.length; lineEl.textContent=CRITIC_LINES[idx].t; effEl.textContent=CRITIC_LINES[idx].msg; },90);
+ const stopBtn=modal.querySelector("#critStop");
+ // NPCは自動で止める
+ if(p.isNpc){ setTimeout(doStop,700+Math.random()*400); }
+ stopBtn.onclick=doStop;
+ function doStop(){
+  if(!spinning)return; spinning=false; clearInterval(timer);
+  lineEl.textContent=line.t; effEl.textContent=line.msg;
+  // 効果適用
+  for(const k in line.eff){ p[k]=Math.max(0,(p[k]||0)+line.eff[k]); }
+  renderHUD();
+  stopBtn.textContent="ぐぬぬ…";
+  stopBtn.onclick=()=>{ modal.style.display="none"; toast(`🧐 評論家：${line.msg}`); finishTurn(); };
+  if(p.isNpc){ setTimeout(()=>{ modal.style.display="none"; toast(`🧐 ${p.pname}：${line.msg}`); finishTurn(); },800); }
+ }
+}
+
+/* ===== カードシステム ===== */
+/* ===== カード定義（系統別・データ駆動で拡張可能） =====
+   eff: 宣言的効果（addDice/grapes/barrels/money/dice/defend）。special: 個別処理。
+   rarity: 出現確率の重み。これらをデータで足すだけでカードが増える（目標50種）。 */
+const CARD_DEFS={
+ // 移動系
+ express1: {cat:"移動",icon:"🚃",name:"急行・小",desc:"次のサイコロ+2",eff:{addDice:2},w:3},
+ express2: {cat:"移動",icon:"🚄",name:"急行",desc:"次のサイコロ+3",eff:{addDice:3},w:3},
+ express3: {cat:"移動",icon:"🚅",name:"特急",desc:"次のサイコロ+5",eff:{addDice:5},w:1},
+ pinpoint: {cat:"移動",icon:"🎯",name:"ぴったり",desc:"次に好きな目を出せる",special:"pinpoint",w:2},
+ warp:     {cat:"移動",icon:"🌀",name:"ワープ",desc:"好きな産地へ移動",special:"warp",w:2},
+ double:   {cat:"移動",icon:"🎲",name:"倍速",desc:"サイコロを2個振る",eff:{dice2:true},w:2},
+ // 資源系
+ harvest:  {cat:"資源",icon:"🧺",name:"収穫",desc:"ぶどう+3・樽+1",eff:{grapes:3,barrels:1},w:3},
+ grapesBig:{cat:"資源",icon:"🍇",name:"豊作",desc:"ぶどう+5",eff:{grapes:5},w:2},
+ barrelBuy:{cat:"資源",icon:"🛢",name:"樽仕入れ",desc:"樽+3",eff:{barrels:3},w:2},
+ fund:     {cat:"資源",icon:"💰",name:"資金調達",desc:"資金+8",eff:{money:8},w:3},
+ // 建設・ワイン系
+ quickBuild:{cat:"建設",icon:"🏗",name:"即建設",desc:"畑を無料で1つ建てる",special:"quickBuild",w:2},
+ aging:    {cat:"建設",icon:"⏳",name:"熟成促進",desc:"手持ちワイン全部の価値+5",special:"aging",w:1},
+ // 防御・妨害系
+ defense:  {cat:"防御",icon:"🛡",name:"防御",desc:"評論家を1回無効化",eff:{defend:true},w:3},
+ sabotage: {cat:"妨害",icon:"💢",name:"資金強奪",desc:"他プレイヤーの資金を3奪う",special:"sabotage",w:2},
+ steal:    {cat:"妨害",icon:"🍇",name:"ぶどう泥棒",desc:"他プレイヤーのぶどうを2奪う",special:"stealGrapes",w:2},
+ passcritic:{cat:"妨害",icon:"🧐",name:"評論家なすりつけ",desc:"憑いている評論家を他プレイヤーに押し付ける",special:"passCritic",w:2},
+ // 特殊系
+ foresee:  {cat:"特殊",icon:"🔮",name:"ヴィンテージ予知",desc:"次の当たり年を今見る",special:"foresee",w:1},
+ quizPass: {cat:"特殊",icon:"📖",name:"ソムリエの知恵",desc:"次のクイズを自動正解",eff:{quizPass:true},w:1},
+};
+// 出現重みを反映したくじ引き用配列
+const CARD_KEYS=Object.keys(CARD_DEFS);
+function drawCardKey(){ const pool=[]; for(const k in CARD_DEFS){ const w=CARD_DEFS[k].w||1; for(let i=0;i<w;i++)pool.push(k); } return pool[Math.floor(Math.random()*pool.length)]; }
+function drawCard(p){
+ const key=drawCardKey();
+ const modal=document.getElementById("cardModal");
+ if(p.isNpc){ p.hand.push(key); toast(`🃏 ${p.pname} がカード獲得`); finishTurn(); npcMaybeUseCard(p); return; }
+ // カードスロット演出：カード名が次々流れ、ストップで確定
+ modal.style.display="flex";
+ modal.innerHTML=`<div class="cardBox">
+   <div class="cardTitle">🃏 カードスロット</div>
+   <div class="cardReelName" id="reelName">？？？</div>
+   <div class="cardReelDesc" id="reelDesc">タイミングよく止めよう</div>
+   <button class="cardOk" id="cardStop">ストップ！</button>
+ </div>`;
+ const keys=CARD_KEYS;
+ let idx=0, spinning=true;
+ const name=modal.querySelector("#reelName");
+ const timer=setInterval(()=>{ if(!spinning)return; idx=(idx+1)%keys.length; name.textContent=CARD_DEFS[keys[idx]].name; },70);
+ modal.querySelector("#cardStop").onclick=doStop;
+ function doStop(){
+  if(!spinning)return; spinning=false; clearInterval(timer);
+  const d=CARD_DEFS[key];
+  name.textContent=d.name;
+  modal.querySelector("#reelDesc").textContent=d.desc;
+  const btn=modal.querySelector("#cardStop"); btn.textContent="手札に加える →";
+  btn.onclick=()=>{ p.hand.push(key); modal.style.display="none"; toast(`🃏 「${d.name}」を手札に`); renderHUD(); finishTurn(); };
+ }
+}
+/* 手札からカードを使う（HUDのカードボタンから） */
+function useCard(idx){
+ const p=curP(); if(p.isNpc)return; const key=p.hand[idx]; if(!key)return;
+ if(rolling||moving||awaitingPick){ toast("今はカードを使えない"); return; }
+ const d=CARD_DEFS[key]; if(!d)return;
+ let consumed=true;
+ if(d.special){
+  // 個別処理カード（対象/産地選択が要るものは選択後に消費）
+  switch(d.special){
+   case"warp": openWarp(p); consumed=false; break;
+   case"sabotage": openSabotage(p); consumed=false; break;
+   case"stealGrapes": if(!stealResource(p,"grapes",2)){ consumed=false; } break;
+   case"pinpoint": pinpointNext=true; toast("🎯 次は好きな目を出せる"); break;
+   case"quickBuild": if(!quickBuildVineyard(p)){ consumed=false; } break;
+   case"aging": p.wines.forEach(w=>{w.value+=5;p.value+=5;}); toast("⏳ 熟成！ワイン全部の価値+5"); break;
+   case"foresee": toast(nextVintageGreat&&REGIONS[nextVintageGreat]&&season<CONFIG.totalSeasons ? `🔮 来季の当たり年は ${REGIONS[nextVintageGreat].name}！` : "🔮 これが最終シーズン、来季はない"); break;
+   case"passCritic": openPassCritic(p,idx); consumed=false; break;
+  }
+ }else if(d.eff){
+  const e=d.eff;
+  if(e.addDice){ pendingBonus+=e.addDice; toast(`${d.icon} ${d.name}！次のサイコロ+${e.addDice}`); }
+  if(e.dice2){ pendingDice2=true; toast(`${d.icon} 倍速！サイコロ2個`); }
+  if(e.grapes){ p.grapes+=e.grapes; }
+  if(e.barrels){ p.barrels+=e.barrels; }
+  if(e.money){ p.money+=e.money; }
+  if(e.defend){ p.defended=true; toast("🛡 防御をセット（次の評論家を無効化）"); }
+  if(e.quizPass){ p.quizPass=true; toast("📖 次のクイズは自動正解"); }
+  if(e.grapes||e.barrels||e.money){ toast(`${d.icon} ${d.name}！`); }
+ }
+ if(consumed){ p.hand.splice(idx,1); renderHUD(); }
+}
+let pinpointNext=false, pendingDice2=false;
+/* 資源を他プレイヤーから奪う共通処理 */
+function stealResource(p,res,amt){
+ let victim=null,max=-1; players.forEach((o,i)=>{ if(i!==cur&&o[res]>max){max=o[res];victim=o;} });
+ if(victim && victim[res]>0){ const take=Math.min(amt,victim[res]); victim[res]-=take; p[res]+=take;
+  toast(`${res==='grapes'?'🍇':'💰'} ${victim.pname} から ${take} 奪った！`); renderHUD(); return true; }
+ toast("奪える相手がいない（カードは温存）"); return false;
+}
+/* 即建設：畑を無料で建てる（今いる産地に）。建てられなければfalse（カード温存） */
+function quickBuildVineyard(p){
+ const c=CELLS[p.posCell];
+ if(c.type!=="region"||REGIONS[c.payload].group==="city"||c.payload==="paris"){ toast("ここは産地でないので畑を建てられない（カードは温存）"); return false; }
+ const k=c.payload;
+ if(p.assets[k]&&p.assets[k].vineyard){ toast("すでに畑がある（カードは温存）"); return false; }
+ if(!owned[k]){owned[k]=cur;} if(!p.assets[k])p.assets[k]={}; p.assets[k].vineyard=true;
+ toast(`🏗 ${REGIONS[k].name} に畑を無料建設！`); checkMonopoly(p,k); checkSets(p); renderHUD();
+ return true;
+}
+let pendingBonus=0; // 急行カードの次ロール加算
+function openWarp(p){
+ const modal=document.getElementById("cardModal"); modal.style.display="flex";
+ let html=`<div class="cardBox"><div class="cardTitle">🌀 ワープ先を選ぶ</div><div class="warpList">`;
+ for(const k in REGIONS){ if(REGIONS[k].group==='city'||k==='paris')continue;
+  html+=`<button class="warpBtn" data-k="${k}">${REGIONS[k].name}</button>`; }
+ html+=`</div><button class="cardOk" id="warpCancel">やめる</button></div>`;
+ modal.innerHTML=html;
+ modal.querySelectorAll(".warpBtn").forEach(b=>b.onclick=()=>{
+  const k=b.dataset.k; p.posCell="R_"+k; p.dlx=CELLS["R_"+k].x; p.dly=CELLS["R_"+k].y;
+  const i=p.hand.indexOf("warp"); if(i>=0)p.hand.splice(i,1);
+  modal.style.display="none"; toast(`🌀 ${REGIONS[k].name} へワープ！`); renderHUD();
+  setTimeout(()=>landAction(),400);
+ });
+ modal.querySelector("#warpCancel").onclick=()=>{ modal.style.display="none"; };
+}
+function openSabotage(p){
+ const others=players.map((o,i)=>({o,i})).filter(e=>e.i!==cur);
+ const modal=document.getElementById("cardModal"); modal.style.display="flex";
+ let html=`<div class="cardBox"><div class="cardTitle">💢 妨害する相手を選ぶ</div><div class="warpList">`;
+ others.forEach(e=>{ html+=`<button class="warpBtn" data-i="${e.i}">${e.o.pname}（💰${e.o.money}）</button>`; });
+ html+=`</div><button class="cardOk" id="sabCancel">やめる</button></div>`;
+ modal.innerHTML=html;
+ modal.querySelectorAll(".warpBtn").forEach(b=>b.onclick=()=>{
+  const ti=+b.dataset.i; const steal=Math.min(3,players[ti].money); players[ti].money-=steal; p.money+=steal;
+  const i=p.hand.indexOf("sabotage"); if(i>=0)p.hand.splice(i,1);
+  modal.style.display="none"; toast(`💢 ${players[ti].pname} から資金${steal}を奪った！`); renderHUD();
+ });
+ modal.querySelector("#sabCancel").onclick=()=>{ modal.style.display="none"; };
+}
+/* 評論家なすりつけ：自分に憑いている評論家を選んだ相手に移す。憑いてなければ使えない（false） */
+function openPassCritic(p,cardIdx){
+ if(criticOn!==cur){ toast("評論家は今あなたに憑いていない（カードは温存）"); return false; }
+ const others=players.map((o,i)=>({o,i})).filter(e=>e.i!==cur);
+ if(others.length===0){ toast("なすりつける相手がいない（カードは温存）"); return false; }
+ const modal=document.getElementById("cardModal"); modal.style.display="flex";
+ let html=`<div class="cardBox"><div class="cardTitle">🧐 評論家を押し付ける相手を選ぶ</div><div class="warpList">`;
+ others.forEach(e=>{ html+=`<button class="warpBtn" data-i="${e.i}">${e.o.pname}（総資産 ${totalAssets(e.o)}）</button>`; });
+ html+=`</div><button class="cardOk" id="pcCancel">やめる</button></div>`;
+ modal.innerHTML=html;
+ modal.querySelectorAll(".warpBtn").forEach(b=>b.onclick=()=>{
+  const ti=+b.dataset.i; criticOn=ti;
+  const i=p.hand.indexOf("passcritic"); if(i>=0)p.hand.splice(i,1);
+  modal.style.display="none"; toast(`🧐 評論家を ${players[ti].pname} に押し付けた！`); renderHUD();
+ });
+ modal.querySelector("#pcCancel").onclick=()=>{ modal.style.display="none"; }; // やめる＝温存
+ return true; // モーダルを開いた（消費はモーダル内で処理）
+}
+/* NPCのカード使用（簡易：資源・急行系はすぐ使う） */
+function npcMaybeUseCard(p){
+ for(let i=p.hand.length-1;i>=0;i--){
+  const d=CARD_DEFS[p.hand[i]]; if(!d||!d.eff)continue;
+  const e=d.eff; let used=false;
+  if(e.grapes){p.grapes+=e.grapes;used=true;} if(e.barrels){p.barrels+=e.barrels;used=true;}
+  if(e.money){p.money+=e.money;used=true;} if(e.addDice){pendingBonus+=e.addDice;used=true;}
+  if(used)p.hand.splice(i,1);
+ }
+}
+
+/* ===== クイズ（選択式・4択） ===== */
+const QUIZ=[
+ {q:"シャンパーニュの主要品種は？",opts:["シャルドネ","リースリング","メルロー","ネッビオーロ"],a:0,exp:"シャンパーニュはシャルドネ、ピノ・ノワール、ムニエが主要品種。"},
+ {q:"ボルドーの代表的な赤品種は？",opts:["ガメイ","カベルネ・ソーヴィニヨン","シュナン・ブラン","ミュスカ"],a:1,exp:"ボルドーはカベルネ・ソーヴィニヨンとメルローが主体。"},
+ {q:"プロヴァンスが主に生産するのは？",opts:["泡","甘口白","ロゼ","貴腐ワイン"],a:2,exp:"プロヴァンスはロゼ専門。仏ロゼの約4割を生産。"},
+ {q:"シャブリのワインの色は？",opts:["赤","白","ロゼ","オレンジ"],a:1,exp:"シャブリはシャルドネの辛口白ワイン。"},
+ {q:"ボジョレーで使う黒ブドウは？",opts:["ピノ・ノワール","シラー","ガメイ","グルナッシュ"],a:2,exp:"ボジョレー・ヌーヴォーで有名なガメイ。"},
+];
+function openQuiz(p){
+ const quiz=QUIZ[Math.floor(Math.random()*QUIZ.length)];
+ if(p.quizPass){ p.quizPass=false; p.money+=4; toast("📖 ソムリエの知恵で自動正解！ 資金+4"); finishTurn(); return; }
+ if(p.isNpc){ // NPCは確率で正解
+  const ok=Math.random()<0.6; if(ok){p.money+=4;toast("🔵 NPCがクイズ正解 資金+4");} else toast("🔵 NPCがクイズ不正解");
+  finishTurn(); return;
+ }
+ const modal=document.getElementById("quizModal");
+ let html=`<div class="qzTitle">🔵 ソムリエクイズ</div><div class="qzQ">${quiz.q}</div>`;
+ quiz.opts.forEach((o,i)=>{ html+=`<button class="qzOpt" data-i="${i}">${o}</button>`; });
+ modal.innerHTML=html; modal.style.display="flex";
+ modal.querySelectorAll(".qzOpt").forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.i; const correct=(i===quiz.a);
+  modal.querySelectorAll(".qzOpt").forEach((x,xi)=>{x.disabled=true;if(xi===quiz.a)x.classList.add("ok");else if(xi===i)x.classList.add("ng");});
+  const rew=correct?`<div class="qzR ok">正解！ 資金+4</div>`:`<div class="qzR ng">不正解…</div>`;
+  if(correct)p.money+=4;
+  modal.innerHTML+=`${rew}<div class="qzExp">${quiz.exp}</div><button class="qzNext">続ける →</button>`;
+  modal.querySelector(".qzNext").onclick=()=>{ modal.style.display="none"; renderHUD(); finishTurn(); };
+ });
+}
+
+/* ===== ゲーム終了・結果 ===== */
+/* 総資産＝価値(ワイン＋ボーナス) ＋ 資金 ＋ 資産の評価額 */
+const ASSET_WORTH={vineyard:5,winery_std:8,winery_prem:12};
+function assetWorth(p){ let w=0; for(const k in p.assets){ const a=p.assets[k]; if(a.vineyard)w+=ASSET_WORTH.vineyard; if(a.winery_std)w+=ASSET_WORTH.winery_std; if(a.winery_prem)w+=ASSET_WORTH.winery_prem; } return w; }
+function totalAssets(p){ return p.value + p.money + assetWorth(p); }
+/* 共有用の結果カード：スクショに適した一枚絵 */
+function showShareCard(ranked){
+ const stage=document.getElementById("edStage"); if(!stage) return;
+ const w=ranked[0];
+ let rows='';
+ ranked.forEach((e,i)=>{
+  const b=assetBreakdown(e.p);
+  const medal=["🥇","🥈","🥉"][i]||`${i+1}位`;
+  const bl=b.bl;
+  const factors=[["ワイン",b.premV+b.stdV],["資金",b.money],["資産",b.assetWorth],["コレクション",b.bonusTotal],["評価",b.parker]];
+  factors.sort((a,c)=>c[1]-a[1]);
+  const topFactor=factors[0][1]>0?factors[0][0]:"—";
+  rows+=`<div class="scRow ${i===0?'win':''}">
+    <span class="scMedal">${medal}</span>
+    <span class="scName">${e.p.pname}</span>
+    <span class="scTotal">${b.total}</span>
+    <span class="scFactor">主力: ${topFactor}</span>
+  </div>`;
+ });
+ stage.innerHTML=`<div class="shareCard" id="shareCard">
+   <div class="scTitle">🍷 VinRoute 🍷</div>
+   <div class="scSub">${seasonYear()}年 フランスワインの旅・全${CONFIG.totalSeasons}シーズン</div>
+   <div class="scCrown">👑 ${w.p.pname}</div>
+   <div class="scWinTotal">総資産 ${w.total}</div>
+   <div class="scRows">${rows}</div>
+   <div class="scFooter">#VinRoute — フランス全土を巡るワイン収集の旅</div>
+ </div>
+ <div class="edBtns">
+   <button class="rsClose" onclick="location.reload()">もう一度遊ぶ</button>
+ </div>
+ <div class="scHint">📸 この画面をスクリーンショットで保存・共有できます</div>`;
+}
+/* 資産の内訳を計算 */
+function assetBreakdown(p){
+ // ワイン価値をプレミアム/量産に分ける
+ let premV=0,stdV=0,premN=0,stdN=0;
+ p.wines.forEach(w=>{ if(w.type==='prem'){premV+=w.value;premN++;} else {stdV+=w.value;stdN++;} });
+ const bl=p.bonusLog||{};
+ const bonusTotal=(bl.monopoly||0)+(bl.geoSet||0)+(bl.typeColl||0)+(bl.regionColl||0)+(bl.vintageColl||0)+(bl.spotlight||0);
+ return { premV,stdV,premN,stdN, money:p.money, assetWorth:assetWorth(p), bl, bonusTotal, parker:Math.round(p.parkerDelta||0), total:totalAssets(p) };
+}
+function endGame(){
+ const ranked=players.map((p,i)=>({p,i,total:totalAssets(p)})).sort((a,b)=>b.total-a.total);
+ const modal=document.getElementById("resultModal");
+ modal.style.display="flex";
+ // フェーズ1：暗転＋煽り
+ modal.innerHTML=`<div class="edStage" id="edStage"><div class="edFade">${seasonYear()}年 —— 長い旅が終わった。</div></div>`;
+ setTimeout(()=>edPhaseBreakdown(ranked), 3400);
+}
+/* フェーズ2：各プレイヤーの資産内訳をゆっくり見せる（順位は伏せ気味に、内訳中心） */
+function edPhaseBreakdown(ranked){
+ const stage=document.getElementById("edStage"); if(!stage){ edPhaseAwards(ranked); return; }
+ // 内訳は「順位が下の人から」見せていく（クライマックスを後に）
+ const order=[...ranked].reverse();
+ let rows='';
+ order.forEach(e=>{
+  const b=assetBreakdown(e.p);
+  const bl=b.bl;
+  let bonusLines='';
+  const bonusItem=(label,v)=>{ if(v>0) bonusLines+=`<div class="edbRow sub"><span>${label}</span><span>+${v}</span></div>`; };
+  bonusItem("🍷 タイプコレクション",bl.typeColl);
+  bonusItem("🗺 産地コレクション",bl.regionColl);
+  bonusItem("📅 ヴィンテージコレクション",bl.vintageColl);
+  bonusItem("🗺 地理セット（畑制覇）",bl.geoSet);
+  bonusItem("👑 独占",bl.monopoly);
+  bonusItem("⭐ 注目産地一番乗り",bl.spotlight);
+  const parkerLine = b.parker!==0 ? `<div class="edbRow sub"><span>🎩 パーカーポイント影響</span><span>${b.parker>0?'+':''}${b.parker}</span></div>` : '';
+  rows+=`<div class="edbCard">
+    <div class="edbName">${e.p.pname}<span class="edbTotal">総資産 ${b.total}</span></div>
+    <div class="edbRow"><span>⭐ プレミアムワイン価値（${b.premN}本）</span><span>${b.premV}</span></div>
+    <div class="edbRow"><span>🍷 量産ワイン価値（${b.stdN}本）</span><span>${b.stdV}</span></div>
+    ${parkerLine}
+    <div class="edbRow"><span>💰 資金</span><span>${b.money}</span></div>
+    <div class="edbRow"><span>🏛 資産（畑・醸造所・ワイナリー）</span><span>${b.assetWorth}</span></div>
+    <div class="edbRowHead">— コレクション／ボーナス内訳 —</div>
+    ${bonusLines||'<div class="edbRow sub"><span>（ボーナスなし）</span><span>0</span></div>'}
+  </div>`;
+ });
+ stage.innerHTML=`<div class="edScroll" id="edScroll">
+   <div class="edBigTitle">📖 それぞれの醸造家の記録</div>
+   <div class="edSection">資産の内訳</div>
+   ${rows}
+ </div>`;
+ const sc=stage.querySelector("#edScroll");
+ // ゆっくりスクロール（内容量に応じて長めに）
+ const dur=Math.max(42, order.length*15);
+ if(sc){ sc.style.animation=`edRoll ${dur}s linear forwards`; }
+ setTimeout(()=>edPhaseAwards(ranked), dur*1000*0.8);
+}
+/* フェーズ3：特別賞 */
+function edPhaseAwards(ranked){
+ const stage=document.getElementById("edStage"); if(!stage){ edPhaseWinner(ranked); return; }
+ const mostWines=[...ranked].sort((a,b)=>b.p.wines.length-a.p.wines.length)[0];
+ const richest=[...ranked].sort((a,b)=>b.p.money-a.p.money)[0];
+ const bestParker=[...ranked].sort((a,b)=>(b.p.parkerDelta||0)-(a.p.parkerDelta||0))[0];
+ const bestWine=(()=>{ let best=null,bp=null; ranked.forEach(e=>e.p.wines.forEach(w=>{ if(!best||w.value>best.value){best=w;bp=e.p;} })); return {w:best,p:bp}; })();
+ let awards='';
+ awards+=`<div class="edAward"><span>🍷 最多コレクション賞</span><b>${mostWines.p.pname}</b>（${mostWines.p.wines.length}本）</div>`;
+ awards+=`<div class="edAward"><span>💰 大富豪賞</span><b>${richest.p.pname}</b>（資金${richest.p.money}）</div>`;
+ if((bestParker.p.parkerDelta||0)>0) awards+=`<div class="edAward"><span>🎩 パーカーの寵児賞</span><b>${bestParker.p.pname}</b>（評価で+${Math.round(bestParker.p.parkerDelta)}）</div>`;
+ if(bestWine.w){ const bw=bestWine.w; const nm=bw.type==='prem'?`${bw.vintage}年 ${REGIONS[bw.region].name}`:`${REGIONS[bw.region].name} 量産`; awards+=`<div class="edAward"><span>⭐ 最高の一本賞</span><b>${bestWine.p.pname}</b>（${nm}・価値${bw.value}）</div>`; }
+ stage.innerHTML=`<div class="edScroll" id="edScroll2">
+   <div class="edBigTitle">🏅 特別賞</div>
+   ${awards}
+ </div>`;
+ const sc=stage.querySelector("#edScroll2");
+ if(sc){ sc.style.animation="edRoll 24s linear forwards"; }
+ setTimeout(()=>edPhaseWinner(ranked), 17000);
+}
+/* フェーズ4：最終順位 → 優勝者発表（クライマックス） */
+function edPhaseWinner(ranked){
+ const stage=document.getElementById("edStage"); if(!stage) return;
+ let rankRows='';
+ ranked.forEach((e,i)=>{ rankRows+=`<div class="edRankRow ${i===0?'win':''}"><span class="edRk">${i+1}位</span><span class="edNm">${e.p.pname}</span><span class="edTot">総資産 ${e.total}</span></div>`; });
+ // まず最終順位を出す
+ stage.innerHTML=`<div class="edResults"><div class="edBigTitle">最終順位</div>${rankRows}</div>`;
+ // 少し置いて、優勝者をスポットライト発表（他のプレイヤーの順位も一緒に表示）
+ setTimeout(()=>{
+  const w=ranked[0];
+  let others='';
+  ranked.forEach((e,i)=>{
+   const medal=["🥇","🥈","🥉"][i]||`${i+1}位`;
+   others+=`<div class="edFinalRow ${i===0?'win':''}"><span class="efMedal">${medal}</span><span class="efName">${e.p.pname}</span><span class="efTot">総資産 ${e.total}</span></div>`;
+  });
+  stage.innerHTML=`<div class="edSpot">
+    <div class="edCrown">👑</div>
+    <div class="edWinLabel">総合優勝</div>
+    <div class="edWinName">${w.p.pname}</div>
+    <div class="edWinAssets">総資産 <b>${w.total}</b></div>
+    <div class="edFinalList">${others}</div>
+    <div class="edBtns">
+      <button class="rsClose" id="edShareBtn">📸 結果を保存・共有</button>
+      <button class="rsClose alt" onclick="location.reload()">もう一度遊ぶ</button>
+    </div>
+  </div>`;
+  const sb=stage.querySelector("#edShareBtn"); if(sb) sb.onclick=()=>showShareCard(ranked);
+ }, 4200);
+}
+
+function addValue(v){curP().value+=v;renderHUD();}
+
+/* HUD：資源・価値・シーズンを表示 */
+function renderHUD(){
+ const hud=document.getElementById("hud");
+ let spotTxt='';
+ if(spotlightRegion&&REGIONS[spotlightRegion]){
+  if(spotlightWonBy===null){ const d=distanceToSpotlight(); spotTxt=`　⭐${REGIONS[spotlightRegion].name}${d!==null?`(あと${d})`:''}`; }
+  else spotTxt=`　⭐制覇:${players[spotlightWonBy].pname}`;
+ }
+ const criticTxt = criticOn!==null&&players[criticOn] ? `　🧐${players[criticOn].pname}` : '';
+ const seasonInfo=`<div class="seasonBar">${seasonYear()}年 第${Math.min(season,CONFIG.totalSeasons)}/${CONFIG.totalSeasons}季${vintageGreat&&REGIONS[vintageGreat]?`　☀️${REGIONS[vintageGreat].name}`:''}${vintagePoor&&REGIONS[vintagePoor]?`　🌧${REGIONS[vintagePoor].name}`:''}${spotTxt}${criticTxt}</div>`;
+ // コンパクトなプレイヤーチップ（1行）。現在手番のみ資源も表示
+ const chips=players.map((p,i)=>{
+  const active=(i===cur);
+  return `<div class="pchip ${active?'active':''}">
+    <span class="dot" style="background:${p.cloth}"></span>
+    <span class="pn">${p.pname}${p.isNpc?'<small>NPC</small>':''}</span>
+    <span class="pv">${totalAssets(p)}</span>
+    ${active?`<span class="pres">🍇${p.grapes} 🛢${p.barrels} 💰${p.money}</span>`:''}
+  </div>`;
+ }).join("");
+ hud.innerHTML=seasonInfo+`<div class="chips">${chips}</div>`+renderHand();
+}
+/* 現在の人間プレイヤーの手札 */
+function renderHand(){
+ const p=players[cur]; if(!p||p.isNpc||!p.hand||p.hand.length===0)return "";
+ let html=`<div class="handBar"><div class="handLabel">手札（タップで使用）</div><div class="handCards">`;
+ p.hand.forEach((key,idx)=>{ const d=CARD_DEFS[key];
+  html+=`<button class="handCard" onclick="useCard(${idx})" title="${d.desc}"><span>${d.icon}</span>${d.name}</button>`; });
+ html+=`</div></div>`;
+ return html;
+}
+
+let toTimer=null;
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toTimer);toTimer=setTimeout(()=>el.classList.remove("show"),1800);
+ addLog(msg);}
+/* 直近のアクションを消えないログに残す（最大4件） */
+function addLog(msg){
+ const log=document.getElementById("actionLog"); if(!log)return;
+ const e=document.createElement("div"); e.className="le"; e.textContent=msg;
+ log.prepend(e); while(log.children.length>4) log.removeChild(log.lastChild);
+}
+/* 残りマス数の表示更新 */
+function updateMoves(){
+ const el=document.getElementById("movesLeft"); if(!el)return;
+ el.textContent = movesLeft>0 ? `あと ${movesLeft} マス` : "";
+}
+</script>

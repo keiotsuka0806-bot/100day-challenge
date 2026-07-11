@@ -1,0 +1,12 @@
+{
+  "name": "なんで箱",
+  "short_name": "なんで箱",
+  "description": "子どもの「なんで？」に年齢に合わせて答え、疑問を家族のアルバムとして育てる。",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffdf6",
+  "theme_color": "#fffdf6",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

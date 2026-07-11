@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>VinRoute — ワイン収集すごろく</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <!-- ステップ0: モード選択（＋国選択・戦績） -->
+  <div id="modeSelect">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p>遊び方を選ぼう</p>
+    <div class="countrySel" id="countrySel"></div>
+    <div class="modeBtns">
+      <div class="mbtn" id="modeSolo">
+        <div class="ic">🧑‍🦰🆚🤖</div>
+        <div class="mt">一人で遊ぶ</div>
+        <div class="ms">NPCと対戦</div>
+      </div>
+      <div class="mbtn" id="modeFriends">
+        <div class="ic">🧑‍🤝‍🧑</div>
+        <div class="mt">友達と遊ぶ</div>
+        <div class="ms">2〜4人で対戦</div>
+      </div>
+    </div>
+    <button class="recordsLink" id="recordsLink">📜 過去の戦績を見る</button>
+    <div class="recordsBox" id="recordsBox" style="display:none"></div>
+  </div>
+
+  <!-- ステップ1: 人数選択 -->
+  <div id="countSelect" style="display:none">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p id="countTitle">何人で遊ぶ？</p>
+    <div class="countBtns" id="countBtns"></div>
+  </div>
+
+  <!-- ステップ2: アバター選択 -->
+  <div id="select" style="display:none">
+    <h1>Vin<span class="v">Route</span></h1>
+    <p>あなたの相棒を選ぼう。</p>
+    <div class="avatars" id="avatars"></div>
+    <div class="namebox"><input id="pname" placeholder="名前を入力" maxlength="8"></div>
+    <button class="go" id="goBtn" disabled>旅に出る →</button>
+  </div>
+
+  <div id="game">
+    <canvas id="cv"></canvas>
+    <div id="avatarLayer"></div>
+    <div class="hud" id="hud"></div>
+    <div class="legend" id="legend">
+      <div class="lgTitle">産地の色</div>
+      <div class="lgRow"><span class="lgDot" style="background:#b0314f"></span>赤ワイン</div>
+      <div class="lgRow"><span class="lgDot" style="background:#7fb04a"></span>白ワイン</div>
+      <div class="lgRow"><span class="lgDot" style="background:#e3b23c"></span>泡</div>
+      <div class="lgRow"><span class="lgDot" style="background:#e07b9a"></span>ロゼ</div>
+      <div class="lgRow"><span class="lgSq" style="background:#6b7785"></span>都市（市場）</div>
+      <div class="lgRow"><span class="lgSq" style="background:#16c65a"></span>カード</div>
+      <div class="lgRow"><span class="lgSq" style="background:#ff2d2d"></span>評論家</div>
+      <div class="lgRow"><span class="lgSq" style="background:#1f7bff"></span>クイズ</div>
+      <div class="lgRow"><span class="lgSq" style="background:#b026ff"></span>市場</div>
+      <div class="lgRow"><span class="lgSq" style="background:#00d0e0"></span>資源</div>
+      <div class="lgRow"><span class="lgSq" style="background:#ffc400"></span>資金</div>
+    </div>
+    <div class="diceWrap">
+      <div class="dieBig">🎲 <span id="dieFace">—</span></div>
+      <div class="movesLeft" id="movesLeft"></div>
+      <button class="btn" id="rollBtn">サイコロを振る</button>
+      <button class="btn ov" id="ovBtn">🗺 全体マップ</button>
+      <button class="btn ov" id="noteBtn">📖 旅ノート</button>
+      <button class="btn ov snd" id="sndBtn">🔊</button>
+    </div>
+    <div class="pickHint" id="pickHint">分かれ道だ！進む先をクリック / 矢印キーでも選べます</div>
+    <div class="toast" id="toast"></div>
+    <div class="actionLog" id="actionLog"></div>
+    <div class="modal" id="buildModal"></div>
+    <div class="modal" id="quizModal"></div>
+    <div class="modal" id="slotModal"></div>
+    <div class="modal" id="criticModal"></div>
+    <div class="modal" id="vintageModal"></div>
+    <div class="modal" id="cardModal"></div>
+    <div class="modal" id="marketModal"></div>
+    <div class="modal" id="fundModal"></div>
+    <div class="modal" id="saleModal"></div>
+    <div class="modal" id="cityModal"></div>
+    <div class="modal" id="resultModal"></div>
+    <div class="modal" id="loreModal"></div>
+  </div>
+</div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

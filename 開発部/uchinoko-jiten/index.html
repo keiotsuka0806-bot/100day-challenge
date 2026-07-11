@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f3e8">
+  <meta name="description" content="子どもの言い間違い・迷言を、国語辞典の体裁で大真面目に保存する「わが家だけの辞典」">
+  <title>うちの子語録辞典</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <p class="header-label">わが家だけの国語辞典</p>
+    <h1 id="dictTitle">うちの子語録辞典</h1>
+    <p class="header-sub">言い間違いは、いつか消える。載せれば、一生もの。</p>
+    <button id="settingsBtn" class="ghost-btn" type="button">⚙ 辞典の名前</button>
+  </header>
+
+  <main>
+    <!-- 登録フォーム -->
+    <section class="entry-form card">
+      <h2 class="form-title">新しい見出し語を載せる</h2>
+      <label for="gorokuInput">子どもの言い間違い・迷言 <span class="req">必須</span></label>
+      <input id="gorokuInput" type="text" maxlength="40" placeholder="例: とうもころし" autocomplete="off">
+      <label for="imiInput">どういう意味?・そのときの状況(任意)</label>
+      <input id="imiInput" type="text" maxlength="120" placeholder="例: とうもろこしのこと。夕飯のたびに言う" autocomplete="off">
+      <label for="photoInput">そのころの写真(任意・この端末の中にだけ保存)</label>
+      <div class="photo-row">
+        <input id="photoInput" type="file" accept="image/*" hidden>
+        <button id="photoBtn" class="ghost-btn" type="button">📷 写真を選ぶ</button>
+        <img id="photoPreview" class="photo-preview" alt="" hidden>
+        <button id="photoClear" class="ghost-btn" type="button" hidden>外す</button>
+      </div>
+      <div class="form-row">
+        <label for="ageInput">言った歳(任意)</label>
+        <select id="ageInput">
+          <option value="">--</option>
+          <option>1さい</option><option>2さい</option><option>3さい</option>
+          <option>4さい</option><option>5さい</option><option>6さい</option>
+          <option>7さい</option><option>8さい以上</option>
+        </select>
+        <button id="addBtn" class="primary-btn" type="button">辞典に載せる</button>
+      </div>
+      <p id="formStatus" class="form-status" role="status"></p>
+    </section>
+
+    <!-- 辞典を引く -->
+    <section class="lookup">
+      <input id="searchInput" type="search" placeholder="🔍 辞典を引く（ことば・よみ・意味）" autocomplete="off">
+      <nav id="gyoIndex" class="gyo-index" aria-label="五十音さくいん"></nav>
+    </section>
+
+    <!-- 辞典本体 -->
+    <section id="dictionary" class="dictionary">
+      <div id="emptyState" class="empty-state">
+        <p>まだ見出し語がありません。</p>
+        <p>最初の一語を載せると、ここに「わが家の辞典」が育ちはじめます。</p>
+      </div>
+      <div id="entryList"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>うちの子語録辞典 — #100DayChallenge Day35</p>
+  </footer>
+
+  <!-- 設定モーダル -->
+  <div id="settingsModal" class="modal" aria-hidden="true">
+    <div class="modal-body card">
+      <h2>辞典の名前</h2>
+      <label for="childNameInput">子どもの名前・呼び名(任意)</label>
+      <input id="childNameInput" type="text" maxlength="10" placeholder="例: そうた" autocomplete="off">
+      <p class="hint">入れると「そうた語辞典」になります。</p>
+      <div class="backup-box">
+        <h3>辞典の控え(バックアップ)</h3>
+        <p class="hint">端末の買い替え・ブラウザのデータ消去で辞典が消えないよう、ときどき控えを書き出して保管してください。</p>
+        <div class="modal-actions">
+          <button id="backupExport" class="ghost-btn" type="button">⬇ 控えを書き出す</button>
+          <button id="backupImportBtn" class="ghost-btn" type="button">⬆ 控えから戻す</button>
+          <input id="backupImport" type="file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="settingsSave" class="primary-btn" type="button">保存</button>
+        <button id="settingsClose" class="ghost-btn" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="cardCanvas" width="1080" height="1350" hidden></canvas>
+  <script src="app.js" defer></script>
+</body>
+</html>

@@ -51,7 +51,7 @@ body {
 }
 .step-nav button {
   flex: none;
-  min-height: 36px;
+  min-height: 44px;
   border: 1px solid var(--line);
   background: #fff;
   border-radius: 999px;
@@ -151,7 +151,7 @@ button { font-family: inherit; cursor: pointer; }
 /* チップ */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .chip {
-  min-height: 40px;
+  min-height: 44px;
   border-radius: 999px;
   border: 1.5px solid var(--primary);
   color: var(--primary-dark);
@@ -203,12 +203,13 @@ button { font-family: inherit; cursor: pointer; }
 .record p { font-size: 0.9rem; padding-right: 32px; }
 .rec-del {
   position: absolute;
-  top: 8px; right: 8px;
-  width: 32px; height: 32px;
+  top: 4px; right: 4px;
+  width: 44px; height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: none;
+  background: transparent;
   color: var(--muted);
+  font-size: 1rem;
 }
 
 /* 模造紙 */
@@ -290,7 +291,8 @@ button { font-family: inherit; cursor: pointer; }
 
 /* 印刷: 模造紙だけ */
 @media print {
-  .app-header, .step-nav, .btn-primary, .btn-secondary, .btn-danger, .hint, .field, .toast { display: none !important; }
+  .app-header, .step-nav, .btn-primary, .btn-secondary, .btn-danger, .hint, .field, .toast,
+  .hakase, .outcome, .celebrate, h2 { display: none !important; }
   body { background: #fff; padding: 0; }
   .poster { grid-template-columns: 1fr 1fr; }
 }

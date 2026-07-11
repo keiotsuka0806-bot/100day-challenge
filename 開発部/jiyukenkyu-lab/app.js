@@ -11,7 +11,20 @@ let state = load();
 function load() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (!s || typeof s !== 'object' || Array.isArray(s)) throw new Error('bad shape');
+      // 形の検査: 正当JSONでもスキーマが壊れていたら直して使う(QA 2026-07-11 #12)
+      const merged = { ...freshState(), ...s };
+      if (!Array.isArray(merged.likes) || merged.likes.length < 2) merged.likes = ['', ''];
+      if (!merged.hypothesis || typeof merged.hypothesis !== 'object') merged.hypothesis = { think: '', because: '' };
+      if (!Array.isArray(merged.records)) merged.records = [];
+      if (!Array.isArray(merged.themes)) merged.themes = [];
+      if (merged.theme !== null && typeof merged.theme !== 'object') merged.theme = null;
+      const validSteps = ['home', 'likes', 'themes', 'sirabe', 'question', 'meaning', 'method', 'hypothesis', 'lab', 'summary'];
+      if (!validSteps.includes(merged.step)) merged.step = 'home';
+      return merged;
+    }
   } catch (e) {
     // 破損データは退避してから初期化(捨てない)
     try { localStorage.setItem(STORE_KEY + '_broken', localStorage.getItem(STORE_KEY) || ''); } catch (_) {}
@@ -63,8 +76,9 @@ function show(screen) {
       (b.dataset.step === 'question' && screen === 'meaning'));
   });
   if (screen === 'sirabe') $('sirabeTheme').textContent = '🔬 テーマ: ' + (state.theme ? state.theme.title : '');
-  if (screen === 'themes') hakaseThemes();
-  if (screen === 'question') renderChips();
+  if (screen === 'likes') renderLikeChips();
+  if (screen === 'themes') { hakaseThemes(); renderThemes(); }
+  if (screen === 'question') { renderChips(); $('pickedTheme').textContent = state.theme ? '🔬 テーマ: ' + state.theme.title : ''; }
   if (screen === 'meaning') $('meaningQuestion').textContent = '❓ ' + (state.question || '');
   if (screen === 'lab') renderRecords();
   if (screen === 'summary') renderPoster();
@@ -119,17 +133,20 @@ async function callAssist(mode, payload) {
       signal: ctrl.signal,
     });
     clearTimeout(tm);
-    if (!res.ok) throw new Error('http ' + res.status);
+    // 事実と違う「オフライン」表示をしない: 状態別にreasonを分ける(QA 2026-07-11)
+    if (res.status === 429) return { ok: true, mock: true, reason: 'busy', data: localMock(mode, payload) };
+    if (!res.ok) return { ok: true, mock: true, reason: 'ai_error', data: localMock(mode, payload) };
     return await res.json();
   } catch (e) {
-    // サーバー自体に届かない(ローカルプレビュー等) → クライアント側モック
+    // サーバー自体に届かない(ローカルプレビュー・ネット切断) → クライアント側モック
     return { ok: true, mock: true, reason: 'offline', data: localMock(mode, payload) };
   }
 }
 
 function mockNotice(reason) {
   if (reason === 'no_key') return '（いまは体験モード: AI未接続のため定番の型から提案しています）';
-  if (reason === 'ai_error') return '（AIが混み合っているため、定番の型から提案しています）';
+  if (reason === 'ai_error') return '（AIの調子が悪いみたいじゃ。定番の型から提案しています）';
+  if (reason === 'busy') return '（混み合っとるようじゃ。1分待ってもう一度。いまは定番の型から提案）';
   return '（オフラインのため、定番の型から提案しています）';
 }
 
@@ -199,6 +216,23 @@ function renderChips() {
 }
 
 /* ---------- ①好き×好き→テーマ ---------- */
+const LIKE_SUGGESTIONS = ['恐竜', '虫', 'ねこ', '犬', 'サッカー', '野球', 'ダンス', '折り紙', 'お菓子づくり', '料理', 'ゲーム', '漫画', 'アニメ', '電車', '車', '宇宙', '天気', '音楽', 'お絵かき', '植物'];
+
+function renderLikeChips() {
+  const wrap = $('likeChips');
+  if (wrap.childElementCount) return;
+  LIKE_SUGGESTIONS.forEach(word => {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = word;
+    c.addEventListener('click', () => {
+      if (!$('like1').value.trim()) $('like1').value = word;
+      else if (!$('like2').value.trim() && $('like1').value.trim() !== word) $('like2').value = word;
+      else if ($('like1').value.trim() !== word) $('like2').value = word; // 両方埋まってたら2つ目を入れ替え
+    });
+    wrap.appendChild(c);
+  });
+}
 async function makeThemes() {
   const a = $('like1').value.trim();
   const b = $('like2').value.trim();
@@ -208,7 +242,7 @@ async function makeThemes() {
   save();
   const btn = $('btnThemes');
   btn.disabled = true;
-  $('likesStatus').textContent = '🧪 掛け算中…';
+  $('likesStatus').textContent = `🧑‍🔬 うーむ、「${a}」×「${b}」…わしの研究ノートをめくっとるところじゃ…（10秒ほど待つのじゃ）`;
   const res = await callAssist('themes', { likes: state.likes, grade: state.grade });
   btn.disabled = false;
   $('likesStatus').textContent = '';
@@ -234,7 +268,7 @@ function renderThemes() {
       state.theme = t;
       save();
       $('pickedTheme').textContent = '🔬 テーマ: ' + t.title;
-      if (t.toi_hint && !state.question) $('questionInput').value = t.toi_hint;
+      if (t.toi_hint && !state.question && !$('questionInput').value.trim()) $('questionInput').value = t.toi_hint;
       show('sirabe'); // まず先行しらべへ
     });
     wrap.appendChild(card);
@@ -263,14 +297,14 @@ function saveQuestion() {
   const q = $('questionInput').value.trim();
   if (!q) { toast('問いを書いてね（チップを押すと型が入るよ）'); return; }
   state.question = q;
-  save();
+  if (!save()) return; // 保存できていないのに先へ進まない(QA 2026-07-11 #11)
   show('meaning'); // だから何？ゲートへ
 }
 
 /* ---------- ②b だから何？ゲート ---------- */
 function pickMeaning(m) {
   state.meaning = m;
-  save();
+  if (!save()) return;
   show('method');
 }
 
@@ -296,7 +330,7 @@ async function askKurabeHints() {
 /* ---------- ③はかり方 / ④仮説 ---------- */
 function pickMethod(m) {
   state.method = m;
-  save();
+  if (!save()) return;
   show('hypothesis');
 }
 
@@ -306,7 +340,7 @@ function saveHypo() {
   if (!think) { toast('「こうなると思う！」を書いてね'); return; }
   state.hypothesis = { think, because };
   if (!state.createdAt) state.createdAt = new Date().toISOString();
-  save();
+  if (!save()) return;
   show('lab');
 }
 
@@ -324,7 +358,7 @@ function onPhotoPicked(file) {
     cv.width = Math.round(img.width * scale);
     cv.height = Math.round(img.height * scale);
     cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-    pendingPhoto = cv.toDataURL('image/jpeg', 0.75);
+    pendingPhoto = cv.toDataURL('image/jpeg', 0.62); // 60件×localStorage 5MB制限から逆算した品質(QA 2026-07-11 #10)
     const prev = $('recPreview');
     prev.src = pendingPhoto;
     prev.classList.remove('hidden');
@@ -344,6 +378,10 @@ function addRecord() {
   $('recMemo').value = '';
   $('recPreview').classList.add('hidden');
   $('recPhoto').value = '';
+  // 容量の先回り警告(QuotaExceededで突然止まる前に伝える)
+  try {
+    if (JSON.stringify(state).length > 3_800_000) toast('🧑‍🔬 写真がだいぶ増えたのう。そろそろ文字だけの記録にするか、古い写真つき記録を消すのじゃ');
+  } catch (_) {}
   const n = state.records.length;
   if (n === 1) celebrate('🎉', 'はじめての記録じゃ！きみは今日から研究員じゃぞ！');
   else if (n === 7) celebrate('⭐', '7日分…！本物の研究者のリズムじゃ！');
@@ -351,6 +389,8 @@ function addRecord() {
   else toast('📗 きろくした！（' + n + '日分）');
   renderRecords();
 }
+
+function cut(s, n) { return [...String(s)].slice(0, n).join(''); } // 絵文字(サロゲートペア)を分断しない切り詰め
 
 function todayStr() {
   const d = new Date();
@@ -395,9 +435,9 @@ function renderPoster() {
     ['📚 しらべたこと（先行しらべ）', state.sirabe || '（①bでしらべたことを書くとここに入るよ）'],
     ['🔮 よそう（仮説）', state.hypothesis.think ? `${state.hypothesis.think}\nなぜなら… ${state.hypothesis.because}` : '（④で書こう）'],
     ['🧰 方法（はかり方）', state.method ? `「${state.method}」ではかった` : '（③で選ぼう）'],
-    ['📊 結果（きろくから）', !state.records.length ? '（⑤できろくしよう）'
-      : state.records.length === 1 ? `1日分のきろく:「${(state.records[0].memo || '写真').slice(0, 40)}」`
-      : `${state.records.length}日分のきろく。最初:「${(state.records[0].memo || '写真').slice(0, 40)}」→ 最新:「${(state.records[state.records.length - 1].memo || '写真').slice(0, 40)}」`],
+    ['📊 結果（きろくから）', !state.records.length ? '（たんけんできろくしよう）'
+      : state.records.length === 1 ? `1日分のきろく:「${cut(state.records[0].memo || '写真', 40)}」`
+      : `${state.records.length}日分のきろく。最初:「${cut(state.records[0].memo || '写真', 40)}」→ 最新:「${cut(state.records[state.records.length - 1].memo || '写真', 40)}」`],
     ['💡 わかったこと', (state.outcome === 'ちがった' ? 'よそうと違った=大発見！なぜ違ったのかを、' : state.outcome === '当たった' ? 'よそうが当たった理由を、' : '← ここは ') + 'きみの言葉で！（AIは書きません）'],
     ['🔭 次に知りたいこと', state.nextQuestion || '（この画面の上の欄に書くとここに入るよ）'],
   ];
@@ -412,19 +452,33 @@ function renderPoster() {
 }
 
 /* ---------- 起動 ---------- */
+function clearInputs() {
+  // stateリセット時にDOMの残留テキストも消す(QA 2026-07-11 #2: 旧研究の混入防止)
+  ['like1', 'like2', 'sirabeNote', 'questionInput', 'hypoThink', 'hypoBecause', 'recMemo', 'nextQuestion'].forEach(id => { $(id).value = ''; });
+  $('aiQuestionHints').classList.add('hidden');
+  $('kurabeHints').classList.add('hidden');
+  $('recPreview').classList.add('hidden');
+  $('recPhoto').value = '';
+  pendingPhoto = null;
+  document.querySelectorAll('.outcome-btn').forEach(x => x.classList.remove('chip-on'));
+}
+
 function init() {
+  // 「つづきから」用に、show('home')でstepが上書きされる前の到達点を退避(QA 2026-07-11 #1)
+  const resumeStep = state.step;
   // ホーム
   $('btnStart').addEventListener('click', () => {
     if (state.createdAt || state.theme) {
       if (!confirm('前の研究のきろくが残っています。新しく始めると消えます。いい？')) return;
       state = freshState(); save();
+      clearInputs();
     }
     show('likes');
   });
   if (state.theme || state.createdAt) {
     $('btnContinue').classList.remove('hidden');
-    $('continueLabel').textContent = state.theme ? state.theme.title.slice(0, 18) : 'テーマ決めから';
-    $('btnContinue').addEventListener('click', () => show(state.step === 'home' ? 'lab' : state.step));
+    $('continueLabel').textContent = state.theme ? [...state.theme.title].slice(0, 18).join('') : 'テーマ決めから';
+    $('btnContinue').addEventListener('click', () => show(resumeStep === 'home' || !resumeStep ? 'lab' : resumeStep));
   }
   // ナビ
   document.querySelectorAll('#stepNav button').forEach(b =>
@@ -435,12 +489,12 @@ function init() {
   // ①b しらべてみよう
   $('btnSirabeDone').addEventListener('click', () => {
     state.sirabe = $('sirabeNote').value.trim();
-    save();
+    if (!save()) return;
     show('question');
   });
   $('btnSirabeAllKnown').addEventListener('click', () => {
     state.sirabe = $('sirabeNote').value.trim();
-    save();
+    if (!save()) return;
     toast('しらべて分かるのも大事な一歩！ちがうテーマにしよう');
     show('themes');
   });
@@ -485,6 +539,11 @@ function init() {
     if (!confirm('本当に全部消して最初から？（きろくも消えます）')) return;
     state = freshState(); save(); location.reload();
   });
+  // 入力途中の下書きも自動保存(確定ボタン前にリロードしても消えない/QA 2026-07-11 #5)
+  $('questionInput').addEventListener('change', () => { state.question = $('questionInput').value.trim(); save(); });
+  $('sirabeNote').addEventListener('change', () => { state.sirabe = $('sirabeNote').value.trim(); save(); });
+  $('hypoThink').addEventListener('change', () => { state.hypothesis.think = $('hypoThink').value.trim(); save(); });
+  $('hypoBecause').addEventListener('change', () => { state.hypothesis.because = $('hypoBecause').value.trim(); save(); });
   // 祝祭はタップでも閉じられる
   $('celebrate').addEventListener('click', () => $('celebrate').classList.add('hidden'));
   // 復元

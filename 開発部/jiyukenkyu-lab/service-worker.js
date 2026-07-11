@@ -1,6 +1,6 @@
 // network-first(記憶庫2026-07-02: 新規PWAは最初からこの型で始める)
-const CACHE = 'jiyukenkyu-v1';
-const ASSETS = ['./', './index.html', './app.js', './styles.css', './manifest.json'];
+const CACHE = 'jiyukenkyu-v2';
+const ASSETS = ['./', './index.html', './app.js', './styles.css', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -16,7 +16,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET' || new URL(e.request.url).pathname.startsWith('/api/')) return;
+  // APIはキャッシュしない(配置パスに依存しない判定/QA 2026-07-11)
+  if (e.request.method !== 'GET' || new URL(e.request.url).pathname.includes('/api/')) return;
   e.respondWith(
     fetch(e.request)
       .then(res => {
@@ -29,7 +30,10 @@ self.addEventListener('fetch', e => {
       .catch(() =>
         caches.match(e.request).then(r => {
           if (r) return r;
-          if (e.request.mode === 'navigate') return caches.match('./index.html');
+          if (e.request.mode === 'navigate') {
+            // index.htmlも未キャッシュならundefinedを返さず明示エラー(QA 2026-07-11)
+            return caches.match('./index.html').then(idx => idx || Response.error());
+          }
           return Response.error();
         })
       )

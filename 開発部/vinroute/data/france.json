@@ -1,0 +1,1412 @@
+{
+  "id": "france",
+  "name": "フランス",
+  "nameEn": "France",
+  "currencySymbol": "💰",
+  "geo": {
+    "bbox": {
+      "minLon": -4.9,
+      "maxLon": 9.8,
+      "minLat": 41.2,
+      "maxLat": 51.2
+    },
+    "outlines": [
+      {
+        "name": "mainland",
+        "latlon": [
+          [
+            51.05,
+            2.55
+          ],
+          [
+            50.95,
+            1.85
+          ],
+          [
+            50.73,
+            1.6
+          ],
+          [
+            50.1,
+            1.55
+          ],
+          [
+            49.7,
+            0.2
+          ],
+          [
+            49.5,
+            0.1
+          ],
+          [
+            49.45,
+            -1.1
+          ],
+          [
+            49.72,
+            -1.94
+          ],
+          [
+            49.3,
+            -1.6
+          ],
+          [
+            48.85,
+            -1.55
+          ],
+          [
+            48.65,
+            -2.02
+          ],
+          [
+            48.85,
+            -3.55
+          ],
+          [
+            48.73,
+            -4.78
+          ],
+          [
+            48.33,
+            -4.78
+          ],
+          [
+            48.03,
+            -4.33
+          ],
+          [
+            47.8,
+            -4.37
+          ],
+          [
+            47.53,
+            -3.1
+          ],
+          [
+            47.28,
+            -2.55
+          ],
+          [
+            47.22,
+            -1.95
+          ],
+          [
+            46.5,
+            -1.78
+          ],
+          [
+            46.3,
+            -1.1
+          ],
+          [
+            45.95,
+            -1.25
+          ],
+          [
+            45.57,
+            -1.18
+          ],
+          [
+            45.13,
+            -1.25
+          ],
+          [
+            44.65,
+            -1.25
+          ],
+          [
+            43.68,
+            -1.45
+          ],
+          [
+            43.39,
+            -1.78
+          ],
+          [
+            42.8,
+            -1.4
+          ],
+          [
+            42.7,
+            0.65
+          ],
+          [
+            42.5,
+            1.45
+          ],
+          [
+            42.43,
+            2.65
+          ],
+          [
+            42.45,
+            3.17
+          ],
+          [
+            43.2,
+            3.0
+          ],
+          [
+            43.35,
+            3.7
+          ],
+          [
+            43.4,
+            4.85
+          ],
+          [
+            43.55,
+            5.35
+          ],
+          [
+            43.12,
+            5.95
+          ],
+          [
+            43.08,
+            6.65
+          ],
+          [
+            43.55,
+            7.13
+          ],
+          [
+            43.75,
+            7.53
+          ],
+          [
+            44.15,
+            7.0
+          ],
+          [
+            44.85,
+            6.95
+          ],
+          [
+            45.45,
+            6.8
+          ],
+          [
+            45.92,
+            7.04
+          ],
+          [
+            46.4,
+            6.1
+          ],
+          [
+            46.95,
+            6.8
+          ],
+          [
+            47.45,
+            7.55
+          ],
+          [
+            48.0,
+            7.58
+          ],
+          [
+            48.75,
+            8.1
+          ],
+          [
+            49.0,
+            8.23
+          ],
+          [
+            49.46,
+            8.2
+          ],
+          [
+            49.55,
+            6.35
+          ],
+          [
+            49.79,
+            5.9
+          ],
+          [
+            50.17,
+            5.83
+          ],
+          [
+            50.35,
+            4.2
+          ],
+          [
+            50.5,
+            4.05
+          ],
+          [
+            50.78,
+            3.15
+          ],
+          [
+            51.05,
+            2.55
+          ]
+        ]
+      },
+      {
+        "name": "corsica",
+        "latlon": [
+          [
+            43.0,
+            9.4
+          ],
+          [
+            42.7,
+            9.55
+          ],
+          [
+            42.35,
+            9.55
+          ],
+          [
+            41.92,
+            9.4
+          ],
+          [
+            41.55,
+            9.28
+          ],
+          [
+            41.37,
+            9.2
+          ],
+          [
+            41.58,
+            8.78
+          ],
+          [
+            42.0,
+            8.55
+          ],
+          [
+            42.35,
+            8.55
+          ],
+          [
+            42.65,
+            8.7
+          ],
+          [
+            43.0,
+            9.4
+          ]
+        ]
+      }
+    ],
+    "elevation": [
+      {
+        "name": "アルプス",
+        "lat": 45.3,
+        "lon": 6.6,
+        "radius": 3.2,
+        "strength": 1.0
+      },
+      {
+        "name": "ピレネー",
+        "lat": 42.8,
+        "lon": 1.0,
+        "radius": 2.8,
+        "strength": 0.9
+      },
+      {
+        "name": "ジュラ山脈",
+        "lat": 46.6,
+        "lon": 6.0,
+        "radius": 1.6,
+        "strength": 0.7
+      },
+      {
+        "name": "中央高地",
+        "lat": 45.0,
+        "lon": 3.2,
+        "radius": 2.4,
+        "strength": 0.6
+      }
+    ],
+    "rivers": [
+      {
+        "name": "セーヌ",
+        "latlon": [
+          [
+            46.2,
+            3.63
+          ],
+          [
+            47.2,
+            3.92
+          ],
+          [
+            48.0,
+            3.19
+          ],
+          [
+            48.8,
+            1.86
+          ],
+          [
+            49.4,
+            0.69
+          ],
+          [
+            49.8,
+            -0.49
+          ]
+        ]
+      },
+      {
+        "name": "ロワール河",
+        "latlon": [
+          [
+            45.2,
+            3.63
+          ],
+          [
+            46.0,
+            2.74
+          ],
+          [
+            46.8,
+            1.86
+          ],
+          [
+            47.2,
+            0.98
+          ],
+          [
+            47.2,
+            -0.49
+          ],
+          [
+            47.0,
+            -1.96
+          ]
+        ]
+      },
+      {
+        "name": "ローヌ河",
+        "latlon": [
+          [
+            45.4,
+            4.21
+          ],
+          [
+            44.6,
+            4.21
+          ],
+          [
+            43.8,
+            4.51
+          ],
+          [
+            43.0,
+            4.8
+          ],
+          [
+            42.4,
+            5.68
+          ],
+          [
+            42.2,
+            6.57
+          ]
+        ]
+      },
+      {
+        "name": "ガロンヌ",
+        "latlon": [
+          [
+            42.0,
+            0.98
+          ],
+          [
+            42.8,
+            -0.2
+          ],
+          [
+            43.6,
+            -1.08
+          ],
+          [
+            44.4,
+            -1.67
+          ],
+          [
+            45.0,
+            -2.55
+          ]
+        ]
+      }
+    ],
+    "seaLabels": [
+      {
+        "name": "大西洋",
+        "lat": 46.0,
+        "lon": -3.72,
+        "vertical": true
+      },
+      {
+        "name": "地中海",
+        "lat": 42.2,
+        "lon": 4.51,
+        "vertical": false
+      }
+    ]
+  },
+  "regions": {
+    "champ": {
+      "name": "シャンパーニュ",
+      "nameEn": "Champagne",
+      "group": "sparkle",
+      "type": "泡",
+      "value": 30,
+      "lat": 49.04,
+      "lon": 4.02,
+      "mark": "sparkle",
+      "lore": {
+        "grape": "シャルドネ / ピノ・ノワール / ムニエ",
+        "land": "白亜(チョーク)質の土壌。地下には迷宮のようなチョークのカーヴ(貯蔵庫)が広がる",
+        "taste": "瓶の中で二度目の発酵を起こして生まれる、きめ細かい泡と鋭い酸",
+        "pair": "揚げ物や寿司とも好相性の万能選手",
+        "line": "泡がきらきらしてる〜!🥂"
+      }
+    },
+    "alsace": {
+      "name": "アルザス",
+      "nameEn": "Alsace",
+      "group": "white",
+      "type": "白",
+      "value": 25,
+      "lat": 48.32,
+      "lon": 7.44,
+      "mark": "halftimber",
+      "lore": {
+        "grape": "リースリング / ゲヴュルツトラミネール",
+        "land": "ヴォージュ山脈が雨雲を遮る、フランス有数の乾燥地帯。ドイツ文化と交差する",
+        "taste": "ライチや花の香りが立つ辛口白。細長いフルート型のボトルが目印",
+        "pair": "シュークルート(酢キャベツと豚の煮込み)",
+        "line": "お花みたいな香りがする!"
+      }
+    },
+    "chablis": {
+      "name": "シャブリ",
+      "nameEn": "Chablis",
+      "group": "white",
+      "type": "白",
+      "value": 25,
+      "lat": 47.81,
+      "lon": 3.8,
+      "mark": "vines",
+      "lore": {
+        "grape": "シャルドネ",
+        "land": "キンメリジャン土壌=太古の海の牡蠣の化石を含む石灰質",
+        "taste": "鋼のようにシャープでミネラル感あふれる辛口白",
+        "pair": "生牡蠣との組み合わせは世界の定番",
+        "line": "牡蠣が食べたくなってきた…!"
+      }
+    },
+    "bourgogne": {
+      "name": "ブルゴーニュ",
+      "nameEn": "Bourgogne",
+      "group": "red",
+      "type": "赤",
+      "value": 35,
+      "lat": 47.32,
+      "lon": 5.04,
+      "mark": "abbey",
+      "lore": {
+        "grape": "ピノ・ノワール / シャルドネ",
+        "land": "畑を細かく区画する「クリマ」は世界遺産。区画が変わると味も変わる",
+        "taste": "単一品種で土地の違いを映す、繊細で複雑な味わい。世界最高値の赤もここから",
+        "pair": "牛肉の赤ワイン煮(ブフ・ブルギニョン)",
+        "line": "ここが憧れの黄金の丘…!"
+      }
+    },
+    "jura": {
+      "name": "ジュラ",
+      "nameEn": "Jura",
+      "group": "white",
+      "type": "白",
+      "value": 22,
+      "lat": 46.87,
+      "lon": 5.79,
+      "mark": "mountain",
+      "lore": {
+        "grape": "サヴァニャン",
+        "land": "スイス国境の山あいにある小さな産地",
+        "taste": "産膜酵母の膜の下で6年以上育てる「黄ワイン」が名物。ナッツのような香り",
+        "pair": "同郷のコンテチーズと運命の相性",
+        "line": "黄色いワインがあるんだって!"
+      }
+    },
+    "beaujo": {
+      "name": "ボジョレー",
+      "nameEn": "Beaujolais",
+      "group": "red",
+      "type": "赤",
+      "value": 20,
+      "lat": 46.0,
+      "lon": 4.72,
+      "mark": "vines",
+      "lore": {
+        "grape": "ガメイ",
+        "land": "花崗岩の丘陵地帯。11月第3木曜のヌーヴォー解禁日には世界中が乾杯",
+        "taste": "イチゴやバナナを思わせる、軽やかでフルーティーな赤",
+        "pair": "リヨン風ソーセージ",
+        "line": "解禁日はお祭りなんだよ〜!"
+      }
+    },
+    "savoie": {
+      "name": "サヴォワ",
+      "nameEn": "Savoie",
+      "group": "white",
+      "type": "白",
+      "altTypes": [
+        "泡"
+      ],
+      "value": 22,
+      "lat": 45.57,
+      "lon": 5.92,
+      "mark": "mountain",
+      "lore": {
+        "grape": "ジャケール など",
+        "land": "アルプスの麓。スキーリゾートに寄り添う高地の畑",
+        "taste": "山の空気のように軽快で澄んだ酸の白",
+        "pair": "チーズフォンデュ・ラクレット",
+        "line": "山の空気がおいしい!⛰"
+      }
+    },
+    "loire": {
+      "name": "ロワール",
+      "nameEn": "Loire",
+      "group": "white",
+      "type": "白",
+      "value": 20,
+      "lat": 47.39,
+      "lon": 0.69,
+      "mark": "chateau",
+      "lore": {
+        "grape": "シュナン・ブラン / カベルネ・フラン",
+        "land": "「フランスの庭」と呼ばれる古城の谷。フランス最長の川に畑が連なる",
+        "taste": "辛口・甘口・泡まで何でも揃う多彩さが武器",
+        "pair": "川魚のクリームソース、豚のリエット",
+        "line": "お城がいっぱいだ!🏰"
+      }
+    },
+    "sancerre": {
+      "name": "サンセール",
+      "nameEn": "Sancerre",
+      "group": "white",
+      "type": "白",
+      "value": 23,
+      "lat": 47.33,
+      "lon": 2.84,
+      "mark": "vines",
+      "lore": {
+        "grape": "ソーヴィニヨン・ブラン",
+        "land": "火打石(シレックス)の土壌。ロワール上流の丘の上の村",
+        "taste": "柑橘と煙のようなミネラルが香るキレのある白",
+        "pair": "山羊チーズ「クロタン・ド・シャヴィニョル」",
+        "line": "山羊チーズと合うんだって"
+      }
+    },
+    "muscadet": {
+      "name": "ミュスカデ",
+      "nameEn": "Muscadet",
+      "group": "white",
+      "type": "白",
+      "value": 20,
+      "lat": 47.985,
+      "lon": -1.51,
+      "mark": "vines",
+      "lore": {
+        "grape": "ムロン・ド・ブルゴーニュ",
+        "land": "大西洋岸の河口地帯。澱(おり)と共に寝かせるシュール・リー製法の本場",
+        "taste": "潮風を思わせる、すっきり軽快な辛口白",
+        "pair": "ムール貝の白ワイン蒸し・牡蠣",
+        "line": "海が近いんだね〜!🌊"
+      }
+    },
+    "rhone": {
+      "name": "ローヌ",
+      "nameEn": "Rhône",
+      "group": "red",
+      "type": "赤",
+      "value": 28,
+      "lat": 44.13,
+      "lon": 4.81,
+      "mark": "papalpalace",
+      "lore": {
+        "grape": "シラー / グルナッシュ",
+        "land": "ローマ時代からの銘醸地。北は断崖の段々畑、南は丸石ゴロゴロの畑(シャトーヌフ・デュ・パプ)",
+        "taste": "黒胡椒が香るスパイシーで力強い赤",
+        "pair": "ジビエや仔羊のグリル",
+        "line": "太陽の味がする!☀️"
+      }
+    },
+    "tavel": {
+      "name": "タヴェル",
+      "nameEn": "Tavel",
+      "group": "rose",
+      "type": "ロゼ",
+      "value": 24,
+      "lat": 44.01,
+      "lon": 4.7,
+      "mark": "lavender",
+      "lore": {
+        "grape": "グルナッシュ 主体",
+        "land": "ロゼしか造ることを許されないロゼ専用の村。ルイ14世も愛飲",
+        "taste": "色濃く辛口、食事に寄り添う「ロゼの王」",
+        "pair": "地中海料理ぜんぶ",
+        "line": "ロゼしか造らない村なんだ!"
+      }
+    },
+    "provence": {
+      "name": "プロヴァンス",
+      "nameEn": "Provence",
+      "group": "rose",
+      "type": "ロゼ",
+      "value": 26,
+      "lat": 43.53,
+      "lon": 5.45,
+      "mark": "lavender",
+      "lore": {
+        "grape": "グルナッシュ / サンソー",
+        "land": "2600年前ギリシャ人がぶどうを伝えた、フランス最古のワイン産地。ラベンダー畑と地中海",
+        "taste": "淡いサーモンピンクの辛口ロゼの聖地",
+        "pair": "ブイヤベース",
+        "line": "ラベンダーのいい香り…"
+      }
+    },
+    "languedoc": {
+      "name": "ラングドック",
+      "nameEn": "Languedoc",
+      "group": "red",
+      "type": "赤",
+      "value": 22,
+      "lat": 43.61,
+      "lon": 3.88,
+      "mark": "vines",
+      "lore": {
+        "grape": "カリニャン / グルナッシュ ほか多彩",
+        "land": "地中海岸に地平線まで続く、世界最大級の広さのぶどう畑",
+        "taste": "気軽でコスパ抜群の赤から、野心的な自然派まで玉石混交の面白さ",
+        "pair": "カスレ(白いんげんと肉の煮込み)",
+        "line": "畑が地平線まで続いてる!"
+      }
+    },
+    "banyuls": {
+      "name": "バニュルス",
+      "nameEn": "Banyuls",
+      "group": "red",
+      "type": "赤",
+      "value": 26,
+      "lat": 42.48,
+      "lon": 3.13,
+      "mark": "vines",
+      "lore": {
+        "grape": "グルナッシュ",
+        "land": "スペイン国境、海へ落ち込む急斜面の段々畑",
+        "taste": "発酵を蒸留酒で止めて甘みを残す酒精強化ワイン。チョコレートに合う希少な赤",
+        "pair": "ガトーショコラ",
+        "line": "チョコに合うワイン!?🍫"
+      }
+    },
+    "bordeaux": {
+      "name": "ボルドー",
+      "nameEn": "Bordeaux",
+      "group": "red",
+      "type": "赤",
+      "value": 35,
+      "lat": 44.84,
+      "lon": -0.58,
+      "mark": "winecity",
+      "lore": {
+        "grape": "カベルネ・ソーヴィニヨン / メルロ",
+        "land": "五大シャトーの故郷。1855年の格付けが今も生きる、ブレンドの美学の都",
+        "taste": "堂々とした渋み(タンニン)とカシスの風味。長期熟成で真価",
+        "pair": "仔羊のロースト",
+        "line": "シャトーってお城みたい!"
+      }
+    },
+    "cognac": {
+      "name": "コニャック",
+      "nameEn": "Cognac",
+      "group": "white",
+      "type": "白",
+      "value": 24,
+      "lat": 45.7,
+      "lon": -0.33,
+      "mark": "barrel",
+      "lore": {
+        "grape": "ユニ・ブラン",
+        "land": "白ワインを2回蒸留し、樽で長く育てるブランデーの王様「コニャック」の里",
+        "taste": "熟成年数でVS→VSOP→XOと格が上がる",
+        "pair": "食後にブルーチーズと",
+        "line": "ワインから生まれたお酒なんだね"
+      }
+    },
+    "cahors": {
+      "name": "カオール",
+      "nameEn": "Cahors",
+      "group": "red",
+      "type": "赤",
+      "value": 24,
+      "lat": 44.45,
+      "lon": 1.44,
+      "mark": "vines",
+      "lore": {
+        "grape": "マルベック(現地名オーセロワ)",
+        "land": "中世に「黒ワイン」と呼ばれ英国へ輸出された濃い赤の里。マルベックの故郷",
+        "taste": "濃密なタンニンとダークフルーツ。アルゼンチンより先輩",
+        "pair": "鴨のコンフィ",
+        "line": "黒いワイン…!?"
+      }
+    },
+    "madiran": {
+      "name": "マディラン",
+      "nameEn": "Madiran",
+      "group": "red",
+      "type": "赤",
+      "value": 23,
+      "lat": 43.55,
+      "lon": -0.05,
+      "mark": "vines",
+      "lore": {
+        "grape": "タナ",
+        "land": "世界一タンニンが豊富といわれる品種タナの本場。ポリフェノール量でも有名",
+        "taste": "若いうちは剛腕、熟成で丸くなる骨太の赤",
+        "pair": "ガスコーニュ地方の鴨料理",
+        "line": "タンニンの王様だ!"
+      }
+    },
+    "gaillac": {
+      "name": "ガイヤック",
+      "nameEn": "Gaillac",
+      "group": "white",
+      "type": "白",
+      "value": 21,
+      "lat": 43.9,
+      "lon": 1.9,
+      "mark": "vines",
+      "lore": {
+        "grape": "モーザック など土着品種",
+        "land": "ローマ時代以前に遡る、フランス最古級のワイン産地のひとつ",
+        "taste": "微発泡・辛口・甘口と型にはまらない多彩さ。土着品種の宝庫",
+        "pair": "田舎風パテ",
+        "line": "珍しいぶどうの宝箱だ〜"
+      }
+    }
+  },
+  "cities": {
+    "paris": {
+      "name": "パリ",
+      "lat": 48.85,
+      "lon": 2.35,
+      "mark": "eiffel",
+      "isStart": true,
+      "lore": {
+        "note": "花の都。世界中のワインがグラス一杯から楽しめるビストロの聖地。旅はここから始まる",
+        "line": "さあ、旅の始まりだ!"
+      }
+    },
+    "lyon": {
+      "name": "リヨン",
+      "lat": 45.76,
+      "lon": 4.84,
+      "mark": "city",
+      "lore": {
+        "note": "美食の都。「リヨンには3本の川が流れる=ローヌ、ソーヌ、そしてボジョレー」と言われる",
+        "line": "お腹すいてきた…"
+      }
+    },
+    "bourges": {
+      "name": "ブールジュ",
+      "lat": 47.08,
+      "lon": 2.4,
+      "mark": "city",
+      "lore": {
+        "note": "中世の面影を残す古都。世界遺産の大聖堂が旅人を見下ろす",
+        "line": "大聖堂、おっきい!"
+      }
+    },
+    "clermont": {
+      "name": "クレルモン",
+      "lat": 45.78,
+      "lon": 3.08,
+      "mark": "volcano",
+      "lore": {
+        "note": "火山地帯オーヴェルニュの中心。チーズの宝庫に囲まれた街",
+        "line": "火山のふもとの町だ!"
+      }
+    },
+    "toulouse": {
+      "name": "トゥールーズ",
+      "lat": 43.6,
+      "lon": 1.44,
+      "mark": "city",
+      "lore": {
+        "note": "バラ色のレンガが夕日に映える「バラ色の都」。カスレ文化圏の中心",
+        "line": "街がバラ色に光ってる!"
+      }
+    },
+    "marseille": {
+      "name": "マルセイユ",
+      "lat": 43.3,
+      "lon": 5.37,
+      "mark": "city",
+      "lore": {
+        "note": "フランス最古の港町。ブイヤベース発祥の地で、プロヴァンスロゼの街",
+        "line": "潮の香りがする!"
+      }
+    },
+    "nantes": {
+      "name": "ナント",
+      "lat": 47.22,
+      "lon": -1.55,
+      "mark": "city",
+      "lore": {
+        "note": "ロワール河口の港町。ミュスカデと海の幸の玄関口",
+        "line": "川が海になる場所だ!"
+      }
+    },
+    "strasbourg": {
+      "name": "ストラスブール",
+      "lat": 48.57,
+      "lon": 7.75,
+      "mark": "city",
+      "lore": {
+        "note": "木組みの家々とクリスマス市で名高い、アルザスワイン街道の起点",
+        "line": "絵本の中みたい!"
+      }
+    },
+    "dijon": {
+      "name": "ディジョン",
+      "lat": 47.32,
+      "lon": 5.04,
+      "mark": "city",
+      "lore": {
+        "note": "かつてのブルゴーニュ公国の都。マスタードの本場としても有名",
+        "line": "マスタード買っていこう"
+      }
+    },
+    "orleans": {
+      "name": "オルレアン",
+      "lat": 47.9,
+      "lon": 1.9,
+      "mark": "city",
+      "lore": {
+        "note": "ジャンヌ・ダルクが解放した街。ロワールの旅の入り口",
+        "line": "ジャンヌ・ダルクの街だ!"
+      }
+    }
+  },
+  "links": [
+    {
+      "a": "paris",
+      "b": "champ",
+      "steps": 5
+    },
+    {
+      "a": "paris",
+      "b": "orleans",
+      "steps": 3
+    },
+    {
+      "a": "orleans",
+      "b": "loire",
+      "steps": 3
+    },
+    {
+      "a": "champ",
+      "b": "alsace",
+      "steps": 6
+    },
+    {
+      "a": "champ",
+      "b": "chablis",
+      "steps": 6
+    },
+    {
+      "a": "loire",
+      "b": "chablis",
+      "steps": 7
+    },
+    {
+      "a": "chablis",
+      "b": "bourgogne",
+      "steps": 5
+    },
+    {
+      "a": "alsace",
+      "b": "jura",
+      "steps": 6
+    },
+    {
+      "a": "jura",
+      "b": "bourgogne",
+      "steps": 5
+    },
+    {
+      "a": "bourgogne",
+      "b": "beaujo",
+      "steps": 4
+    },
+    {
+      "a": "beaujo",
+      "b": "lyon",
+      "steps": 2
+    },
+    {
+      "a": "lyon",
+      "b": "rhone",
+      "steps": 5
+    },
+    {
+      "a": "rhone",
+      "b": "provence",
+      "steps": 5
+    },
+    {
+      "a": "rhone",
+      "b": "languedoc",
+      "steps": 6
+    },
+    {
+      "a": "languedoc",
+      "b": "bordeaux",
+      "steps": 8
+    },
+    {
+      "a": "loire",
+      "b": "cognac",
+      "steps": 6
+    },
+    {
+      "a": "cognac",
+      "b": "bordeaux",
+      "steps": 4
+    },
+    {
+      "a": "paris",
+      "b": "bourges",
+      "steps": 5
+    },
+    {
+      "a": "bourges",
+      "b": "chablis",
+      "steps": 4
+    },
+    {
+      "a": "bourges",
+      "b": "clermont",
+      "steps": 5
+    },
+    {
+      "a": "clermont",
+      "b": "lyon",
+      "steps": 5
+    },
+    {
+      "a": "clermont",
+      "b": "cognac",
+      "steps": 5
+    },
+    {
+      "a": "clermont",
+      "b": "languedoc",
+      "steps": 6
+    },
+    {
+      "a": "bordeaux",
+      "b": "toulouse",
+      "steps": 6
+    },
+    {
+      "a": "toulouse",
+      "b": "languedoc",
+      "steps": 5
+    },
+    {
+      "a": "loire",
+      "b": "bourges",
+      "steps": 4
+    },
+    {
+      "a": "loire",
+      "b": "muscadet",
+      "steps": 3
+    },
+    {
+      "a": "bourges",
+      "b": "sancerre",
+      "steps": 3
+    },
+    {
+      "a": "sancerre",
+      "b": "loire",
+      "steps": 4
+    },
+    {
+      "a": "rhone",
+      "b": "tavel",
+      "steps": 2
+    },
+    {
+      "a": "lyon",
+      "b": "savoie",
+      "steps": 4
+    },
+    {
+      "a": "savoie",
+      "b": "jura",
+      "steps": 4
+    },
+    {
+      "a": "alsace",
+      "b": "bourgogne",
+      "steps": 7
+    },
+    {
+      "a": "provence",
+      "b": "tavel",
+      "steps": 3
+    },
+    {
+      "a": "provence",
+      "b": "languedoc",
+      "steps": 6
+    },
+    {
+      "a": "muscadet",
+      "b": "cognac",
+      "steps": 6
+    },
+    {
+      "a": "savoie",
+      "b": "beaujo",
+      "steps": 5
+    },
+    {
+      "a": "tavel",
+      "b": "languedoc",
+      "steps": 5
+    },
+    {
+      "a": "sancerre",
+      "b": "clermont",
+      "steps": 5
+    },
+    {
+      "a": "toulouse",
+      "b": "cahors",
+      "steps": 4
+    },
+    {
+      "a": "cahors",
+      "b": "bordeaux",
+      "steps": 5
+    },
+    {
+      "a": "toulouse",
+      "b": "gaillac",
+      "steps": 3
+    },
+    {
+      "a": "gaillac",
+      "b": "cahors",
+      "steps": 3
+    },
+    {
+      "a": "toulouse",
+      "b": "madiran",
+      "steps": 5
+    },
+    {
+      "a": "madiran",
+      "b": "bordeaux",
+      "steps": 6
+    },
+    {
+      "a": "languedoc",
+      "b": "banyuls",
+      "steps": 5
+    },
+    {
+      "a": "banyuls",
+      "b": "toulouse",
+      "steps": 7
+    },
+    {
+      "a": "cahors",
+      "b": "clermont",
+      "steps": 6
+    },
+    {
+      "a": "marseille",
+      "b": "provence",
+      "steps": 3
+    },
+    {
+      "a": "marseille",
+      "b": "tavel",
+      "steps": 4
+    },
+    {
+      "a": "nantes",
+      "b": "muscadet",
+      "steps": 2
+    },
+    {
+      "a": "nantes",
+      "b": "loire",
+      "steps": 4
+    },
+    {
+      "a": "strasbourg",
+      "b": "alsace",
+      "steps": 2
+    },
+    {
+      "a": "strasbourg",
+      "b": "champ",
+      "steps": 6
+    },
+    {
+      "a": "dijon",
+      "b": "bourgogne",
+      "steps": 2
+    },
+    {
+      "a": "dijon",
+      "b": "chablis",
+      "steps": 4
+    },
+    {
+      "a": "dijon",
+      "b": "jura",
+      "steps": 4
+    }
+  ],
+  "sets": {
+    "geo": {
+      "北東": [
+        "champ",
+        "alsace"
+      ],
+      "ブルゴーニュ圏": [
+        "chablis",
+        "bourgogne",
+        "jura",
+        "beaujo",
+        "savoie"
+      ],
+      "ロワール圏": [
+        "loire",
+        "sancerre",
+        "muscadet"
+      ],
+      "南部": [
+        "rhone",
+        "tavel",
+        "provence",
+        "languedoc",
+        "banyuls"
+      ],
+      "南西": [
+        "bordeaux",
+        "cognac",
+        "cahors",
+        "madiran",
+        "gaillac"
+      ]
+    },
+    "typeLabels": [
+      "赤",
+      "白",
+      "泡",
+      "ロゼ"
+    ]
+  },
+  "quizFile": "quiz_france.json",
+  "art": {
+    "landmarks": {
+      "champ": "sp_champ.png",
+      "alsace": "sp_alsace.png",
+      "chablis": "sp_chablis.png",
+      "bourgogne": "sp_bourgogne.png",
+      "jura": "sp_jura.png",
+      "beaujo": "sp_beaujo.png",
+      "savoie": "sp_savoie.png",
+      "loire": "sp_loire.png",
+      "sancerre": "sp_sancerre.png",
+      "muscadet": "sp_muscadet.png",
+      "rhone": "sp_rhone.png",
+      "tavel": "sp_tavel.png",
+      "provence": "sp_provence.png",
+      "languedoc": "sp_languedoc.png",
+      "banyuls": "sp_banyuls.png",
+      "bordeaux": "sp_bordeaux.png",
+      "cognac": "sp_cognac.png",
+      "cahors": "sp_cahors.png",
+      "madiran": "sp_madiran.png",
+      "gaillac": "sp_gaillac.png",
+      "paris": "ct_paris.png",
+      "lyon": "ct_lyon.png",
+      "bourges": "ct_bourges.png",
+      "clermont": "ct_clermont.png",
+      "toulouse": "ct_toulouse.png",
+      "marseille": "ct_marseille.png",
+      "nantes": "ct_nantes.png",
+      "strasbourg": "ct_strasbourg.png",
+      "dijon": "ct_dijon.png",
+      "orleans": "ct_orleans.png"
+    },
+    "bigLandmarks": [
+      "paris"
+    ],
+    "trees": [
+      "tree.png"
+    ],
+    "mountainSprite": "mountain_snow.png",
+    "placed": [
+      {
+        "near": "paris",
+        "dx": -3.8,
+        "dy": 1.1,
+        "img": "house2",
+        "w": 2.5
+      },
+      {
+        "near": "paris",
+        "dx": -2.6,
+        "dy": 3.1,
+        "img": "house",
+        "w": 2.5
+      },
+      {
+        "near": "paris",
+        "dx": -3.8,
+        "dy": -1.1,
+        "img": "house",
+        "w": 2.3
+      },
+      {
+        "near": "paris",
+        "dx": -1.5,
+        "dy": 4.5,
+        "img": "flowers_white",
+        "w": 1.5
+      },
+      {
+        "near": "paris",
+        "dx": 1.5,
+        "dy": 4.5,
+        "img": "flowers_orange",
+        "w": 1.5
+      },
+      {
+        "near": "champ",
+        "dx": -3,
+        "dy": -2,
+        "img": "flowers_white",
+        "w": 1.6
+      },
+      {
+        "near": "champ",
+        "dx": 0,
+        "dy": -2.4,
+        "img": "flowers_white",
+        "w": 1.7
+      },
+      {
+        "near": "champ",
+        "dx": 3,
+        "dy": -2,
+        "img": "flowers_white",
+        "w": 1.6
+      },
+      {
+        "near": "champ",
+        "dx": -5.2,
+        "dy": -2.6,
+        "img": "tree",
+        "w": 2.8
+      },
+      {
+        "near": "champ",
+        "dx": 5.2,
+        "dy": -2.6,
+        "img": "tree",
+        "w": 2.8
+      },
+      {
+        "near": "champ",
+        "dx": -2.6,
+        "dy": -3.1,
+        "img": "house",
+        "w": 2.6
+      },
+      {
+        "near": "bourgogne",
+        "dx": -2.6,
+        "dy": -3.1,
+        "img": "house2",
+        "w": 2.6
+      },
+      {
+        "near": "bourgogne",
+        "dx": 1.5,
+        "dy": -1.5,
+        "img": "fence",
+        "w": 2.2
+      },
+      {
+        "near": "bordeaux",
+        "dx": -3.3,
+        "dy": 0.9,
+        "img": "flowers_orange",
+        "w": 1.5
+      },
+      {
+        "near": "bordeaux",
+        "dx": -3.5,
+        "dy": -0.7,
+        "img": "flowers_white",
+        "w": 1.5
+      },
+      {
+        "near": "lyon",
+        "dx": 2.9,
+        "dy": 3.4,
+        "img": "house",
+        "w": 2.6
+      },
+      {
+        "near": "lyon",
+        "dx": -2.9,
+        "dy": 3.4,
+        "img": "house2",
+        "w": 2.6
+      },
+      {
+        "near": "lyon",
+        "dx": 3.6,
+        "dy": 2.2,
+        "img": "flowers_orange",
+        "w": 1.4
+      }
+    ]
+  },
+  "flavor": {
+    "startCityLine": "パリから旅が始まる",
+    "criticName": "辛口評論家",
+    "endingMemo": "パリから始まった旅。ボルドー、ブルゴーニュ…",
+    "shareTag": "#VinRoute — フランス全土を巡るワイン収集の旅",
+    "journeyName": "フランスワインの旅"
+  }
+}
