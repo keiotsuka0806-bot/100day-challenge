@@ -84,6 +84,10 @@
     <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble" id="hkThemes"></p></div>
     <p class="hint" id="themesHint"></p>
     <div id="themeCards" class="cards"></div>
+    <label class="field">じぶんで考えたテーマでもOK
+      <input id="ownTheme" type="text" maxlength="40" placeholder="例: セミのぬけがらは、どこにいちばん多い？" autocomplete="off">
+    </label>
+    <button id="btnOwnTheme" class="btn-secondary">じぶんのテーマでいく</button>
     <button id="btnRetheme" class="btn-secondary">ちがう2つで作り直す</button>
   </section>
 
@@ -101,13 +105,16 @@
 
   <!-- ②問い -->
   <section id="screen-question" class="screen hidden">
-    <h2>「数えられる問い」に変えよう</h2>
-    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">「なんとなく調べる」より「数字で答えが出る問い」が研究のコツじゃ。下の型を借りてもいいぞ。</p></div>
+    <h2>きみの問いを立てよう</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble"><b>問いを決めるのは、きみじゃ。</b>わしは頼まれたときだけ口を出す。コツは1つだけ——「数字で答えが出る問い」にすることじゃよ。</p></div>
     <p class="picked" id="pickedTheme"></p>
-    <div class="chips" id="questionChips"></div>
-    <label class="field">きみの問い
+    <label class="field">きみの問い（じぶんの言葉で）
       <textarea id="questionInput" rows="2" maxlength="100" placeholder="例: テントウムシの羽は、何回折りたたまれている？"></textarea>
     </label>
+    <p class="hint">まよったら、型を借りてもいい👇</p>
+    <div class="chips" id="questionChips"></div>
+    <button id="btnPeekExample" class="btn-secondary">🧑‍🔬 はかせの例をちらっと見る</button>
+    <div id="exampleBox" class="ai-hints hidden"></div>
     <button id="btnAskAI" class="btn-secondary">🧑‍🔬 はかせに問いのヒントをもらう（答えはくれません）</button>
     <div id="aiQuestionHints" class="ai-hints hidden"></div>
     <button id="btnSaveQuestion" class="btn-primary big">この問いにする</button>

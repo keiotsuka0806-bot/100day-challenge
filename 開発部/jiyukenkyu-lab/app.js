@@ -268,7 +268,7 @@ function renderThemes() {
       state.theme = t;
       save();
       $('pickedTheme').textContent = '🔬 テーマ: ' + t.title;
-      if (t.toi_hint && !state.question && !$('questionInput').value.trim()) $('questionInput').value = t.toi_hint;
+      // 問いは自動で入れない(Kei FB 2026-07-12: AIの問いをなぞる体験になる)。例は「ちらっと見る」の中だけ
       show('sirabe'); // まず先行しらべへ
     });
     wrap.appendChild(card);
