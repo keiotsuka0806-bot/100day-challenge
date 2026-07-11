@@ -51,7 +51,7 @@
   <!-- ①好き×好き → テーマ -->
   <section id="screen-likes" class="screen hidden">
     <h2>① 好きなものを2つ教えて</h2>
-    <p class="hint">はなれているほど、世界に1つのテーマになるよ（例:「折り紙」×「虫」）</p>
+    <p class="hint">はなれているほど、世界に1つのテーマになるよ（例:「折り紙」×「虫」）。近い2つ（例:「漫画」×「アニメ」）でもOK——そのときは「くらべる研究」になる！</p>
     <label class="field">好きなもの その1
       <input id="like1" type="text" maxlength="20" placeholder="例: 折り紙" autocomplete="off">
     </label>
@@ -83,13 +83,7 @@
     <h2>② 「数えられる問い」に変える</h2>
     <p class="hint">「なんとなく調べる」より「数字で答えが出る問い」が研究のコツ。</p>
     <p class="picked" id="pickedTheme"></p>
-    <div class="chips" id="questionChips">
-      <button class="chip" data-tpl="◯◯は 何通り ある？">何通り？</button>
-      <button class="chip" data-tpl="◯◯は 何秒（何分）かかる？">何秒？</button>
-      <button class="chip" data-tpl="◯◯は 何個（何匹）いる？">何個？</button>
-      <button class="chip" data-tpl="◯◯と △△では どちらが どれくらい ちがう？">どっちが？</button>
-      <button class="chip" data-tpl="◯◯は 30日で どう変わる？">どう変わる？</button>
-    </div>
+    <div class="chips" id="questionChips"></div>
     <label class="field">きみの問い
       <textarea id="questionInput" rows="2" maxlength="100" placeholder="例: テントウムシの羽は、何回折りたたまれている？"></textarea>
     </label>
@@ -97,6 +91,34 @@
     <div id="aiQuestionHints" class="ai-hints hidden"></div>
     <button id="btnSaveQuestion" class="btn-primary big">この問いにする</button>
     <p id="questionStatus" class="status" role="status"></p>
+  </section>
+
+  <!-- ②b だから何？ゲート -->
+  <section id="screen-meaning" class="screen hidden">
+    <h2>②b その数字がわかったら、なにが言える？</h2>
+    <p class="hint">「数えるだけ」で終わらせない、いちばん大事な質問。1つ選んでね。</p>
+    <p class="picked" id="meaningQuestion"></p>
+    <div class="cards" id="meaningCards">
+      <button class="card meaning" data-meaning="ひみつ・謎がとける">
+        <span class="card-emoji">🔍</span><b>ひみつ・謎がとける</b>
+        <span>例: 人気マンガの秘密、テントウムシの羽のしくみ</span>
+      </button>
+      <button class="card meaning" data-meaning="どっちがいいか決められる">
+        <span class="card-emoji">⚖️</span><b>どっちがいいか決められる</b>
+        <span>例: どの保冷剤がいちばん長持ちか</span>
+      </button>
+      <button class="card meaning" data-meaning="みんなの思いこみをたしかめられる">
+        <span class="card-emoji">💭</span><b>みんなの思いこみをたしかめられる</b>
+        <span>例:「アニメは原作どおり」って本当？</span>
+      </button>
+      <button class="card meaning" data-meaning="変化・成長が見える">
+        <span class="card-emoji">📈</span><b>変化・成長が見える</b>
+        <span>例: 1巻と最終巻でキャラはどう変わった？</span>
+      </button>
+    </div>
+    <button id="btnKurabe" class="btn-secondary">🤖 どれも選べない…「くらべる相手」のヒントをもらう</button>
+    <div id="kurabeHints" class="ai-hints hidden"></div>
+    <button id="btnBackQuestion" class="btn-secondary">← 問いを直す</button>
   </section>
 
   <!-- ③はかり方カタログ -->

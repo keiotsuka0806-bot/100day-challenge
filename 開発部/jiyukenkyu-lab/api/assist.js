@@ -43,8 +43,29 @@ function mockThemes(a, b) {
 function mockHints() {
   return { hints: [
     'その問いは「数字」で答えられる？（何個・何秒・何通り）',
-    '1つだけ条件を変えて比べられる形にできる？',
+    '「くらべる相手」はいる？（差があってはじめて意味が出るよ）',
     '30日間つづけて見たら変化がわかる形にできる？',
+  ]};
+}
+
+function mockKurabe() {
+  return { hints: [
+    '人気の作品 vs そうでない作品（人気の秘密をさがす）',
+    '1巻（最初） vs 最終巻（最新）（変化・成長を見る）',
+    '原作 vs アニメ版（思いこみをたしかめる）',
+    'きのう vs 今日（時間でくらべる）',
+    '日なた vs 日かげ（場所・条件でくらべる）',
+  ]};
+}
+
+const MEDIA_WORDS = ['漫画', 'マンガ', 'まんが', 'アニメ', 'ゲーム', '映画', 'ドラマ', '動画', 'youtube', '音楽', '曲', 'アイドル', '小説', '絵本', 'キャラ', '推し'];
+function isMedia(s) { const t = String(s || '').toLowerCase(); return MEDIA_WORDS.some(w => t.includes(w.toLowerCase())); }
+
+function mockThemesMedia(a, b) {
+  return { themes: [
+    { title: `${a}×${b}: 同じ作品の${a}版と${b}版をくらべる`, naze: `同じ話なのに違いがある＝作った人の工夫が数字で見えるから`, toi_hint: `同じシーンは、${a}では何コマ（何ページ）？ ${b}では何秒？` },
+    { title: `${a}×${b}: 人気作品のかくれたルールをさがす`, naze: `「人気の秘密」が数字で見つかったら大発見だから`, toi_hint: `人気の作品とそうでない作品で、◯◯の回数はちがう？` },
+    { title: `${a}×${b}: みんなの「思いこみ」を数字でたしかめる`, naze: `みんなが信じていることを、実際に数えた人はほとんどいないから`, toi_hint: `「${b}は原作どおり」って本当？ セリフはどれくらい変わってる？` },
   ]};
 }
 
@@ -87,16 +108,21 @@ module.exports = async (req, res) => {
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (_) { body = {}; } }
   body = body || {};
-  const mode = body.mode === 'toi' ? 'toi' : 'themes';
+  const mode = ['toi', 'kurabe'].includes(body.mode) ? body.mode : 'themes';
   const grade = clamp(body.grade, 10) || '小3〜4';
   const a = clamp((body.likes || [])[0], 20) || '好きなもの';
   const b = clamp((body.likes || [])[1], 20) || '身近なもの';
   const theme = clamp(body.theme, 80);
   const question = clamp(body.question, 120);
 
+  const mockData = () =>
+    mode === 'toi' ? mockHints()
+    : mode === 'kurabe' ? mockKurabe()
+    : (isMedia(a) && isMedia(b)) ? mockThemesMedia(a, b) : mockThemes(a, b);
+
   const key = process.env.OPENAI_API_KEY;
   if (!key) {
-    return res.end(JSON.stringify({ ok: true, mock: true, reason: 'no_key', data: mode === 'toi' ? mockHints() : mockThemes(a, b) }));
+    return res.end(JSON.stringify({ ok: true, mock: true, reason: 'no_key', data: mockData() }));
   }
 
   try {
@@ -104,21 +130,28 @@ module.exports = async (req, res) => {
     if (mode === 'themes') {
       data = await callOpenAI(key, [
         { role: 'system', content: COMMON_RULES },
-        { role: 'user', content: `学年: ${grade}。好きなもの2つ:「${a}」「${b}」。この2つの掛け算(交点)から生まれる自由研究テーマを3つ。それぞれ、家や近所で30日以内にでき、数える/測る/比べる/毎日記録するのどれかで検証できること。JSON: {"themes":[{"title":"テーマ名(「${a}×${b}:」で始める)","naze":"なぜ面白いか1文","toi_hint":"数えられる問いの例1文"}]}` },
+        { role: 'user', content: `学年: ${grade}。好きなもの2つ:「${a}」「${b}」。この2つの掛け算(交点)から生まれる自由研究テーマを3つ。それぞれ、家や近所で30日以内にでき、数える/測る/比べる/毎日記録するのどれかで検証できること。大事: 意味のある研究=「くらべる相手」がいて「数字の差が何かを教えてくれる」もの。2つが漫画・アニメ・ゲーム等の"観る系"で近い場合は、内容分析型(「同じ作品のA版とB版をくらべる」「人気作とそうでない作品をくらべる」「思いこみを数字でたしかめる」)を優先する。JSON: {"themes":[{"title":"テーマ名(「${a}×${b}:」で始める)","naze":"なぜ面白いか1文","toi_hint":"くらべる相手が入った数えられる問いの例1文"}]}` },
       ]);
       if (!Array.isArray(data.themes) || !data.themes.length) throw new Error('bad shape');
       data.themes = data.themes.slice(0, 3).map(t => ({ title: clamp(t.title, 60), naze: clamp(t.naze, 80), toi_hint: clamp(t.toi_hint, 80) }));
-    } else {
+    } else if (mode === 'toi') {
       data = await callOpenAI(key, [
         { role: 'system', content: COMMON_RULES },
         { role: 'user', content: `学年: ${grade}。テーマ:「${theme}」。子どもが今考えている問い:「${question}」。この問いを「数字で答えが出る検証可能な問い」に磨くための問いかけを3〜4個。答えや改善後の問いそのものは書かず、子ども自身が気づける質問の形にする。JSON: {"hints":["問いかけ1", ...]}` },
       ]);
       if (!Array.isArray(data.hints) || !data.hints.length) throw new Error('bad shape');
       data.hints = data.hints.slice(0, 4).map(h => clamp(h, 90));
+    } else {
+      data = await callOpenAI(key, [
+        { role: 'system', content: COMMON_RULES },
+        { role: 'user', content: `学年: ${grade}。テーマ:「${theme}」。問い:「${question}」。この問いに意味を与える「くらべる相手」の候補を4〜5個。形式は「A vs B（何がわかるか）」。数字の差が謎の解明・思いこみの検証・変化の発見につながる組み合わせにする。結論や答えは書かない。JSON: {"hints":["A vs B（…がわかる）", ...]}` },
+      ]);
+      if (!Array.isArray(data.hints) || !data.hints.length) throw new Error('bad shape');
+      data.hints = data.hints.slice(0, 5).map(h => clamp(h, 90));
     }
     return res.end(JSON.stringify({ ok: true, mock: false, data }));
   } catch (e) {
     // AI障害時: 「未接続」と嘘をつかず reason:'ai_error' で縮退(絶対ルール1)
-    return res.end(JSON.stringify({ ok: true, mock: true, reason: 'ai_error', data: mode === 'toi' ? mockHints() : mockThemes(a, b) }));
+    return res.end(JSON.stringify({ ok: true, mock: true, reason: 'ai_error', data: mockData() }));
   }
 };

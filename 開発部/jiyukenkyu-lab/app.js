@@ -24,7 +24,7 @@ function freshState() {
     step: 'home',
     likes: ['', ''], grade: '小3〜4',
     themes: [], theme: null,
-    question: '', method: '',
+    question: '', meaning: '', method: '',
     hypothesis: { think: '', because: '' },
     records: [], nextQuestion: '',
     createdAt: null,
@@ -42,8 +42,15 @@ function save() {
 }
 
 /* ---------- 画面遷移 ---------- */
-const SCREENS = ['home', 'likes', 'themes', 'question', 'method', 'hypothesis', 'lab', 'summary'];
+const SCREENS = ['home', 'likes', 'themes', 'question', 'meaning', 'method', 'hypothesis', 'lab', 'summary'];
 const NAV_MAP = { theme: 'likes', question: 'question', method: 'method', hypothesis: 'hypothesis', lab: 'lab', summary: 'summary' };
+
+/* 観る系(メディア)の好きの検知 */
+const MEDIA_WORDS = ['漫画', 'マンガ', 'まんが', 'アニメ', 'ゲーム', '映画', 'ドラマ', '動画', 'youtube', 'ユーチューブ', '音楽', '曲', 'アイドル', '小説', '絵本', 'キャラ', '推し'];
+function isMedia(s) { const t = String(s || '').toLowerCase(); return MEDIA_WORDS.some(w => t.includes(w.toLowerCase())); }
+function isMediaResearch() {
+  return isMedia(state.likes[0]) || isMedia(state.likes[1]) || isMedia(state.theme && state.theme.title);
+}
 
 function show(screen) {
   SCREENS.forEach(s => $('screen-' + s).classList.toggle('hidden', s !== screen));
@@ -52,8 +59,11 @@ function show(screen) {
   $('stepNav').classList.toggle('hidden', screen === 'home');
   document.querySelectorAll('#stepNav button').forEach(b => {
     b.classList.toggle('active', NAV_MAP[b.dataset.step] === screen ||
-      (b.dataset.step === 'theme' && (screen === 'likes' || screen === 'themes')));
+      (b.dataset.step === 'theme' && (screen === 'likes' || screen === 'themes')) ||
+      (b.dataset.step === 'question' && screen === 'meaning'));
   });
+  if (screen === 'question') renderChips();
+  if (screen === 'meaning') $('meaningQuestion').textContent = '❓ ' + (state.question || '');
   if (screen === 'lab') renderRecords();
   if (screen === 'summary') renderPoster();
   window.scrollTo(0, 0);
@@ -98,6 +108,14 @@ function mockNotice(reason) {
 function localMock(mode, p) {
   if (mode === 'themes') {
     const [a, b] = p.likes;
+    // 近すぎ検知: 2つとも観る系 → 「同じ作品のA版とB版をくらべる」内容分析型に切り替え
+    if (isMedia(a) && isMedia(b)) {
+      return { themes: [
+        { title: `${a}×${b}: 同じ作品の${a}版と${b}版をくらべる`, naze: `同じ話なのに違いがある＝作った人の工夫が数字で見えるから`, toi_hint: `同じシーンは、${a}では何コマ（何ページ）？ ${b}では何秒？` },
+        { title: `${a}×${b}: 人気作品のかくれたルールをさがす`, naze: `「人気の秘密」が数字で見つかったら大発見だから`, toi_hint: `人気の作品とそうでない作品で、◯◯の回数はちがう？` },
+        { title: `${a}×${b}: みんなの「思いこみ」を数字でたしかめる`, naze: `みんなが信じていることを、実際に数えた人はほとんどいないから`, toi_hint: `「${b}は原作どおり」って本当？ セリフはどれくらい変わってる？` },
+      ]};
+    }
     return { themes: [
       { title: `${a}×${b}: ${b}の中の「${a}のしくみ」をさがす`, naze: `だれも${a}と${b}を同時に調べた人はいないから`, toi_hint: `${b}のどこに${a}と同じ形がある？` },
       { title: `${a}×${b}: ${a}で${b}を再現してみる`, naze: `作ってみると「本物のすごさ」が数字でわかるから`, toi_hint: `${a}で${b}を作ると、本物と何がちがう？` },
@@ -107,11 +125,49 @@ function localMock(mode, p) {
   if (mode === 'toi') {
     return { hints: [
       'その問いは「数字」で答えられる？（何個・何秒・何通り）',
-      '1つだけ条件を変えて比べられる形にできる？',
+      '「くらべる相手」はいる？（差があってはじめて意味が出るよ）',
       '30日間つづけて見たら変化がわかる形にできる？',
     ]};
   }
+  if (mode === 'kurabe') {
+    return { hints: [
+      '人気の作品 vs そうでない作品（人気の秘密をさがす）',
+      '1巻（最初） vs 最終巻（最新）（変化・成長を見る）',
+      '原作 vs アニメ版（思いこみをたしかめる）',
+      'きのう vs 今日（時間でくらべる）',
+      '日なた vs 日かげ（場所・条件でくらべる）',
+    ]};
+  }
   return {};
+}
+
+/* ---------- 問いチップ(観る系/観察系で出し分け) ---------- */
+const CHIPS_BASE = [
+  ['どっちが？', '◯◯と △△では どちらが どれくらい ちがう？'],
+  ['どう変わる？', '◯◯は 30日で どう変わる？'],
+  ['何通り？', '◯◯は 何通り ある？'],
+  ['何秒？', '◯◯は 何秒（何分）かかる？'],
+  ['何個？', '◯◯は 何個（何匹）いる？'],
+];
+const CHIPS_MEDIA = [
+  ['同じシーンは？', '同じシーンは、漫画では何コマ？ アニメでは何秒？'],
+  ['人気作vs他', '人気の◯◯と そうでない◯◯で、△△の回数はちがう？'],
+  ['最初vs最後', '1巻と最終巻で、◯◯は どう変わった？'],
+  ['原作どおり？', '原作とアニメで、◯◯は どれくらい変わってる？'],
+  ['1話に何回？', '◯◯は 1話に何回（何種類）出てくる？'],
+];
+
+function renderChips() {
+  const wrap = $('questionChips');
+  wrap.innerHTML = '';
+  const set = isMediaResearch() ? CHIPS_MEDIA : CHIPS_BASE;
+  set.forEach(([label, tpl]) => {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = label;
+    c.addEventListener('click', () => { $('questionInput').value = tpl; $('questionInput').focus(); });
+    wrap.appendChild(c);
+  });
 }
 
 /* ---------- ①好き×好き→テーマ ---------- */
@@ -180,7 +236,33 @@ function saveQuestion() {
   if (!q) { toast('問いを書いてね（チップを押すと型が入るよ）'); return; }
   state.question = q;
   save();
+  show('meaning'); // だから何？ゲートへ
+}
+
+/* ---------- ②b だから何？ゲート ---------- */
+function pickMeaning(m) {
+  state.meaning = m;
+  save();
   show('method');
+}
+
+async function askKurabeHints() {
+  const btn = $('btnKurabe');
+  btn.disabled = true;
+  const res = await callAssist('kurabe', { theme: state.theme ? state.theme.title : '', question: state.question, grade: state.grade });
+  btn.disabled = false;
+  const box = $('kurabeHints');
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  const head = document.createElement('p');
+  head.textContent = '🤖 「くらべる相手」の候補（選ぶのはきみ） ' + (res.mock ? mockNotice(res.reason) : '');
+  box.appendChild(head);
+  const ul = document.createElement('ul');
+  ((res.data && res.data.hints) || []).slice(0, 5).forEach(h => { const li = document.createElement('li'); li.textContent = h; ul.appendChild(li); });
+  box.appendChild(ul);
+  const tail = document.createElement('p');
+  tail.textContent = '👆 くらべる相手が決まったら「← 問いを直す」で問いに入れてみよう';
+  box.appendChild(tail);
 }
 
 /* ---------- ③はかり方 / ④仮説 ---------- */
@@ -275,7 +357,7 @@ function renderPoster() {
   const el = $('poster');
   el.innerHTML = '';
   const blocks = [
-    ['🎯 目的（しらべたいこと）', state.question || '（②で問いを書こう）'],
+    ['🎯 目的（しらべたいこと）', (state.question || '（②で問いを書こう）') + (state.meaning ? `\n→ わかること: ${state.meaning}` : '')],
     ['🔮 よそう（仮説）', state.hypothesis.think ? `${state.hypothesis.think}\nなぜなら… ${state.hypothesis.because}` : '（④で書こう）'],
     ['🧰 方法（はかり方）', state.method ? `「${state.method}」ではかった` : '（③で選ぼう）'],
     ['📊 結果（きろくから）', !state.records.length ? '（⑤できろくしよう）'
@@ -315,11 +397,14 @@ function init() {
   // ①
   $('btnThemes').addEventListener('click', makeThemes);
   $('btnRetheme').addEventListener('click', () => show('likes'));
-  // ②
-  document.querySelectorAll('#questionChips .chip').forEach(c =>
-    c.addEventListener('click', () => { $('questionInput').value = c.dataset.tpl; $('questionInput').focus(); }));
+  // ②(チップはrenderChipsで動的生成)
   $('btnAskAI').addEventListener('click', askQuestionHints);
   $('btnSaveQuestion').addEventListener('click', saveQuestion);
+  // ②b
+  document.querySelectorAll('#meaningCards .meaning').forEach(c =>
+    c.addEventListener('click', () => pickMeaning(c.dataset.meaning)));
+  $('btnKurabe').addEventListener('click', askKurabeHints);
+  $('btnBackQuestion').addEventListener('click', () => show('question'));
   // ③
   document.querySelectorAll('#methodCards .method').forEach(c =>
     c.addEventListener('click', () => pickMethod(c.dataset.method)));
