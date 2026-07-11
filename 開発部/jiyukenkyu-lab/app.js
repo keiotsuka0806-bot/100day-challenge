@@ -78,7 +78,13 @@ function show(screen) {
   if (screen === 'sirabe') $('sirabeTheme').textContent = '🔬 テーマ: ' + (state.theme ? state.theme.title : '');
   if (screen === 'likes') renderLikeChips();
   if (screen === 'themes') { hakaseThemes(); renderThemes(); }
-  if (screen === 'question') { renderChips(); $('pickedTheme').textContent = state.theme ? '🔬 テーマ: ' + state.theme.title : ''; }
+  if (screen === 'question') {
+    renderChips();
+    $('pickedTheme').textContent = state.theme ? '🔬 テーマ: ' + state.theme.title : '';
+    // はかせの例はテーマごとに作り直す(古いテーマの例が残らないように)
+    $('exampleBox').classList.add('hidden');
+    $('exampleBox').innerHTML = '';
+  }
   if (screen === 'meaning') $('meaningQuestion').textContent = '❓ ' + (state.question || '');
   if (screen === 'lab') renderRecords();
   if (screen === 'summary') renderPoster();
@@ -454,7 +460,7 @@ function renderPoster() {
 /* ---------- 起動 ---------- */
 function clearInputs() {
   // stateリセット時にDOMの残留テキストも消す(QA 2026-07-11 #2: 旧研究の混入防止)
-  ['like1', 'like2', 'sirabeNote', 'questionInput', 'hypoThink', 'hypoBecause', 'recMemo', 'nextQuestion'].forEach(id => { $(id).value = ''; });
+  ['like1', 'like2', 'ownTheme', 'sirabeNote', 'questionInput', 'hypoThink', 'hypoBecause', 'recMemo', 'nextQuestion'].forEach(id => { $(id).value = ''; });
   $('aiQuestionHints').classList.add('hidden');
   $('kurabeHints').classList.add('hidden');
   $('recPreview').classList.add('hidden');
@@ -498,7 +504,38 @@ function init() {
     toast('しらべて分かるのも大事な一歩！ちがうテーマにしよう');
     show('themes');
   });
+  // テーマは自分で書いてもいい(Kei FB 2026-07-12)
+  $('btnOwnTheme').addEventListener('click', () => {
+    const t = $('ownTheme').value.trim();
+    if (!t) { toast('テーマを書いてね'); return; }
+    state.theme = { title: t, naze: 'じぶんで考えた', toi_hint: '' };
+    if (!save()) return;
+    $('pickedTheme').textContent = '🔬 テーマ: ' + t;
+    show('sirabe');
+  });
   // ②(チップはrenderChipsで動的生成)
+  $('btnPeekExample').addEventListener('click', () => {
+    const box = $('exampleBox');
+    box.classList.toggle('hidden');
+    if (box.classList.contains('hidden') || box.childElementCount) return;
+    const hint = state.theme && state.theme.toi_hint;
+    const head = document.createElement('p');
+    head.textContent = hint ? '🧑‍🔬 わしならこう問うかのう…（使うかどうかは、きみが決める）' : '🧑‍🔬 このテーマはきみが考えたものじゃから、例はないぞ。上の型を借りてみるのじゃ。';
+    box.appendChild(head);
+    if (hint) {
+      const p = document.createElement('p');
+      p.textContent = '❓ ' + hint;
+      const use = document.createElement('button');
+      use.className = 'chip';
+      use.textContent = 'この問いをつかう';
+      use.addEventListener('click', () => {
+        if ($('questionInput').value.trim() && !confirm('いま書いてある問いを、はかせの例に置きかえる？')) return;
+        $('questionInput').value = hint;
+        $('questionInput').focus();
+      });
+      box.append(p, use);
+    }
+  });
   $('btnAskAI').addEventListener('click', askQuestionHints);
   $('btnSaveQuestion').addEventListener('click', saveQuestion);
   // ②b
