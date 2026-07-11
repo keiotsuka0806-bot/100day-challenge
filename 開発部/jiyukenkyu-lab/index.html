@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>自由研究ラボ — 好き×好きで世界に1つのテーマ</title>
+<meta name="description" content="子どもの「好き」の掛け算から自由研究テーマを作り、問い・仮説・観察・まとめまで30日伴走する研究ノート。AIは答えを書きません。">
+<meta name="theme-color" content="#00897B">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>🔬 自由研究ラボ</h1>
+  <p class="ai-badge" title="考える部分は子ども自身。AIは問いと選択肢を出すだけです">🤖 AIは答えを書きません</p>
+</header>
+
+<nav id="stepNav" class="step-nav hidden">
+  <button data-step="theme">①テーマ</button>
+  <button data-step="question">②問い</button>
+  <button data-step="method">③はかり方</button>
+  <button data-step="hypothesis">④よそう</button>
+  <button data-step="lab">⑤きろく</button>
+  <button data-step="summary">⑥まとめ</button>
+</nav>
+
+<main id="main">
+
+  <!-- ホーム -->
+  <section id="screen-home" class="screen">
+    <div class="hero">
+      <p class="hero-emoji">🧪✨</p>
+      <h2>「好き」×「好き」で、<br>世界に1つの自由研究をつくろう</h2>
+      <p class="hero-sub">テーマ決め → 問い → 観察きろく → まとめまで、夏の30日をこのノートが伴走します。きろくはこの端末の中だけに保存されます。</p>
+      <button id="btnStart" class="btn-primary big">はじめる</button>
+      <button id="btnContinue" class="btn-secondary big hidden">つづきから（<span id="continueLabel"></span>）</button>
+    </div>
+    <div class="katas">
+      <h3>世界一の自由研究の「4つの型」</h3>
+      <ol>
+        <li><b>好き×好きの掛け算</b>でテーマを作る</li>
+        <li>好きを<b>「数えられる問い」</b>に変える</li>
+        <li>はかり方は発明せず<b>カタログから借りる</b></li>
+        <li><b>「次に知りたいこと」</b>で終わる</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ①好き×好き → テーマ -->
+  <section id="screen-likes" class="screen hidden">
+    <h2>① 好きなものを2つ教えて</h2>
+    <p class="hint">はなれているほど、世界に1つのテーマになるよ（例:「折り紙」×「虫」）</p>
+    <label class="field">好きなもの その1
+      <input id="like1" type="text" maxlength="20" placeholder="例: 折り紙" autocomplete="off">
+    </label>
+    <label class="field">好きなもの その2
+      <input id="like2" type="text" maxlength="20" placeholder="例: 虫" autocomplete="off">
+    </label>
+    <label class="field">がくねん
+      <select id="grade">
+        <option value="小1〜2">小1〜2</option>
+        <option value="小3〜4" selected>小3〜4</option>
+        <option value="小5〜6">小5〜6</option>
+        <option value="中学生">中学生</option>
+      </select>
+    </label>
+    <button id="btnThemes" class="btn-primary big">掛け算してテーマを作る</button>
+    <p id="likesStatus" class="status" role="status"></p>
+  </section>
+
+  <!-- テーマ3案 -->
+  <section id="screen-themes" class="screen hidden">
+    <h2>きみだけのテーマ候補</h2>
+    <p class="hint" id="themesHint"></p>
+    <div id="themeCards" class="cards"></div>
+    <button id="btnRetheme" class="btn-secondary">ちがう2つで作り直す</button>
+  </section>
+
+  <!-- ②問い -->
+  <section id="screen-question" class="screen hidden">
+    <h2>② 「数えられる問い」に変える</h2>
+    <p class="hint">「なんとなく調べる」より「数字で答えが出る問い」が研究のコツ。</p>
+    <p class="picked" id="pickedTheme"></p>
+    <div class="chips" id="questionChips">
+      <button class="chip" data-tpl="◯◯は 何通り ある？">何通り？</button>
+      <button class="chip" data-tpl="◯◯は 何秒（何分）かかる？">何秒？</button>
+      <button class="chip" data-tpl="◯◯は 何個（何匹）いる？">何個？</button>
+      <button class="chip" data-tpl="◯◯と △△では どちらが どれくらい ちがう？">どっちが？</button>
+      <button class="chip" data-tpl="◯◯は 30日で どう変わる？">どう変わる？</button>
+    </div>
+    <label class="field">きみの問い
+      <textarea id="questionInput" rows="2" maxlength="100" placeholder="例: テントウムシの羽は、何回折りたたまれている？"></textarea>
+    </label>
+    <button id="btnAskAI" class="btn-secondary">🤖 AIに問いのヒントをもらう（答えはくれません）</button>
+    <div id="aiQuestionHints" class="ai-hints hidden"></div>
+    <button id="btnSaveQuestion" class="btn-primary big">この問いにする</button>
+    <p id="questionStatus" class="status" role="status"></p>
+  </section>
+
+  <!-- ③はかり方カタログ -->
+  <section id="screen-method" class="screen hidden">
+    <h2>③ はかり方をカタログから借りる</h2>
+    <p class="hint">世界一の研究も、はかり方は「発明」せず既にある方法を借りたんだ。</p>
+    <div class="cards" id="methodCards">
+      <button class="card method" data-method="数える">
+        <span class="card-emoji">🔢</span><b>数える</b>
+        <span>個数・回数・種類を数える（例: 折り方は何通り？）</span>
+      </button>
+      <button class="card method" data-method="測る">
+        <span class="card-emoji">📏</span><b>測る</b>
+        <span>長さ・重さ・時間・温度をはかる（例: 何秒で氷がとける？）</span>
+      </button>
+      <button class="card method" data-method="比べる">
+        <span class="card-emoji">⚖️</span><b>比べる</b>
+        <span>条件を1つだけ変えて比べる（例: 日なたと日かげ）</span>
+      </button>
+      <button class="card method" data-method="毎日記録する">
+        <span class="card-emoji">📅</span><b>毎日記録する</b>
+        <span>同じ時間・同じ場所で毎日みる（例: アサガオの成長）</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ④仮説 -->
+  <section id="screen-hypothesis" class="screen hidden">
+    <h2>④ よそう（仮説）を立てる</h2>
+    <p class="hint">当たっても外れても研究は成功。外れたときのほうが発見は大きいよ。</p>
+    <label class="field">こうなると思う！
+      <textarea id="hypoThink" rows="2" maxlength="120" placeholder="例: 5回くらい折りたたまれていると思う"></textarea>
+    </label>
+    <label class="field">なぜなら…
+      <textarea id="hypoBecause" rows="2" maxlength="120" placeholder="例: 羽は大きいのに、しまうと小さく見えるから"></textarea>
+    </label>
+    <button id="btnSaveHypo" class="btn-primary big">よそう完成！観察スタート</button>
+  </section>
+
+  <!-- ⑤観察ラボ -->
+  <section id="screen-lab" class="screen hidden">
+    <h2>⑤ 観察きろく</h2>
+    <p class="picked" id="labQuestion"></p>
+    <div class="record-form">
+      <label class="photo-btn">📷 写真をつける（なくてもOK）
+        <input id="recPhoto" type="file" accept="image/*" capture="environment" hidden>
+      </label>
+      <img id="recPreview" class="hidden" alt="観察写真プレビュー">
+      <label class="field">今日わかったこと・気づいたこと（1行でOK）
+        <textarea id="recMemo" rows="2" maxlength="200" placeholder="例: 羽をひろげた瞬間の写真がとれた！折り目は2本見えた"></textarea>
+      </label>
+      <button id="btnAddRecord" class="btn-primary big">きろくする</button>
+      <p id="recStatus" class="status" role="status"></p>
+    </div>
+    <h3 id="recCount"></h3>
+    <div id="recordList" class="records"></div>
+    <button id="btnToSummary" class="btn-secondary big">まとめに進む →</button>
+  </section>
+
+  <!-- ⑥まとめ -->
+  <section id="screen-summary" class="screen hidden">
+    <h2>⑥ 模造紙のまとめレイアウト</h2>
+    <p class="hint">文章はきみの言葉で。ここでは「ならべ方」だけ用意するよ。</p>
+    <label class="field">🔭 次に知りたいこと（来年のきみへの問い）
+      <textarea id="nextQuestion" rows="2" maxlength="120" placeholder="例: ほかの虫の羽は何回折りたたまれている？"></textarea>
+    </label>
+    <div id="poster" class="poster"></div>
+    <button id="btnPrint" class="btn-primary big">🖨 印刷する（模造紙の下書きに）</button>
+    <p class="hint">じつは自由研究には全国コンテストもあるよ。「自然科学観察コンクール」「JSECジュニア」などで検索してみてね。世界一につながる道もここから始まる。</p>
+    <button id="btnReset" class="btn-danger">この研究をリセットして最初から</button>
+  </section>
+
+</main>
+
+<div id="toast" class="toast hidden" role="alert"></div>
+<script src="app.js" defer></script>
+</body>
+</html>
