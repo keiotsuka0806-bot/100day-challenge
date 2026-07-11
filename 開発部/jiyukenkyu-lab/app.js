@@ -26,7 +26,7 @@ function freshState() {
     themes: [], theme: null,
     sirabe: '', question: '', meaning: '', method: '',
     hypothesis: { think: '', because: '' },
-    records: [], nextQuestion: '',
+    records: [], nextQuestion: '', outcome: '',
     createdAt: null,
   };
 }
@@ -63,6 +63,7 @@ function show(screen) {
       (b.dataset.step === 'question' && screen === 'meaning'));
   });
   if (screen === 'sirabe') $('sirabeTheme').textContent = '🔬 テーマ: ' + (state.theme ? state.theme.title : '');
+  if (screen === 'themes') hakaseThemes();
   if (screen === 'question') renderChips();
   if (screen === 'meaning') $('meaningQuestion').textContent = '❓ ' + (state.question || '');
   if (screen === 'lab') renderRecords();
@@ -78,6 +79,32 @@ function toast(msg) {
   t.classList.remove('hidden');
   clearTimeout(toast._tm);
   toast._tm = setTimeout(() => t.classList.add('hidden'), 3500);
+}
+
+/* 祝祭オーバーレイ(タップか2.6秒で閉じる) */
+function celebrate(emoji, msg) {
+  $('celebrateEmoji').textContent = emoji;
+  $('celebrateMsg').textContent = msg;
+  const el = $('celebrate');
+  el.classList.remove('hidden');
+  clearTimeout(celebrate._tm);
+  celebrate._tm = setTimeout(() => el.classList.add('hidden'), 2600);
+}
+
+/* はかせの動的セリフ */
+function hakaseThemes() {
+  const [a, b] = state.likes;
+  $('hkThemes').textContent = `ほほう…「${a}」×「${b}」⁉ その掛け算、わしも初めて見たぞ。どれがいちばんワクワクするか、きみの直感で選ぶんじゃ。`;
+}
+
+function hakaseLab() {
+  const n = state.records.length;
+  const msg =
+    n === 0 ? 'さあ、たんけんの始まりじゃ。今日の1件目を待っとるぞ。' :
+    n < 3 ? `${n}日分たまったのう。研究は「つづき」が命じゃ。` :
+    n < 7 ? `${n}日分！むむ、きみは本物の研究者の目をしとるな…` :
+    `${n}日分…！ここまで続けた小学生を、わしはほとんど知らんぞ。`;
+  $('hkLab').textContent = msg;
 }
 
 /* ---------- API(鍵なしモック対応) ---------- */
@@ -225,7 +252,7 @@ async function askQuestionHints() {
   box.classList.remove('hidden');
   const hints = (res.data && res.data.hints) || [];
   const head = document.createElement('p');
-  head.textContent = '🤖 AIからの問いかけ ' + (res.mock ? mockNotice(res.reason) : '（答えはきみが決める）');
+  head.textContent = '🧑‍🔬 はかせからの問いかけ ' + (res.mock ? mockNotice(res.reason) : '（答えはきみが決める）');
   box.appendChild(head);
   const ul = document.createElement('ul');
   hints.slice(0, 4).forEach(h => { const li = document.createElement('li'); li.textContent = h; ul.appendChild(li); });
@@ -256,7 +283,7 @@ async function askKurabeHints() {
   box.innerHTML = '';
   box.classList.remove('hidden');
   const head = document.createElement('p');
-  head.textContent = '🤖 「くらべる相手」の候補（選ぶのはきみ） ' + (res.mock ? mockNotice(res.reason) : '');
+  head.textContent = '🧑‍🔬 「くらべる相手」の候補じゃ（選ぶのはきみ） ' + (res.mock ? mockNotice(res.reason) : '');
   box.appendChild(head);
   const ul = document.createElement('ul');
   ((res.data && res.data.hints) || []).slice(0, 5).forEach(h => { const li = document.createElement('li'); li.textContent = h; ul.appendChild(li); });
@@ -317,7 +344,11 @@ function addRecord() {
   $('recMemo').value = '';
   $('recPreview').classList.add('hidden');
   $('recPhoto').value = '';
-  toast('📗 きろくした！（' + state.records.length + '日分）');
+  const n = state.records.length;
+  if (n === 1) celebrate('🎉', 'はじめての記録じゃ！きみは今日から研究員じゃぞ！');
+  else if (n === 7) celebrate('⭐', '7日分…！本物の研究者のリズムじゃ！');
+  else if (n === 30) celebrate('🏆', '30日やりきった⁉ わしの研究人生でも滅多に見ん根性じゃ！');
+  else toast('📗 きろくした！（' + n + '日分）');
   renderRecords();
 }
 
@@ -327,6 +358,7 @@ function todayStr() {
 }
 
 function renderRecords() {
+  hakaseLab();
   $('labQuestion').textContent = '❓ ' + (state.question || '') +
     (state.method === '比べる' ? '\n⚖️ くらべるときは、変えることは1つだけ！（2つ変えると、どっちが原因か分からなくなるよ）' : '');
   $('recCount').textContent = state.records.length ? `これまでのきろく（${state.records.length}件）` : 'まだきろくはないよ。今日の1件目をどうぞ！';
@@ -366,7 +398,7 @@ function renderPoster() {
     ['📊 結果（きろくから）', !state.records.length ? '（⑤できろくしよう）'
       : state.records.length === 1 ? `1日分のきろく:「${(state.records[0].memo || '写真').slice(0, 40)}」`
       : `${state.records.length}日分のきろく。最初:「${(state.records[0].memo || '写真').slice(0, 40)}」→ 最新:「${(state.records[state.records.length - 1].memo || '写真').slice(0, 40)}」`],
-    ['💡 わかったこと', '← ここは きみの言葉で！（AIは書きません）'],
+    ['💡 わかったこと', (state.outcome === 'ちがった' ? 'よそうと違った=大発見！なぜ違ったのかを、' : state.outcome === '当たった' ? 'よそうが当たった理由を、' : '← ここは ') + 'きみの言葉で！（AIは書きません）'],
     ['🔭 次に知りたいこと', state.nextQuestion || '（この画面の上の欄に書くとここに入るよ）'],
   ];
   blocks.forEach(([h, body]) => {
@@ -429,6 +461,23 @@ function init() {
   $('recPhoto').addEventListener('change', e => onPhotoPicked(e.target.files[0]));
   $('btnAddRecord').addEventListener('click', addRecord);
   $('btnToSummary').addEventListener('click', () => show('summary'));
+  // まとめ: よそうとくらべてどうじゃった？
+  document.querySelectorAll('.outcome-btn').forEach(b =>
+    b.addEventListener('click', () => {
+      state.outcome = b.dataset.outcome;
+      save();
+      document.querySelectorAll('.outcome-btn').forEach(x => x.classList.toggle('chip-on', x === b));
+      if (state.outcome === 'ちがった') {
+        celebrate('💥', 'よそうと違った⁉ それこそ、いちばんの大発見じゃーー！！');
+        $('hkSummary').textContent = '予想外れは失敗ではない。「世界がきみの予想より面白かった」という証拠じゃ。なぜ違ったのか、きみの言葉で「わかったこと」に書くんじゃぞ。';
+      } else if (state.outcome === '当たった') {
+        celebrate('🎯', 'よそうが当たった！見事な読みじゃ！');
+        $('hkSummary').textContent = '当たった理由まで書けたら一級品の研究じゃ。「なぜなら」の予想も当たっとったか、確かめてみるんじゃ。';
+      } else {
+        toast('🧑‍🔬 まだわからない、も立派な答えじゃ。たんけんを続けよう');
+      }
+      renderPoster();
+    }));
   // ⑥
   $('nextQuestion').addEventListener('change', () => { state.nextQuestion = $('nextQuestion').value.trim(); save(); renderPoster(); });
   $('btnPrint').addEventListener('click', () => window.print());
@@ -436,7 +485,10 @@ function init() {
     if (!confirm('本当に全部消して最初から？（きろくも消えます）')) return;
     state = freshState(); save(); location.reload();
   });
+  // 祝祭はタップでも閉じられる
+  $('celebrate').addEventListener('click', () => $('celebrate').classList.add('hidden'));
   // 復元
+  document.querySelectorAll('.outcome-btn').forEach(x => x.classList.toggle('chip-on', x.dataset.outcome === state.outcome));
   $('like1').value = state.likes[0] || '';
   $('like2').value = state.likes[1] || '';
   $('grade').value = state.grade;

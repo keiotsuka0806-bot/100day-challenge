@@ -18,12 +18,12 @@
 </header>
 
 <nav id="stepNav" class="step-nav hidden">
-  <button data-step="theme">①テーマ</button>
-  <button data-step="question">②問い</button>
-  <button data-step="method">③はかり方</button>
-  <button data-step="hypothesis">④よそう</button>
-  <button data-step="lab">⑤きろく</button>
-  <button data-step="summary">⑥まとめ</button>
+  <button data-step="theme">🗺 さがす</button>
+  <button data-step="question">❓ とい</button>
+  <button data-step="method">🧰 はかり方</button>
+  <button data-step="hypothesis">🔮 よそう</button>
+  <button data-step="lab">🔭 たんけん</button>
+  <button data-step="summary">🌟 はっけん</button>
 </nav>
 
 <main id="main">
@@ -33,7 +33,8 @@
     <div class="hero">
       <p class="hero-emoji">🧪✨</p>
       <h2>「好き」×「好き」で、<br>世界に1つの自由研究をつくろう</h2>
-      <p class="hero-sub">テーマ決め → 問い → 観察きろく → まとめまで、夏の30日をこのノートが伴走します。きろくはこの端末の中だけに保存されます。</p>
+      <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">わしは研究はかせ。きみの夏の研究の相棒じゃ。答えは教えん——じゃが、きみが世界にひとつの研究をつくるのを、最後まで見届けるぞい。</p></div>
+      <p class="hero-sub">きろくはこの端末の中だけに保存されます。</p>
       <button id="btnStart" class="btn-primary big">はじめる</button>
       <button id="btnContinue" class="btn-secondary big hidden">つづきから（<span id="continueLabel"></span>）</button>
     </div>
@@ -50,8 +51,8 @@
 
   <!-- ①好き×好き → テーマ -->
   <section id="screen-likes" class="screen hidden">
-    <h2>① 好きなものを2つ教えて</h2>
-    <p class="hint">はなれているほど、世界に1つのテーマになるよ（例:「折り紙」×「虫」）。近い2つ（例:「漫画」×「アニメ」）でもOK——そのときは「くらべる研究」になる！</p>
+    <h2>好きなものを2つ、教えてくれんか</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">はなれた2つほど、誰もやったことのない研究になるんじゃ（例:「折り紙」×「虫」）。近い2つ（「漫画」×「アニメ」）でも大丈夫——そのときは「くらべる研究」の出番じゃ。</p></div>
     <label class="field">好きなもの その1
       <input id="like1" type="text" maxlength="20" placeholder="例: 折り紙" autocomplete="off">
     </label>
@@ -73,6 +74,7 @@
   <!-- テーマ3案 -->
   <section id="screen-themes" class="screen hidden">
     <h2>きみだけのテーマ候補</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble" id="hkThemes"></p></div>
     <p class="hint" id="themesHint"></p>
     <div id="themeCards" class="cards"></div>
     <button id="btnRetheme" class="btn-secondary">ちがう2つで作り直す</button>
@@ -80,8 +82,8 @@
 
   <!-- ①b しらべてみよう(先行しらべ) -->
   <section id="screen-sirabe" class="screen hidden">
-    <h2>①b まず5分、しらべてみよう</h2>
-    <p class="hint"><b>調べれば分かることは、研究じゃない。調べても分からないことが、きみの研究。</b><br>図鑑・本・検索で5分だけしらべてみよう。プロの研究者も、実験の前にかならずこれをやるよ。</p>
+    <h2>まず5分、しらべてみよう</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble"><b>調べれば分かることは、研究じゃない。調べても分からんことが、きみの研究じゃ。</b><br>図鑑・本・検索で5分だけしらべてみるんじゃ。プロの研究者も、実験の前にかならずこれをやるぞい。</p></div>
     <p class="picked" id="sirabeTheme"></p>
     <label class="field">しらべて分かったこと（1〜2行。模造紙の「しらべたこと」に入るよ）
       <textarea id="sirabeNote" rows="2" maxlength="150" placeholder="例: テントウムシの羽が折りたたみ式なのは分かった。でも何回折られているかはどこにも書いてなかった"></textarea>
@@ -92,14 +94,14 @@
 
   <!-- ②問い -->
   <section id="screen-question" class="screen hidden">
-    <h2>② 「数えられる問い」に変える</h2>
-    <p class="hint">「なんとなく調べる」より「数字で答えが出る問い」が研究のコツ。</p>
+    <h2>「数えられる問い」に変えよう</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">「なんとなく調べる」より「数字で答えが出る問い」が研究のコツじゃ。下の型を借りてもいいぞ。</p></div>
     <p class="picked" id="pickedTheme"></p>
     <div class="chips" id="questionChips"></div>
     <label class="field">きみの問い
       <textarea id="questionInput" rows="2" maxlength="100" placeholder="例: テントウムシの羽は、何回折りたたまれている？"></textarea>
     </label>
-    <button id="btnAskAI" class="btn-secondary">🤖 AIに問いのヒントをもらう（答えはくれません）</button>
+    <button id="btnAskAI" class="btn-secondary">🧑‍🔬 はかせに問いのヒントをもらう（答えはくれません）</button>
     <div id="aiQuestionHints" class="ai-hints hidden"></div>
     <button id="btnSaveQuestion" class="btn-primary big">この問いにする</button>
     <p id="questionStatus" class="status" role="status"></p>
@@ -107,8 +109,8 @@
 
   <!-- ②b だから何？ゲート -->
   <section id="screen-meaning" class="screen hidden">
-    <h2>②b その数字がわかったら、なにが言える？</h2>
-    <p class="hint">「数えるだけ」で終わらせない、いちばん大事な質問。1つ選んでね。</p>
+    <h2>その数字がわかったら、なにが言える？</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">これが、わしからの<b>いちばん大事な質問</b>じゃ。「数えるだけ」で終わる研究と、意味のある研究の分かれ道じゃよ。1つ選んでくれ。</p></div>
     <p class="picked" id="meaningQuestion"></p>
     <div class="cards" id="meaningCards">
       <button class="card meaning" data-meaning="ひみつ・謎がとける">
@@ -128,15 +130,15 @@
         <span>例: 1巻と最終巻でキャラはどう変わった？</span>
       </button>
     </div>
-    <button id="btnKurabe" class="btn-secondary">🤖 どれも選べない…「くらべる相手」のヒントをもらう</button>
+    <button id="btnKurabe" class="btn-secondary">🧑‍🔬 どれも選べない…はかせに「くらべる相手」のヒントをもらう</button>
     <div id="kurabeHints" class="ai-hints hidden"></div>
     <button id="btnBackQuestion" class="btn-secondary">← 問いを直す</button>
   </section>
 
   <!-- ③はかり方カタログ -->
   <section id="screen-method" class="screen hidden">
-    <h2>③ はかり方をカタログから借りる</h2>
-    <p class="hint">世界一の研究も、はかり方は「発明」せず既にある方法を借りたんだ。</p>
+    <h2>はかり方をカタログから借りよう</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">はかり方は発明せんでいい。世界一の研究も、既にある方法を借りたんじゃ。きみの問いに合うのはどれじゃ？</p></div>
     <div class="cards" id="methodCards">
       <button class="card method" data-method="数える">
         <span class="card-emoji">🔢</span><b>数える</b>
@@ -159,8 +161,8 @@
 
   <!-- ④仮説 -->
   <section id="screen-hypothesis" class="screen hidden">
-    <h2>④ よそう（仮説）を立てる</h2>
-    <p class="hint">当たっても外れても研究は成功。外れたときのほうが発見は大きいよ。</p>
+    <h2>よそう（仮説）を立てよう</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble">よそうは当たっても外れても成功じゃ。むしろ<b>外れたときのほうが、大きな発見</b>なんじゃよ。科学の歴史はぜんぶ「予想外れ」で進んできたんじゃ。</p></div>
     <label class="field">こうなると思う！
       <textarea id="hypoThink" rows="2" maxlength="120" placeholder="例: 5回くらい折りたたまれていると思う"></textarea>
     </label>
@@ -172,7 +174,8 @@
 
   <!-- ⑤観察ラボ -->
   <section id="screen-lab" class="screen hidden">
-    <h2>⑤ 観察きろく</h2>
+    <h2>観察たんけん</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble" id="hkLab"></p></div>
     <p class="picked" id="labQuestion"></p>
     <div class="record-form">
       <label class="photo-btn">📷 写真をつける（なくてもOK）
@@ -192,8 +195,16 @@
 
   <!-- ⑥まとめ -->
   <section id="screen-summary" class="screen hidden">
-    <h2>⑥ 模造紙のまとめレイアウト</h2>
-    <p class="hint">文章はきみの言葉で。ここでは「ならべ方」だけ用意するよ。</p>
+    <h2>大はっけんのまとめ</h2>
+    <div class="hakase"><span class="hakase-avatar">🧑‍🔬</span><p class="hakase-bubble" id="hkSummary">ここまで来たか…！まとめの「ならべ方」はわしが用意した。じゃが<b>「わかったこと」だけは、きみの言葉で書く</b>んじゃぞ。そこがきみの研究の心臓じゃ。</p></div>
+    <div class="outcome" id="outcomeBox">
+      <p class="outcome-q">🧑‍🔬 ところで——よそうとくらべて、どうじゃった？</p>
+      <div class="chips">
+        <button class="chip outcome-btn" data-outcome="当たった">当たった！</button>
+        <button class="chip outcome-btn" data-outcome="ちがった">ちがった！</button>
+        <button class="chip outcome-btn" data-outcome="まだわからない">まだわからない</button>
+      </div>
+    </div>
     <label class="field">🔭 次に知りたいこと（来年のきみへの問い）
       <textarea id="nextQuestion" rows="2" maxlength="120" placeholder="例: ほかの虫の羽は何回折りたたまれている？"></textarea>
     </label>
@@ -206,6 +217,12 @@
 </main>
 
 <div id="toast" class="toast hidden" role="alert"></div>
+<div id="celebrate" class="celebrate hidden" role="alert">
+  <div class="celebrate-inner">
+    <p id="celebrateEmoji" class="celebrate-emoji"></p>
+    <p id="celebrateMsg" class="celebrate-msg"></p>
+  </div>
+</div>
 <script src="app.js" defer></script>
 </body>
 </html>
