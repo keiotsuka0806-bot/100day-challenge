@@ -24,7 +24,7 @@ function freshState() {
     step: 'home',
     likes: ['', ''], grade: '小3〜4',
     themes: [], theme: null,
-    question: '', meaning: '', method: '',
+    sirabe: '', question: '', meaning: '', method: '',
     hypothesis: { think: '', because: '' },
     records: [], nextQuestion: '',
     createdAt: null,
@@ -42,7 +42,7 @@ function save() {
 }
 
 /* ---------- 画面遷移 ---------- */
-const SCREENS = ['home', 'likes', 'themes', 'question', 'meaning', 'method', 'hypothesis', 'lab', 'summary'];
+const SCREENS = ['home', 'likes', 'themes', 'sirabe', 'question', 'meaning', 'method', 'hypothesis', 'lab', 'summary'];
 const NAV_MAP = { theme: 'likes', question: 'question', method: 'method', hypothesis: 'hypothesis', lab: 'lab', summary: 'summary' };
 
 /* 観る系(メディア)の好きの検知 */
@@ -59,9 +59,10 @@ function show(screen) {
   $('stepNav').classList.toggle('hidden', screen === 'home');
   document.querySelectorAll('#stepNav button').forEach(b => {
     b.classList.toggle('active', NAV_MAP[b.dataset.step] === screen ||
-      (b.dataset.step === 'theme' && (screen === 'likes' || screen === 'themes')) ||
+      (b.dataset.step === 'theme' && (screen === 'likes' || screen === 'themes' || screen === 'sirabe')) ||
       (b.dataset.step === 'question' && screen === 'meaning'));
   });
+  if (screen === 'sirabe') $('sirabeTheme').textContent = '🔬 テーマ: ' + (state.theme ? state.theme.title : '');
   if (screen === 'question') renderChips();
   if (screen === 'meaning') $('meaningQuestion').textContent = '❓ ' + (state.question || '');
   if (screen === 'lab') renderRecords();
@@ -207,7 +208,7 @@ function renderThemes() {
       save();
       $('pickedTheme').textContent = '🔬 テーマ: ' + t.title;
       if (t.toi_hint && !state.question) $('questionInput').value = t.toi_hint;
-      show('question');
+      show('sirabe'); // まず先行しらべへ
     });
     wrap.appendChild(card);
   });
@@ -326,7 +327,8 @@ function todayStr() {
 }
 
 function renderRecords() {
-  $('labQuestion').textContent = '❓ ' + (state.question || '');
+  $('labQuestion').textContent = '❓ ' + (state.question || '') +
+    (state.method === '比べる' ? '\n⚖️ くらべるときは、変えることは1つだけ！（2つ変えると、どっちが原因か分からなくなるよ）' : '');
   $('recCount').textContent = state.records.length ? `これまでのきろく（${state.records.length}件）` : 'まだきろくはないよ。今日の1件目をどうぞ！';
   const list = $('recordList');
   list.innerHTML = '';
@@ -358,6 +360,7 @@ function renderPoster() {
   el.innerHTML = '';
   const blocks = [
     ['🎯 目的（しらべたいこと）', (state.question || '（②で問いを書こう）') + (state.meaning ? `\n→ わかること: ${state.meaning}` : '')],
+    ['📚 しらべたこと（先行しらべ）', state.sirabe || '（①bでしらべたことを書くとここに入るよ）'],
     ['🔮 よそう（仮説）', state.hypothesis.think ? `${state.hypothesis.think}\nなぜなら… ${state.hypothesis.because}` : '（④で書こう）'],
     ['🧰 方法（はかり方）', state.method ? `「${state.method}」ではかった` : '（③で選ぼう）'],
     ['📊 結果（きろくから）', !state.records.length ? '（⑤できろくしよう）'
@@ -368,7 +371,7 @@ function renderPoster() {
   ];
   blocks.forEach(([h, body]) => {
     const b = document.createElement('div');
-    b.className = 'poster-block';
+    b.className = 'poster-block' + (h.includes('わかったこと') && h.includes('💡') ? ' freeform' : '');
     const hd = document.createElement('h4'); hd.textContent = h;
     const tx = document.createElement('p'); tx.textContent = body;
     b.append(hd, tx);
@@ -397,6 +400,18 @@ function init() {
   // ①
   $('btnThemes').addEventListener('click', makeThemes);
   $('btnRetheme').addEventListener('click', () => show('likes'));
+  // ①b しらべてみよう
+  $('btnSirabeDone').addEventListener('click', () => {
+    state.sirabe = $('sirabeNote').value.trim();
+    save();
+    show('question');
+  });
+  $('btnSirabeAllKnown').addEventListener('click', () => {
+    state.sirabe = $('sirabeNote').value.trim();
+    save();
+    toast('しらべて分かるのも大事な一歩！ちがうテーマにしよう');
+    show('themes');
+  });
   // ②(チップはrenderChipsで動的生成)
   $('btnAskAI').addEventListener('click', askQuestionHints);
   $('btnSaveQuestion').addEventListener('click', saveQuestion);
@@ -426,6 +441,7 @@ function init() {
   $('like2').value = state.likes[1] || '';
   $('grade').value = state.grade;
   $('questionInput').value = state.question || '';
+  $('sirabeNote').value = state.sirabe || '';
   $('hypoThink').value = state.hypothesis.think || '';
   $('hypoBecause').value = state.hypothesis.because || '';
   show('home');

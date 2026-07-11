@@ -74,6 +74,7 @@ h3 { font-size: 1rem; margin: 16px 0 8px; }
   padding: 8px 12px;
   font-size: 0.9rem;
   margin-bottom: 12px;
+  white-space: pre-line;
 }
 .status { min-height: 1.4em; font-size: 0.85rem; color: var(--primary-dark); }
 
@@ -224,7 +225,7 @@ button { font-family: inherit; cursor: pointer; }
 .poster-block { background: #fff; border-radius: 8px; padding: 10px; border: 1px solid var(--line); }
 .poster-block h4 { font-size: 0.82rem; color: var(--primary-dark); margin-bottom: 4px; }
 .poster-block p { font-size: 0.8rem; white-space: pre-wrap; }
-.poster-block:nth-child(5) { grid-column: 1 / -1; border: 2px dashed var(--accent); }
+.poster-block.freeform { grid-column: 1 / -1; border: 2px dashed var(--accent); }
 
 /* トースト */
 .toast {

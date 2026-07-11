@@ -78,6 +78,18 @@
     <button id="btnRetheme" class="btn-secondary">ちがう2つで作り直す</button>
   </section>
 
+  <!-- ①b しらべてみよう(先行しらべ) -->
+  <section id="screen-sirabe" class="screen hidden">
+    <h2>①b まず5分、しらべてみよう</h2>
+    <p class="hint"><b>調べれば分かることは、研究じゃない。調べても分からないことが、きみの研究。</b><br>図鑑・本・検索で5分だけしらべてみよう。プロの研究者も、実験の前にかならずこれをやるよ。</p>
+    <p class="picked" id="sirabeTheme"></p>
+    <label class="field">しらべて分かったこと（1〜2行。模造紙の「しらべたこと」に入るよ）
+      <textarea id="sirabeNote" rows="2" maxlength="150" placeholder="例: テントウムシの羽が折りたたみ式なのは分かった。でも何回折られているかはどこにも書いてなかった"></textarea>
+    </label>
+    <button id="btnSirabeDone" class="btn-primary big">それでも分からないことがあった → 問いにする</button>
+    <button id="btnSirabeAllKnown" class="btn-secondary">ぜんぶ分かっちゃった → ちがうテーマにする</button>
+  </section>
+
   <!-- ②問い -->
   <section id="screen-question" class="screen hidden">
     <h2>② 「数えられる問い」に変える</h2>
