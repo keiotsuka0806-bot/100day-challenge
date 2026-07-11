@@ -1,0 +1,5 @@
+# AI画像の制作途中素材（原本はローカル保持・ゲームは assets/game と assets/audio のみ使用）
+assets/concept*/
+assets/landmarks/
+assets/characters/
+.playwright-mcp/
