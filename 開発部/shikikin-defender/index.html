@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敷金ディフェンダー — 退去費用、払いすぎない</title>
+  <meta name="description" content="賃貸退去の原状回復費用を国交省ガイドラインでその場で確認。写真で証拠を残し、根拠付きの交渉メモを作れる無料の防具。">
+  <meta property="og:title" content="敷金ディフェンダー">
+  <meta property="og:description" content="退去費用、払いすぎない。国交省ガイドライン準拠の負担区分チェック＋証拠アルバム＋交渉メモ。">
+  <meta name="theme-color" content="#12324f">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>🛡️ 敷金ディフェンダー</h1>
+    <p class="tagline">退去費用、払いすぎない。<br>国交省ガイドラインで「どっちの負担か」をその場で確認</p>
+  </header>
+
+  <div class="years-bar">
+    <label for="yearsInput">🏠 この部屋に住んだ年数</label>
+    <select id="yearsInput">
+      <option value="">未入力</option>
+      <option value="0.5">半年未満</option>
+      <option value="1">1年</option>
+      <option value="2">2年</option>
+      <option value="3">3年</option>
+      <option value="4">4年</option>
+      <option value="5">5年</option>
+      <option value="6">6年以上</option>
+    </select>
+    <p class="years-note" id="yearsNote">入力すると、負担になる項目でも「何%まで減るか」の目安が出ます</p>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-screen="check">🔎 しらべる</button>
+    <button class="tab" data-screen="mylist">📋 うちのリスト<span class="badge-count" id="listCount"></span></button>
+    <button class="tab" data-screen="album">📷 証拠アルバム<span class="badge-count" id="albumCount"></span></button>
+    <button class="tab" data-screen="memo">📝 交渉メモ</button>
+  </nav>
+
+  <main>
+    <!-- しらべる -->
+    <section class="screen active" id="screen-check">
+      <input type="search" id="searchInput" class="search-input" placeholder="例: 画鋲、日焼け、クリーニング…">
+      <div class="cat-chips" id="catChips"></div>
+      <div class="legend">
+        <span class="pill pill-lender">大家さん負担</span>
+        <span class="pill pill-tenant">自分の負担になりやすい</span>
+        <span class="pill pill-depends">条件次第</span>
+      </div>
+      <div id="itemList"></div>
+      <p class="source-note" id="sourceNote"></p>
+    </section>
+
+    <!-- うちのリスト -->
+    <section class="screen" id="screen-mylist">
+      <p class="screen-lead">立会いで話題になりそうな箇所を集めておく場所。写真とメモを添えると交渉メモに反映されます。</p>
+      <div id="myListContainer"></div>
+    </section>
+
+    <!-- 証拠アルバム -->
+    <section class="screen" id="screen-album">
+      <p class="screen-lead">退去前の部屋の状態を日付入りで記録。「通常の掃除をしていた」証拠にもなります。写真は端末の中にだけ保存されます。</p>
+      <div class="album-add">
+        <input type="text" id="photoPlace" placeholder="場所（例: リビング東側の壁）" maxlength="30">
+        <label class="btn btn-primary photo-btn">📷 写真を追加
+          <input type="file" id="albumFile" accept="image/*" hidden>
+        </label>
+      </div>
+      <div class="album-grid" id="albumGrid"></div>
+    </section>
+
+    <!-- 交渉メモ -->
+    <section class="screen" id="screen-memo">
+      <p class="screen-lead">立会いにそのまま持っていける、根拠付きのメモを作ります。</p>
+      <input type="text" id="propertyName" class="text-input" placeholder="物件名（任意）" maxlength="40">
+      <div class="memo-actions">
+        <button class="btn btn-primary" id="printBtn">🖨️ 印刷 / PDF保存</button>
+        <button class="btn" id="copyBtn">📋 テキストをコピー</button>
+      </div>
+      <div id="memoPreview" class="memo-preview"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="guideline-data.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
