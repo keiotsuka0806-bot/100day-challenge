@@ -33,6 +33,7 @@ function isEmployee(profile) { return profile.worker === 'employee' || profile.w
 function show(viewId) {
   document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
   document.getElementById(`view-${viewId}`).classList.add('active');
+  if (viewId === 'home') renderResume();
   window.scrollTo({ top: 0 });
 }
 
@@ -252,6 +253,14 @@ function judgePolicy(policy, profile) {
           reason: '守る相手（配偶者・子）がいない場合、死亡保障は目的から確認が必要です。葬儀費用程度なら貯蓄で受け止められることが多く、整理候補の筆頭です。',
           keep: '残す理由になるのは: 親への仕送りなど、あなたの収入に頼る人が実際にいる場合。',
           questions: ['この死亡保険の受取人は誰で、その人は私の収入にどれくらい頼っていますか？'],
+        };
+      }
+      if (izoku === 0) {
+        return {
+          color: 'red', verdict: 'あなたの本当の穴を埋めている可能性',
+          reason: '18歳以下の子がいない自営業世帯では、遺族基礎年金は原則出ず、遺族厚生年金もありません。万一の時の公的な保障はほぼゼロ＝この死亡保険は公的の空白を埋めている可能性が高く、安易に削る対象ではありません。金額の根拠だけ確認を。',
+          keep: '確認どころ: 保険金額が「配偶者の生活費 − 配偶者自身の収入」に見合っているか。',
+          questions: ['遺族年金がほぼ出ない私の場合、この保険金額はどんな計算で決まっていますか？'],
         };
       }
       return {
@@ -487,10 +496,22 @@ function renderStatic() {
   });
 }
 
+function renderResume() {
+  const btn = document.getElementById('resume-btn');
+  if (!state.profile) { btn.hidden = true; return; }
+  btn.hidden = false;
+  btn.textContent = state.policies.length ? '前回の3色マップを見る' : '前回の公的保障カードを見る';
+  btn.onclick = () => {
+    if (state.policies.length) { renderResult(); show('result'); }
+    else { renderPublic(); show('public'); }
+  };
+}
+
 loadState();
 renderStatic();
 renderPolicyList();
 if (state.profile) renderPublic();
+renderResume();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });

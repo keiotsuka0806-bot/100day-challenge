@@ -126,6 +126,8 @@ h1 { font-size: 24px; line-height: 1.4; margin: 4px 0 10px; }
 
 .actions { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
 
+.resume-btn { margin-top: 10px; }
+
 .trust-points { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 6px; }
 .trust-points li { font-size: 13px; color: var(--muted); }
 

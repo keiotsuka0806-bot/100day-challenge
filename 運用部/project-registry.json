@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-11T16:47:49.950Z",
+  "updatedAt": "2026-07-15T14:53:41.454Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -507,6 +507,65 @@
       "lastCouncil": "",
       "councilReport": "",
       "lastReleaseCheck": ""
+    },
+    "shikikin-defender": {
+      "path": "開発部/shikikin-defender",
+      "url": "https://shikikin-defender.vercel.app",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "共有可能",
+      "lastCouncil": "2026-07-12",
+      "lastDeploy": "2026-07-12",
+      "councilReport": "デザイン部/reports/2026-07-12-shikikin-defender-genius-council.md",
+      "hosting": "vercel",
+      "lastReleaseCheck": "2026-07-12",
+      "lastVerifiedAt": "2026-07-12T15:31:08.905Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://shikikin-defender.vercel.app",
+      "lastVisualCheckAt": "2026-07-12T15:31:08.905Z",
+      "lastVisualCheck": "HTTP 200; mode=html"
+    },
+    "kansou-no-doko": {
+      "path": "開発部/kansou-no-doko",
+      "url": "https://kansou-no-doko.vercel.app",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "共有可能",
+      "lastCouncil": "2026-07-13",
+      "lastDeploy": "2026-07-13",
+      "councilReport": "デザイン部/reports/2026-07-13-kansou-no-doko-genius-council.md",
+      "lastVerifiedAt": "2026-07-13T16:18:33.049Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://kansou-no-doko.vercel.app",
+      "lastVisualCheckAt": "2026-07-13T16:18:33.049Z",
+      "lastVisualCheck": "HTTP 200; mode=html",
+      "lastReleaseCheck": "2026-07-13"
+    },
+    "tebanashi-triage": {
+      "path": "開発部/tebanashi-triage",
+      "url": "https://tebanashi-triage.vercel.app",
+      "type": "ai",
+      "council": "AI Product Council",
+      "status": "共有可能",
+      "lastCouncil": "2026-07-14",
+      "lastDeploy": "2026-07-14",
+      "councilReport": "デザイン部/reports/2026-07-14-tebanashi-triage-genius-council.md",
+      "lastVerifiedAt": "2026-07-14T15:31:30.314Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://tebanashi-triage.vercel.app",
+      "lastVisualCheckAt": "2026-07-14T15:31:30.314Z",
+      "lastVisualCheck": "HTTP 200; mode=html",
+      "lastReleaseCheck": "2026-07-14"
+    },
+    "hoken-diet": {
+      "path": "開発部/hoken-diet",
+      "url": "http://localhost:8791",
+      "type": "visual-share",
+      "council": "Visual Share Council",
+      "status": "デプロイ後改善中",
+      "lastCouncil": "2026-07-15",
+      "lastDeploy": "2026-07-15",
+      "councilReport": "デザイン部/reports/2026-07-15-hoken-diet-genius-council.md"
     }
   }
 }
