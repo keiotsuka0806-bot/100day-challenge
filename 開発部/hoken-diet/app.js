@@ -46,7 +46,7 @@ document.querySelectorAll('[data-go]').forEach((btn) => {
 });
 
 const incomeChoices = document.getElementById('income-choices');
-INCOME_BANDS.forEach((band, i) => {
+INCOME_BANDS.forEach((band) => {
   const label = document.createElement('label');
   const input = document.createElement('input');
   input.type = 'radio';
@@ -88,7 +88,7 @@ function publicItems(profile) {
   items.push({
     tag: '医療', title: '高額療養費制度',
     amount: `自己負担は${band.capText}で頭打ち`,
-    detail: `医療費が月100万円かかっても、あなたの窓口負担は約${yen(cap100)}まで（区分${band.kubun}）。${KOGAKU_NOTE}`,
+    detail: `医療費が月100万円かかっても、あなたの窓口負担は約${yen(cap100)}まで（区分${band.kubun}）。直近12ヶ月に3回以上使うと4回目からは月${yen(band.tajusu)}に下がる（多数回該当）。${KOGAKU_NOTE}`,
   });
   if (isEmployee(profile)) {
     items.push({
@@ -121,7 +121,7 @@ function publicItems(profile) {
     amount: `2級で年${man(PENSION_2026.shogai2)}〜`,
     detail: `障害基礎年金は2級 年${yen(PENSION_2026.shogai2)}・1級 年${yen(PENSION_2026.shogai1)}＋子の加算${isEmployee(profile) ? '。会社員・公務員はさらに報酬比例の障害厚生年金が上乗せ' : ''}。`,
   });
-  if (profile.children >= 0 && (profile.spouse || profile.children > 0)) {
+  if (profile.spouse || profile.children > 0) {
     items.push({
       tag: '出産', title: '出産育児一時金',
       amount: `1児につき${man(PENSION_2026.birthLumpSum)}`,
@@ -180,7 +180,7 @@ document.getElementById('policy-form').addEventListener('submit', (e) => {
   state.policies.push({
     id: Date.now(),
     type: document.getElementById('policy-type').value,
-    premium: Math.max(0, Number(premiumRaw) || 0),
+    premium: Math.min(500000, Math.max(0, Number(premiumRaw) || 0)),
     memo: document.getElementById('policy-memo').value.trim(),
   });
   if (!saveState()) { error.textContent = '端末の保存容量が一杯です。'; error.hidden = false; state.policies.pop(); return; }
@@ -495,6 +495,15 @@ function renderStatic() {
     sourceList.appendChild(li);
   });
 }
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  if (!confirm('入力した保険と診断結果をすべて消して、最初からやり直しますか？')) return;
+  state = { profile: null, policies: [] };
+  localStorage.removeItem(STORE_KEY);
+  renderPolicyList();
+  document.getElementById('wizard-form').reset();
+  show('wizard');
+});
 
 function renderResume() {
   const btn = document.getElementById('resume-btn');
