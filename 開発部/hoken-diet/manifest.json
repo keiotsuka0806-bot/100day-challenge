@@ -1,0 +1,17 @@
+{
+  "name": "保険ダイエット",
+  "short_name": "保険ダイエット",
+  "description": "公的保障を先に見せて、保険の重複・過剰・本当の穴を仕分ける棚卸しアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f9",
+  "theme_color": "#1d4d6e",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

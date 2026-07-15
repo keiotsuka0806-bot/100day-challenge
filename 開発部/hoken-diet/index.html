@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4d6e">
+  <meta name="description" content="公的保障を先に見せて、いまの保険との重複・過剰・本当の穴を仕分ける保険の棚卸しアプリ。何も売りません。送信ゼロ・端末内だけ。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="保険ダイエット | あなたはもう保険に入っている">
+  <meta property="og:description" content="高額療養費・傷病手当金・遺族年金。公的保障と重ねて「入りすぎ」を金額で見える化。商品は1つも提案しません。">
+  <meta property="og:image" content="/icon.svg">
+  <meta name="twitter:card" content="summary">
+  <title>保険ダイエット | あなたはもう保険に入っている</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" type="button" data-go="home" aria-label="ホームへ">
+      <span class="brand-mark">保</span>
+      <span><strong>保険ダイエット</strong><small>公的保障ファーストの棚卸し</small></span>
+    </button>
+    <span class="badge-neutral">商品提案ゼロ</span>
+  </header>
+
+  <main>
+    <section id="view-home" class="view active" aria-labelledby="home-title">
+      <div class="hero">
+        <p class="eyebrow">その保険、公的保障ともう重なってるかも。</p>
+        <h1 id="home-title">あなたは、すでに保険に入っています。</h1>
+        <p class="lead">高額療養費・傷病手当金・遺族年金——毎月の社会保険料で、あなたはすでに大きな保障を買っています。まずそれを見てから、いまの保険を重ねてみませんか。</p>
+        <button class="cta" type="button" data-go="wizard">3問で現在地を見る（30秒）</button>
+        <ul class="trust-points">
+          <li>🔒 入力は端末の中だけ。どこにも送信しません</li>
+          <li>🚫 保険商品を1つも提案しません。売るものがありません</li>
+          <li>📖 数字はすべて出典つき（厚労省・協会けんぽ・日本年金機構）</li>
+        </ul>
+      </div>
+      <div class="sample-card">
+        <h2>判定の見本</h2>
+        <div class="sample-row"><span class="dot green"></span><div><strong>公的とかぶっている可能性</strong><p>医療保険 月4,500円 — 医療費の自己負担は月80,100円＋αで頭打ち</p></div></div>
+        <div class="sample-row"><span class="dot yellow"></span><div><strong>上乗せの価値はある</strong><p>就業不能保険 — 傷病手当金が切れる1年6ヶ月後をカバーするなら意味がある</p></div></div>
+        <div class="sample-row"><span class="dot red"></span><div><strong>本当の穴</strong><p>自営業のあなたに傷病手当金はない — ここは公的も民間も空白</p></div></div>
+        <p class="sample-total">重複の可能性がある保険料: <strong>月4,500円 → 10年で54万円</strong></p>
+      </div>
+    </section>
+
+    <section id="view-wizard" class="view" aria-labelledby="wizard-title">
+      <h1 id="wizard-title">3つだけ教えてください</h1>
+      <p class="note">すべて端末内で計算します。送信されません。</p>
+      <form id="wizard-form">
+        <fieldset>
+          <legend>1. 働き方</legend>
+          <div class="choice-grid" id="worker-choices">
+            <label><input type="radio" name="worker" value="employee" required><span>会社員</span></label>
+            <label><input type="radio" name="worker" value="public"><span>公務員</span></label>
+            <label><input type="radio" name="worker" value="self"><span>自営業・フリーランス</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>2. 年収（だいたいで大丈夫）</legend>
+          <div class="choice-grid" id="income-choices"></div>
+        </fieldset>
+        <fieldset>
+          <legend>3. 家族</legend>
+          <div class="choice-grid">
+            <label><input type="radio" name="spouse" value="yes" required><span>配偶者がいる</span></label>
+            <label><input type="radio" name="spouse" value="no"><span>いない</span></label>
+          </div>
+          <label class="inline-field">18歳以下の子ども
+            <select id="children">
+              <option value="0">いない</option>
+              <option value="1">1人</option>
+              <option value="2">2人</option>
+              <option value="3">3人以上</option>
+            </select>
+          </label>
+        </fieldset>
+        <button class="cta" type="submit">あなたの公的保障を見る</button>
+      </form>
+    </section>
+
+    <section id="view-public" class="view" aria-labelledby="public-title">
+      <h1 id="public-title">あなたは、すでに入っています</h1>
+      <p id="premium-line" class="premium-line"></p>
+      <div id="public-cards" class="public-cards"></div>
+      <p class="note asof"></p>
+      <div class="actions">
+        <button class="cta" type="button" data-go="private">いまの保険を重ねてみる</button>
+        <button class="ghost" type="button" id="share-public">この画面をカードにする</button>
+      </div>
+    </section>
+
+    <section id="view-private" class="view" aria-labelledby="private-title">
+      <h1 id="private-title">いま入っている保険</h1>
+      <p class="note">保険証券は要りません。種類と月々の保険料だけで大丈夫。</p>
+      <form id="policy-form" class="policy-form">
+        <label class="inline-field">種類
+          <select id="policy-type"></select>
+        </label>
+        <label class="inline-field">月々の保険料
+          <input type="number" id="policy-premium" inputmode="numeric" min="0" max="500000" placeholder="例: 4500">
+        </label>
+        <label class="inline-field">メモ（任意）
+          <input type="text" id="policy-memo" maxlength="40" placeholder="例: 入院日額5,000円">
+        </label>
+        <button class="cta" type="submit">追加する</button>
+        <p id="policy-error" class="error" hidden></p>
+      </form>
+      <ul id="policy-list" class="policy-list"></ul>
+      <div class="actions">
+        <button class="cta" type="button" id="to-result" disabled>3色マップで判定する</button>
+      </div>
+    </section>
+
+    <section id="view-result" class="view" aria-labelledby="result-title">
+      <h1 id="result-title">あなたの3色マップ</h1>
+      <div id="result-summary" class="result-summary"></div>
+      <div id="result-cards"></div>
+      <div id="holes-block"></div>
+      <div class="exit-block">
+        <h2>断る前に、聞く前に</h2>
+        <details open>
+          <summary>窓口・担当者に聞く質問リスト</summary>
+          <ul id="question-list" class="check-list"></ul>
+          <button class="ghost" type="button" id="copy-questions">質問リストをコピー</button>
+        </details>
+        <details>
+          <summary>解約前チェックリスト</summary>
+          <ul id="cancel-checklist" class="check-list"></ul>
+        </details>
+      </div>
+      <div class="actions">
+        <button class="cta" type="button" id="share-result">結果カードを保存（PNG）</button>
+        <button class="ghost" type="button" data-go="private">保険を追加・修正する</button>
+        <button class="ghost" type="button" data-go="wizard">最初からやり直す</button>
+      </div>
+      <p class="note asof"></p>
+      <p class="disclaimer">このアプリは情報提供のみを目的とし、保険の募集・個別の助言・解約の推奨は行いません。金額はすべて概算の目安です。実際の判断は一次資料と専門家の確認を。</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>数字の出典（<span class="asof-inline"></span>）:</p>
+    <ul id="source-list"></ul>
+    <p class="footer-note">遺族厚生年金は2028年度から、子のない配偶者への給付が段階的に5年有期になる改正が予定されています。高額療養費は2026年8月から上限引き上げ予定。</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
