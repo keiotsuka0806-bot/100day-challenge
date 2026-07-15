@@ -28,17 +28,22 @@ body {
 }
 
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   padding: 10px 16px;
   background: var(--primary);
   color: #fff;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.topbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .brand {
