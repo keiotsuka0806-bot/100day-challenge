@@ -9,7 +9,15 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') {
       state.profile = parsed.profile || null;
-      state.policies = Array.isArray(parsed.policies) ? parsed.policies : [];
+      const typeIds = INSURANCE_TYPES.map((t) => t.id);
+      state.policies = (Array.isArray(parsed.policies) ? parsed.policies : [])
+        .filter((p) => p && typeof p === 'object' && typeIds.includes(p.type))
+        .map((p) => ({
+          id: Number(p.id) || 0,
+          type: p.type,
+          premium: Math.min(500000, Math.max(0, Number(p.premium) || 0)),
+          memo: String(p.memo || '').slice(0, 40),
+        }));
     }
   } catch (e) {
     localStorage.setItem(`${STORE_KEY}_broken`, localStorage.getItem(STORE_KEY) || '');
