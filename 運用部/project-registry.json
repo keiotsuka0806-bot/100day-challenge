@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-15T14:53:41.454Z",
+  "updatedAt": "2026-07-15T15:08:45.208Z",
   "projects": {
     "lexworld": {
       "path": "開発部/lexworld",
@@ -559,13 +559,17 @@
     },
     "hoken-diet": {
       "path": "開発部/hoken-diet",
-      "url": "http://localhost:8791",
-      "type": "visual-share",
-      "council": "Visual Share Council",
-      "status": "デプロイ後改善中",
+      "url": "https://hoken-diet.vercel.app",
+      "type": "ops-tool",
+      "council": "Business Tool Council",
+      "status": "共有可能",
       "lastCouncil": "2026-07-15",
       "lastDeploy": "2026-07-15",
-      "councilReport": "デザイン部/reports/2026-07-15-hoken-diet-genius-council.md"
+      "councilReport": "デザイン部/reports/2026-07-15-hoken-diet-genius-council.md",
+      "lastVerifiedAt": "2026-07-15T15:08:45.203Z",
+      "lastHttpStatus": "HTTP 200",
+      "lastPublicUrl": "https://hoken-diet.vercel.app",
+      "lastReleaseCheck": "2026-07-15"
     }
   }
 }

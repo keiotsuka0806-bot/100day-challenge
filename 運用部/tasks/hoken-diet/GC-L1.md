@@ -37,6 +37,6 @@ Done
 - Skipped: 明確な理由つきで対象外
 
 ## 証拠
-- 変更ファイル: 未記録
-- 確認コマンド: 未記録
-- 公開URL確認: 未記録
+- 変更ファイル: デザイン部/reports/2026-07-15-hoken-diet-genius-council.md を参照
+- 確認コマンド: node 運用部/scripts/release-check.mjs --project hoken-diet
+- 公開URL確認: https://hoken-diet.vercel.app (HTTP 200)
